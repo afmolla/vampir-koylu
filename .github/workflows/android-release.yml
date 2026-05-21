@@ -50,7 +50,6 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: "3.29.3"
           cache: true
 
       - name: Accept Android licenses
@@ -84,8 +83,9 @@ jobs:
       - name: Install dependencies & l10n
         working-directory: mobile
         run: |
+          flutter --version
           flutter pub get
-          flutter gen-l10n
+          flutter gen-l10n --verbose
 
       - name: Build APK
         working-directory: mobile
