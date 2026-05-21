@@ -1,8 +1,28 @@
-# GitHub → Sunucuya otomatik çekme
+# GitHub → Sunucuya çekme
 
-Repo: https://github.com/afmolla/flutter
+Repo (GitHub’daki isim): **https://github.com/afmolla/flutter**  
+Sunucudaki klasör adı (senin seçtiğin): **`vampir-koylu`** — fark etmez, sorun olmaz.
 
-Üç yol var; çoğu ekip **A** ile başlar, sonra **C**’ye geçer.
+```text
+git clone https://github.com/afmolla/flutter.git vampir-koylu
+         ↑ GitHub repo adı              ↑ Bilgisayardaki klasör adı (istediğin gibi)
+```
+
+İçerik aynı: `mobile/`, `server/`, `deploy/`. Klasör adı `flutter` olmak zorunda değil.
+
+---
+
+## Otomatik çekiyor mu?
+
+**Şu an hayır** — bilerek kapalı (SSH secrets yokken her push’ta “run failed” maili geliyordu).
+
+| Yöntem | Otomatik mi? |
+|--------|----------------|
+| `git push` → sunucu kendisi günceller | **Kapalı** (Secrets + Run workflow gerekir) |
+| Sunucuda `git pull` / `vps-update.sh` | **Manuel** — sen çalıştırırsın |
+| GitHub Actions → Deploy API to VPS | **Elle** (Actions → Run workflow) |
+
+Üç yol var; çoğu ekip **A** ile başlar, Secrets kurunca **C**’ye geçer.
 
 ---
 
@@ -52,9 +72,16 @@ Daha iyisi: `git remote set-url origin` ile credential helper.
 
 ---
 
-## C) GitHub Actions — `main`’e push olunca sunucu güncellenir (önerilen)
+## C) GitHub Actions — sunucuyu uzaktan güncelle
 
-Workflow: `.github/workflows/deploy-vps.yml`
+Workflow: `.github/workflows/deploy-vps.yml` (**otomatik push yok**, sadece elle)
+
+### Otomatik yapmak istersen (ileride)
+
+1. Repo **Settings → Secrets → Actions** → `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `DEPLOY_PATH` (`/opt/vampir-koylu` veya `C:\apps\vampir-koylu`)
+2. **Actions** → **Deploy API to VPS** → **Run workflow**
+
+Her `git push` sonrası otomatik istiyorsan bize yaz; `main` push’ta deploy’u tekrar açarız (Secrets hazır olunca).
 
 ### Sunucuda bir kez
 
