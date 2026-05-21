@@ -12,7 +12,7 @@ git push origin v0.1.0
 
 1–2 dk sonra: https://github.com/afmolla/flutter/releases → **app-release.apk** indir.
 
-Sunucu IP/domain için repo **Settings → Secrets → Actions** → `API_BASE_URL` = `http://SUNUCU_IP:3000` veya `https://api.domain.com`  
+Production API: **`https://api.mollayazilim.com`** (varsayılan). Override: Secrets → `API_BASE_URL`  
 Sonra yeni tag: `v0.1.1` + push.
 
 ### Elle tetikle (Actions sekmesi)
