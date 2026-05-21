@@ -62,11 +62,14 @@ Repo: **https://github.com/afmolla/flutter**
 
 `v*` tag push edildiğinde GitHub Actions APK üretir (workflow: `.github/workflows/android-release.yml`).
 
-## VPS (Linux)
+## Sunucu
 
-Tam adımlar: **[deploy/vps-setup.md](deploy/vps-setup.md)**
+| OS | Rehber |
+|----|--------|
+| Linux VPS | [deploy/vps-setup.md](deploy/vps-setup.md) |
+| **Windows** | [deploy/windows-setup.md](deploy/windows-setup.md) |
 
-Kısa özet: VPS’te `git clone` → `server/.env` → `docker compose -f deploy/docker-compose.prod.yml up -d` → Nginx + Certbot → mobilde `API_BASE_URL=https://api.domain.com`
+Windows hızlı başlat: `powershell -File deploy\scripts\windows-start.ps1`
 
 ## Durum (Sprint 0)
 
