@@ -67,7 +67,7 @@ Repo: **https://github.com/afmolla/flutter**
 | OS | Rehber |
 |----|--------|
 | Linux VPS | [deploy/vps-setup.md](deploy/vps-setup.md) |
-| **Windows** | [deploy/windows-setup.md](deploy/windows-setup.md) |
+| **Windows** | [deploy/windows-setup.md](deploy/windows-setup.md) — repo: [github.com/afmolla/flutter](https://github.com/afmolla/flutter) |
 
 Windows hızlı başlat: `powershell -File deploy\scripts\windows-start.ps1`
 
