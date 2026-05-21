@@ -49,6 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (token != null && token.isNotEmpty) {
         final nick = await _session.getNick();
+        if (!mounted) return;
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => HomeScreen(nick: nick ?? 'Player')),
         );

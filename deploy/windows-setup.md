@@ -38,17 +38,42 @@ https://git-scm.com/download/win → Next → **“Git from the command line and
 
 > ZIP ile güncelleme için her seferinde yeni ZIP indirmen gerekir; kalıcı çözüm **Git kurmak**.
 
-### PATH kontrolü
+### Git yüklü ama `git is not recognized` (PATH sorunu)
 
-Git kurulu ama hâlâ tanımıyorsa, **yeni** PowerShell aç veya şunu dene:
+Kurulu olur; CMD sadece PATH’te arar. **Yeni kurulumdan sonra eski pencereyi kapat.**
+
+**1) Tam yol ile dene (çoğu sunucuda çalışır):**
 
 ```powershell
 & "C:\Program Files\Git\cmd\git.exe" --version
 ```
 
-Çalışıyorsa PATH’e ekle (Kullanıcı ortam değişkeni):
+**2) Çalışıyorsa clone da böyle:**
 
-`C:\Program Files\Git\cmd`
+```powershell
+cd C:\apps
+& "C:\Program Files\Git\cmd\git.exe" clone https://github.com/afmolla/flutter.git vampir-koylu
+```
+
+**3) Kalıcı PATH (bir kez, sonra yeni terminal):**
+
+```powershell
+[Environment]::SetEnvironmentVariable(
+  "Path",
+  $env:Path + ";C:\Program Files\Git\cmd",
+  "User"
+)
+```
+
+Oturumu kapat / yeni CMD aç → `git --version`
+
+**4) Teşhis scripti:**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\apps\vampir-koylu\deploy\scripts\windows-find-git.ps1
+```
+
+(ZIP henüz yoksa scripti indirdiğin klasörden çalıştır.)
 
 ---
 

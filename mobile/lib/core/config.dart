@@ -1,7 +1,10 @@
 /// API base URL.
-/// - Android emulator: http://10.0.2.2:3000
-/// - Physical device on same LAN: http://YOUR_PC_IP:3000
-/// - Production VPS: https://api.yourdomain.com
+///
+/// **10.0.2.2** sadece Android **emülatör** içindir — PC tarayıcısında açılmaz.
+/// PC'de test: http://127.0.0.1:3000/health
+///
+/// Gerçek telefon: aynı Wi‑Fi + bilgisayar IP:
+/// `flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000`
 class AppConfig {
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',

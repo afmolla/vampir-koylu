@@ -10,6 +10,14 @@ export function createApp() {
   app.use(cors());
   app.use(express.json());
 
+  app.get('/', (_req, res) => {
+    res.json({
+      ok: true,
+      service: 'vampir-koylu-server',
+      hint: 'Use /health or /api/version from the mobile app',
+    });
+  });
+
   app.use('/health', healthRouter);
   app.use('/api/version', versionRouter);
   app.use('/api/auth', authRouter);
