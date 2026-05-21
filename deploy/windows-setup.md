@@ -5,6 +5,53 @@
 > Bu link Flutter SDK değil — oyun + API kodunun olduğu repodur.  
 > Repoyu bilgisayarda istediğin klasör adına klonlayabilirsin (`vampir-koylu` önerilir).
 
+---
+
+## 0) Git kurulu değilse (`git is not recognized`)
+
+`git clone` çalışmıyorsa önce **Git for Windows** kur:
+
+### Yol 1 — winget (önerilen)
+
+PowerShell veya CMD (**Yönetici**):
+
+```powershell
+winget install --id Git.Git -e --source winget
+```
+
+Kurulum bitince **terminali kapat ve yeniden aç**, sonra:
+
+```powershell
+git --version
+```
+
+### Yol 2 — İndir
+
+https://git-scm.com/download/win → Next → **“Git from the command line and also from 3rd-party software”** seç → kur.
+
+### Yol 3 — Git yok, ZIP ile al (geçici)
+
+1. Tarayıcıda aç: https://github.com/afmolla/flutter/archive/refs/heads/main.zip  
+2. ZIP’i `C:\apps\` altına çıkar  
+3. Klasör adı `flutter-main` olur → yeniden adlandır: `vampir-koylu`  
+4. Sonra `cd C:\apps\vampir-koylu` ile devam et (clone adımlarını atla)
+
+> ZIP ile güncelleme için her seferinde yeni ZIP indirmen gerekir; kalıcı çözüm **Git kurmak**.
+
+### PATH kontrolü
+
+Git kurulu ama hâlâ tanımıyorsa, **yeni** PowerShell aç veya şunu dene:
+
+```powershell
+& "C:\Program Files\Git\cmd\git.exe" --version
+```
+
+Çalışıyorsa PATH’e ekle (Kullanıcı ortam değişkeni):
+
+`C:\Program Files\Git\cmd`
+
+---
+
 Linux VPS yerine **Windows Server** veya **Windows 10/11** (7/24 açık) kullanabilirsin. Mobil uygulama `https://api.senindomain.com` veya sunucu IP’si ile bağlanır.
 
 ## Linux vs Windows (kısa)
