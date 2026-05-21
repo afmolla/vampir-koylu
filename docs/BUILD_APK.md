@@ -2,6 +2,14 @@
 
 ## A) GitHub Actions (bu PC'de Android SDK gerekmez) — önerilen
 
+> **"Run failed" maili** `Deploy API to VPS` workflow'undan gelmiş olabilir — SSH secrets yokken otomatik deploy kapalı. **APK için** `Android APK Release` workflow'una bak.
+
+### APK indir (Actions → Artifacts)
+
+Build bitince: **Actions** → en son **Android APK Release** (yeşil) → altta **Artifacts** → `vampir-koylu-apk` → `app-release.apk`
+
+### Tag ile (Releases)
+
 ### Tag ile (Releases'a yükler)
 
 ```powershell

@@ -1,23 +1,23 @@
-# main'e push → SSH ile sunucuda git pull + docker restart
-# Gerekli Secrets: SSH_HOST, SSH_USER, SSH_KEY, DEPLOY_PATH
-# Opsiyonel: SSH_PORT (varsayılan 22)
+# Sunucuya SSH deploy — SADECE elle çalıştır (Secrets kurulunca).
+# Otomatik push KAPALI (secrets yokken "run failed" maili gelmesin).
 
 name: Deploy API to VPS
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'server/**'
-      - 'deploy/**'
-      - '.github/workflows/deploy-vps.yml'
-
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Sunucuya deploy et (SSH secrets gerekli)'
+        required: true
+        default: 'deploy'
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.SSH_HOST != '' }}
+    timeout-minutes: 20
 
     steps:
       - name: Deploy over SSH
