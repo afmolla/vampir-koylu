@@ -20,6 +20,8 @@ git push origin v0.1.0
 
 1–2 dk sonra: https://github.com/afmolla/flutter/releases → **app-release.apk** indir.
 
+**Yayındaki sürümler:** yalnızca `v0.1.8`, `v0.1.9`, `v0.2.2` (eski 0.1.0–0.1.7 kaldırıldı).
+
 Production API: **`https://api.mollayazilim.com`** (varsayılan). Override: Secrets → `API_BASE_URL`  
 Sonra yeni tag: `v0.1.1` + push.
 

@@ -18,7 +18,9 @@ Kontrol (PC veya telefon tarayıcısı):
 
 **Sürüm 0.2.2** yüklü olmalı (eski 0.1.x ile paket çakışması olur → önce kaldır).
 
-İndir: https://github.com/afmolla/flutter/releases/tag/v0.2.2  
+İndir: https://github.com/afmolla/flutter/releases  
+
+**Aktif sürümler (sadece bunlar):** `v0.1.8`, `v0.1.9`, `v0.2.2` — güncel olan **v0.2.2**  
 Dosya: **app-release.apk**
 
 ## 3. Uygulama akışı
