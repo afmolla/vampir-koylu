@@ -41,11 +41,16 @@ flutter run
 
 **Emulator API adresi:** `http://10.0.2.2:3000` (varsayılan `lib/core/config.dart`)
 
-**Fiziksel telefon:** Bilgisayar IP’n ile:
+> `10.0.2.2` **PC Chrome’da çalışmaz** — sadece emülatörün “bilgisayarına” giden adrestir.  
+> Bilgisayarda test: http://127.0.0.1:3000/health
+
+**Fiziksel telefon:** Aynı Wi‑Fi, Windows IP’ni bul (`ipconfig` → IPv4), sonra:
 
 ```bash
 flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000
 ```
+
+**Bağlantı hâlâ yoksa:** Windows Güvenlik Duvarı → Node.js için özel kural (port 3000) veya geçici kapatıp dene.
 
 ### 3. Zorunlu güncelleme testi
 
@@ -57,9 +62,11 @@ Repo: **https://github.com/afmolla/flutter**
 
 `v*` tag push edildiğinde GitHub Actions APK üretir (workflow: `.github/workflows/android-release.yml`).
 
-## VPS
+## VPS (Linux)
 
-Bkz. [deploy/vps-setup.md](deploy/vps-setup.md)
+Tam adımlar: **[deploy/vps-setup.md](deploy/vps-setup.md)**
+
+Kısa özet: VPS’te `git clone` → `server/.env` → `docker compose -f deploy/docker-compose.prod.yml up -d` → Nginx + Certbot → mobilde `API_BASE_URL=https://api.domain.com`
 
 ## Durum (Sprint 0)
 

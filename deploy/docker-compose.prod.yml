@@ -1,0 +1,41 @@
+# Production: sadece API dışarıya (Nginx arkasında). Postgres/Redis sadece iç ağ.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vampir
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-CHANGE_ME_STRONG}
+      POSTGRES_DB: vampir_koylu
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - internal
+
+  api:
+    build:
+      context: ../server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ../server/.env
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  pgdata:
