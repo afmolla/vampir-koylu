@@ -5,6 +5,17 @@
   "forceUpdateTitle": "Update required",
   "forceUpdateBody": "This version is no longer supported. Please install the latest release to continue.",
   "updateButton": "Download update",
+  "downloadAndInstall": "Download and install",
+  "downloading": "Downloading… %{percent}",
+  "@downloading": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "downloadFailed": "Download failed",
+  "installOpened": "Installer opened. Tap Install / Update.",
+  "installedVersion": "Installed version:",
+  "openInBrowser": "Open in browser (fallback)",
   "loginTitle": "Sign in",
   "guestNickHint": "Nickname",
   "guestPlay": "Play as guest",

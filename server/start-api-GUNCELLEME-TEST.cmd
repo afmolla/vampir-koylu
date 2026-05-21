@@ -10,9 +10,9 @@ echo === GUNCELLEME TESTI: eski APK engellenecek ===
 set PORT=3000
 set NODE_ENV=production
 set MIN_REQUIRED_VERSION=0.2.0
-set LATEST_VERSION=0.1.7
+set LATEST_VERSION=0.1.8
 set FORCE_UPDATE=true
-set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v0.1.7/app-release.apk
+set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v0.1.8/app-release.apk
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 

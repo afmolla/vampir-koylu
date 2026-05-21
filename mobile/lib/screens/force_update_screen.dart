@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../l10n/app_localizations.dart';
-
-/// GitHub Releases sayfasi — APK dosyasindan daha guvenilir acilir.
-const _releasesPage = 'https://github.com/afmolla/flutter/releases';
+import '../services/apk_installer.dart';
 
 const _defaultApkUrl =
-    'https://github.com/afmolla/flutter/releases/download/v0.1.6/app-release.apk';
+    'https://github.com/afmolla/flutter/releases/download/v0.1.8/app-release.apk';
 
 class ForceUpdateScreen extends StatefulWidget {
   const ForceUpdateScreen({
@@ -26,13 +21,18 @@ class ForceUpdateScreen extends StatefulWidget {
 }
 
 class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
+  final _installer = ApkInstaller();
   String _installedVersion = '…';
-  bool _busy = false;
+  double _progress = 0;
+  bool _downloading = false;
 
   @override
   void initState() {
     super.initState();
     _loadVersion();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_downloading) _downloadAndInstall();
+    });
   }
 
   Future<void> _loadVersion() async {
@@ -47,76 +47,52 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
     return u.isNotEmpty ? u : _defaultApkUrl;
   }
 
-  Future<bool> _tryOpen(String url) async {
-    final uri = Uri.parse(url);
+  Future<void> _downloadAndInstall() async {
+    setState(() {
+      _downloading = true;
+      _progress = 0;
+    });
+
     try {
-      if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        return true;
+      await _installer.downloadAndInstall(
+        url: _apkUrl,
+        onProgress: (p) {
+          if (mounted) setState(() => _progress = p);
+        },
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.installOpened),
+            duration: const Duration(seconds: 5),
+          ),
+        );
       }
-      return await launchUrl(uri, mode: LaunchMode.platformDefault);
-    } catch (_) {
-      return false;
+    } on ApkInstallException catch (e) {
+      if (mounted) _showError(e.message);
+    } catch (e) {
+      if (mounted) {
+        _showError('${AppLocalizations.of(context)!.downloadFailed}\n$e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _downloading = false;
+        });
+      }
     }
   }
 
-  Future<void> _openReleasesPage() async {
-    setState(() => _busy = true);
-    final ok = await _tryOpen(_releasesPage);
-    if (!mounted) return;
-    setState(() => _busy = false);
-    if (!ok) _showManualDialog(_releasesPage);
-  }
-
-  Future<void> _openApkLink() async {
-    setState(() => _busy = true);
-    final ok = await _tryOpen(_apkUrl);
-    if (!mounted) return;
-    setState(() => _busy = false);
-    if (!ok) {
-      _showMsg('APK acilmadi. Once "GitHub sayfasini ac" kullan.');
-    }
-  }
-
-  Future<void> _copy(String text) async {
-    await Clipboard.setData(ClipboardData(text: text));
-    _showMsg('Link kopyalandi — Chrome yapistir');
-  }
-
-  void _showMsg(String text) {
+  void _showError(String text) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(text), duration: const Duration(seconds: 4)),
-    );
-  }
-
-  void _showManualDialog(String url) {
-    showDialog<void>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Manuel indir'),
-        content: SelectableText(
-          'Chrome acip su adrese git:\n\n$url\n\n'
-          'veya Releases sayfasindan en son APK yi indir.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              _copy(url);
-              Navigator.pop(ctx);
-            },
-            child: const Text('Kopyala'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Tamam'),
-          ),
-        ],
-      ),
+      SnackBar(content: Text(text), duration: const Duration(seconds: 5)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final percent = (_progress * 100).clamp(0, 100).toInt();
 
     return PopScope(
       canPop: false,
@@ -140,7 +116,7 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Yuklu surum: $_installedVersion',
+                  '${l10n.installedVersion} $_installedVersion',
                   style: const TextStyle(color: Colors.white54),
                 ),
                 const SizedBox(height: 16),
@@ -148,29 +124,22 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                   widget.message ?? l10n.forceUpdateBody,
                   textAlign: TextAlign.center,
                 ),
+                if (_downloading) ...[
+                  const SizedBox(height: 28),
+                  LinearProgressIndicator(value: _progress > 0 ? _progress : null),
+                  const SizedBox(height: 12),
+                  Text(l10n.downloading(percent)),
+                ],
                 const SizedBox(height: 28),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _busy ? null : _openReleasesPage,
-                    icon: const Icon(Icons.open_in_browser),
-                    label: const Text('GitHub sayfasini ac (onerilen)'),
+                if (!_downloading)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _downloadAndInstall,
+                      icon: const Icon(Icons.download_for_offline),
+                      label: Text(l10n.downloadAndInstall),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _busy ? null : _openApkLink,
-                    icon: const Icon(Icons.download),
-                    label: Text(l10n.updateButton),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => _copy(_apkUrl),
-                  child: const Text('APK linkini kopyala'),
-                ),
               ],
             ),
           ),

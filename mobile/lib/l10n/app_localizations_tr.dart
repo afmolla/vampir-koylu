@@ -25,6 +25,27 @@ class AppLocalizationsTr extends AppLocalizations {
   String get updateButton => 'Güncellemeyi indir';
 
   @override
+  String get downloadAndInstall => 'İndir ve yükle';
+
+  @override
+  String downloading(int percent) {
+    return 'İndiriliyor… %$percent';
+  }
+
+  @override
+  String get downloadFailed => 'İndirme başarısız';
+
+  @override
+  String get installOpened =>
+      'Kurulum ekranı açıldı. «Yükle» / «Güncelle» ye dokun.';
+
+  @override
+  String get installedVersion => 'Yüklü sürüm:';
+
+  @override
+  String get openInBrowser => 'Tarayıcıda aç (yedek)';
+
+  @override
   String get loginTitle => 'Giriş yap';
 
   @override

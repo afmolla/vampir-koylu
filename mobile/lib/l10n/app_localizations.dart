@@ -128,6 +128,42 @@ abstract class AppLocalizations {
   /// **'Download update'**
   String get updateButton;
 
+  /// No description provided for @downloadAndInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Download and install'**
+  String get downloadAndInstall;
+
+  /// No description provided for @downloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading… %{percent}'**
+  String downloading(int percent);
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get downloadFailed;
+
+  /// No description provided for @installOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Installer opened. Tap Install / Update.'**
+  String get installOpened;
+
+  /// No description provided for @installedVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed version:'**
+  String get installedVersion;
+
+  /// No description provided for @openInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in browser (fallback)'**
+  String get openInBrowser;
+
   /// No description provided for @loginTitle.
   ///
   /// In en, this message translates to:

@@ -5,6 +5,17 @@
   "forceUpdateTitle": "Güncelleme gerekli",
   "forceUpdateBody": "Bu sürüm artık desteklenmiyor. Oyuna devam etmek için lütfen en güncel sürümü yükleyin.",
   "updateButton": "Güncellemeyi indir",
+  "downloadAndInstall": "İndir ve yükle",
+  "downloading": "İndiriliyor… %{percent}",
+  "@downloading": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "downloadFailed": "İndirme başarısız",
+  "installOpened": "Kurulum ekranı açıldı. «Yükle» / «Güncelle» ye dokun.",
+  "installedVersion": "Yüklü sürüm:",
+  "openInBrowser": "Tarayıcıda aç (yedek)",
   "loginTitle": "Giriş yap",
   "guestNickHint": "Takma ad",
   "guestPlay": "Misafir olarak oyna",

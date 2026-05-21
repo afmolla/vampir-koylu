@@ -25,6 +25,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get updateButton => 'Download update';
 
   @override
+  String get downloadAndInstall => 'Download and install';
+
+  @override
+  String downloading(int percent) {
+    return 'Downloading… %$percent';
+  }
+
+  @override
+  String get downloadFailed => 'Download failed';
+
+  @override
+  String get installOpened => 'Installer opened. Tap Install / Update.';
+
+  @override
+  String get installedVersion => 'Installed version:';
+
+  @override
+  String get openInBrowser => 'Open in browser (fallback)';
+
+  @override
   String get loginTitle => 'Sign in';
 
   @override
