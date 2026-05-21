@@ -167,7 +167,7 @@ abstract class AppLocalizations {
   /// No description provided for @homeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Online rooms (6–8 players) — coming soon'**
+  /// **'Choose a mode'**
   String get homeSubtitle;
 
   /// No description provided for @language.
@@ -187,6 +187,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get errorGeneric;
+
+  /// No description provided for @soloPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play solo'**
+  String get soloPlay;
+
+  /// No description provided for @soloPlayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'6-player room (you + 5 bots) — quick match'**
+  String get soloPlayDesc;
+
+  /// No description provided for @onlinePlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play online'**
+  String get onlinePlay;
+
+  /// No description provided for @onlinePlayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'6–8 real players'**
+  String get onlinePlayDesc;
+
+  /// No description provided for @onlineSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Online mode coming soon'**
+  String get onlineSoon;
+
+  /// No description provided for @soloTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Solo'**
+  String get soloTitle;
+
+  /// No description provided for @phaseNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Night phase'**
+  String get phaseNight;
+
+  /// No description provided for @phaseDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day vote'**
+  String get phaseDay;
+
+  /// No description provided for @dayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get dayLabel;
+
+  /// No description provided for @you.
+  ///
+  /// In en, this message translates to:
+  /// **'you'**
+  String get you;
+
+  /// No description provided for @waitingVampire.
+  ///
+  /// In en, this message translates to:
+  /// **'The vampire is choosing…'**
+  String get waitingVampire;
+
+  /// No description provided for @tapToVote.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a player to vote them out'**
+  String get tapToVote;
+
+  /// No description provided for @villagersWin.
+  ///
+  /// In en, this message translates to:
+  /// **'Villagers win!'**
+  String get villagersWin;
+
+  /// No description provided for @vampiresWin.
+  ///
+  /// In en, this message translates to:
+  /// **'Vampires win!'**
+  String get vampiresWin;
+
+  /// No description provided for @playAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Play again'**
+  String get playAgain;
 }
 
 class _AppLocalizationsDelegate

@@ -45,7 +45,7 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get homeSubtitle => 'Online odalar (6–8 kişi) — yakında';
+  String get homeSubtitle => 'Bir mod seç';
 
   @override
   String get language => 'Dil';
@@ -56,4 +56,49 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorGeneric => 'Bir şeyler ters gitti. Lütfen tekrar dene.';
+
+  @override
+  String get soloPlay => 'Tek başına oyna';
+
+  @override
+  String get soloPlayDesc => '6 kişilik oda (sen + 5 bot) — hızlı maç';
+
+  @override
+  String get onlinePlay => 'Online oyna';
+
+  @override
+  String get onlinePlayDesc => '6–8 kişi, gerçek oyuncular';
+
+  @override
+  String get onlineSoon => 'Online mod yakında';
+
+  @override
+  String get soloTitle => 'Tek oyuncu';
+
+  @override
+  String get phaseNight => 'Gece fazı';
+
+  @override
+  String get phaseDay => 'Gündüz oylaması';
+
+  @override
+  String get dayLabel => 'Gün';
+
+  @override
+  String get you => 'sen';
+
+  @override
+  String get waitingVampire => 'Vampir avını seçiyor…';
+
+  @override
+  String get tapToVote => 'Elenmesini istediğin oyuncuya dokun';
+
+  @override
+  String get villagersWin => 'Köylüler kazandı!';
+
+  @override
+  String get vampiresWin => 'Vampirler kazandı!';
+
+  @override
+  String get playAgain => 'Tekrar oyna';
 }

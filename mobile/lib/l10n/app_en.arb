@@ -16,8 +16,23 @@
       "nick": { "type": "String" }
     }
   },
-  "homeSubtitle": "Online rooms (6–8 players) — coming soon",
+  "homeSubtitle": "Choose a mode",
   "language": "Language",
   "errorNetwork": "Connection error. Check your network and try again.",
-  "errorGeneric": "Something went wrong. Please try again."
+  "errorGeneric": "Something went wrong. Please try again.",
+  "soloPlay": "Play solo",
+  "soloPlayDesc": "6-player room (you + 5 bots) — quick match",
+  "onlinePlay": "Play online",
+  "onlinePlayDesc": "6–8 real players",
+  "onlineSoon": "Online mode coming soon",
+  "soloTitle": "Solo",
+  "phaseNight": "Night phase",
+  "phaseDay": "Day vote",
+  "dayLabel": "Day",
+  "you": "you",
+  "waitingVampire": "The vampire is choosing…",
+  "tapToVote": "Tap a player to vote them out",
+  "villagersWin": "Villagers win!",
+  "vampiresWin": "Vampires win!",
+  "playAgain": "Play again"
 }

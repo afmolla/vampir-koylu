@@ -11,8 +11,28 @@
   "googleSignIn": "Google ile giriş",
   "facebookSignIn": "Facebook ile giriş",
   "homeWelcome": "Hoş geldin, {nick}",
-  "homeSubtitle": "Online odalar (6–8 kişi) — yakında",
+  "@homeWelcome": {
+    "placeholders": {
+      "nick": { "type": "String" }
+    }
+  },
+  "homeSubtitle": "Bir mod seç",
   "language": "Dil",
   "errorNetwork": "Bağlantı hatası. İnterneti kontrol edip tekrar dene.",
-  "errorGeneric": "Bir şeyler ters gitti. Lütfen tekrar dene."
+  "errorGeneric": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+  "soloPlay": "Tek başına oyna",
+  "soloPlayDesc": "6 kişilik oda (sen + 5 bot) — hızlı maç",
+  "onlinePlay": "Online oyna",
+  "onlinePlayDesc": "6–8 kişi, gerçek oyuncular",
+  "onlineSoon": "Online mod yakında",
+  "soloTitle": "Tek oyuncu",
+  "phaseNight": "Gece fazı",
+  "phaseDay": "Gündüz oylaması",
+  "dayLabel": "Gün",
+  "you": "sen",
+  "waitingVampire": "Vampir avını seçiyor…",
+  "tapToVote": "Elenmesini istediğin oyuncuya dokun",
+  "villagersWin": "Köylüler kazandı!",
+  "vampiresWin": "Vampirler kazandı!",
+  "playAgain": "Tekrar oyna"
 }
