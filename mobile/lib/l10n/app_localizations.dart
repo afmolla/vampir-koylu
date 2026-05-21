@@ -251,7 +251,7 @@ abstract class AppLocalizations {
   /// No description provided for @onlinePlayDesc.
   ///
   /// In en, this message translates to:
-  /// **'6–8 real players'**
+  /// **'6–8 real players — join with room code'**
   String get onlinePlayDesc;
 
   /// No description provided for @onlineSoon.
@@ -259,6 +259,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Online mode coming soon'**
   String get onlineSoon;
+
+  /// No description provided for @onlineLobbyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Online lobbies'**
+  String get onlineLobbyTitle;
+
+  /// No description provided for @onlineLobbyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a room or join with a code. Game starts with 6+ players.'**
+  String get onlineLobbyDesc;
+
+  /// No description provided for @roomCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Room code'**
+  String get roomCodeHint;
+
+  /// No description provided for @joinRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get joinRoom;
+
+  /// No description provided for @createRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Create room'**
+  String get createRoom;
+
+  /// No description provided for @maxPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Max players'**
+  String get maxPlayers;
+
+  /// No description provided for @openRooms.
+  ///
+  /// In en, this message translates to:
+  /// **'Open rooms'**
+  String get openRooms;
+
+  /// No description provided for @noOpenRooms.
+  ///
+  /// In en, this message translates to:
+  /// **'No open rooms — create one.'**
+  String get noOpenRooms;
+
+  /// No description provided for @hostLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Host: {nick}'**
+  String hostLabel(String nick);
+
+  /// No description provided for @roomCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Room'**
+  String get roomCode;
+
+  /// No description provided for @roomWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for players…'**
+  String get roomWaiting;
+
+  /// No description provided for @playersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {max} players'**
+  String playersCount(int current, int max);
+
+  /// No description provided for @host.
+  ///
+  /// In en, this message translates to:
+  /// **'Host'**
+  String get host;
+
+  /// No description provided for @needSixPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 6 players required to start.'**
+  String get needSixPlayers;
+
+  /// No description provided for @startGame.
+  ///
+  /// In en, this message translates to:
+  /// **'Start game'**
+  String get startGame;
+
+  /// No description provided for @backToLobby.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to menu'**
+  String get backToLobby;
+
+  /// No description provided for @yourRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Your role: {role}'**
+  String yourRole(String role);
+
+  /// No description provided for @lastVictim.
+  ///
+  /// In en, this message translates to:
+  /// **'Last eliminated: {name}'**
+  String lastVictim(String name);
+
+  /// No description provided for @eliminated.
+  ///
+  /// In en, this message translates to:
+  /// **'Eliminated'**
+  String get eliminated;
 
   /// No description provided for @soloTitle.
   ///

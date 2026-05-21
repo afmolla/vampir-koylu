@@ -92,10 +92,76 @@ class AppLocalizationsTr extends AppLocalizations {
   String get onlinePlay => 'Online oyna';
 
   @override
-  String get onlinePlayDesc => '6–8 kişi, gerçek oyuncular';
+  String get onlinePlayDesc => '6–8 kişi, gerçek oyuncular — oda kodu ile';
 
   @override
   String get onlineSoon => 'Online mod yakında';
+
+  @override
+  String get onlineLobbyTitle => 'Online lobiler';
+
+  @override
+  String get onlineLobbyDesc =>
+      'Oda oluştur veya koda katıl. Oyun 6+ oyuncu ile başlar.';
+
+  @override
+  String get roomCodeHint => 'Oda kodu';
+
+  @override
+  String get joinRoom => 'Katıl';
+
+  @override
+  String get createRoom => 'Oda oluştur';
+
+  @override
+  String get maxPlayers => 'Maks. oyuncu';
+
+  @override
+  String get openRooms => 'Açık odalar';
+
+  @override
+  String get noOpenRooms => 'Açık oda yok — yeni oda oluştur.';
+
+  @override
+  String hostLabel(String nick) {
+    return 'Kurucu: $nick';
+  }
+
+  @override
+  String get roomCode => 'Oda';
+
+  @override
+  String get roomWaiting => 'Oyuncular bekleniyor…';
+
+  @override
+  String playersCount(int current, int max) {
+    return '$current / $max oyuncu';
+  }
+
+  @override
+  String get host => 'Kurucu';
+
+  @override
+  String get needSixPlayers => 'Başlatmak için en az 6 oyuncu gerekli.';
+
+  @override
+  String get startGame => 'Oyunu başlat';
+
+  @override
+  String get backToLobby => 'Ana menüye dön';
+
+  @override
+  String yourRole(String role) {
+    return 'Rolün: $role';
+  }
+
+  @override
+  String lastVictim(String name) {
+    return 'Son elenen: $name';
+  }
+
+  @override
+  String get eliminated => 'Elenmiş';
 
   @override
   String get soloTitle => 'Tek oyuncu';

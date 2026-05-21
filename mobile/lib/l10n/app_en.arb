@@ -35,8 +35,42 @@
   "soloPlay": "Play solo",
   "soloPlayDesc": "6-player room (you + 5 bots) — quick match",
   "onlinePlay": "Play online",
-  "onlinePlayDesc": "6–8 real players",
+  "onlinePlayDesc": "6–8 real players — join with room code",
   "onlineSoon": "Online mode coming soon",
+  "onlineLobbyTitle": "Online lobbies",
+  "onlineLobbyDesc": "Create a room or join with a code. Game starts with 6+ players.",
+  "roomCodeHint": "Room code",
+  "joinRoom": "Join",
+  "createRoom": "Create room",
+  "maxPlayers": "Max players",
+  "openRooms": "Open rooms",
+  "noOpenRooms": "No open rooms — create one.",
+  "hostLabel": "Host: {nick}",
+  "@hostLabel": {
+    "placeholders": { "nick": { "type": "String" } }
+  },
+  "roomCode": "Room",
+  "roomWaiting": "Waiting for players…",
+  "playersCount": "{current} / {max} players",
+  "@playersCount": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "host": "Host",
+  "needSixPlayers": "At least 6 players required to start.",
+  "startGame": "Start game",
+  "backToLobby": "Back to menu",
+  "yourRole": "Your role: {role}",
+  "@yourRole": {
+    "placeholders": { "role": { "type": "String" } }
+  },
+  "lastVictim": "Last eliminated: {name}",
+  "@lastVictim": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "eliminated": "Eliminated",
   "soloTitle": "Solo",
   "phaseNight": "Night phase",
   "phaseDay": "Day vote",

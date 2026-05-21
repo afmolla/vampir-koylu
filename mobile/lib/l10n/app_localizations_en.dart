@@ -91,10 +91,76 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onlinePlay => 'Play online';
 
   @override
-  String get onlinePlayDesc => '6–8 real players';
+  String get onlinePlayDesc => '6–8 real players — join with room code';
 
   @override
   String get onlineSoon => 'Online mode coming soon';
+
+  @override
+  String get onlineLobbyTitle => 'Online lobbies';
+
+  @override
+  String get onlineLobbyDesc =>
+      'Create a room or join with a code. Game starts with 6+ players.';
+
+  @override
+  String get roomCodeHint => 'Room code';
+
+  @override
+  String get joinRoom => 'Join';
+
+  @override
+  String get createRoom => 'Create room';
+
+  @override
+  String get maxPlayers => 'Max players';
+
+  @override
+  String get openRooms => 'Open rooms';
+
+  @override
+  String get noOpenRooms => 'No open rooms — create one.';
+
+  @override
+  String hostLabel(String nick) {
+    return 'Host: $nick';
+  }
+
+  @override
+  String get roomCode => 'Room';
+
+  @override
+  String get roomWaiting => 'Waiting for players…';
+
+  @override
+  String playersCount(int current, int max) {
+    return '$current / $max players';
+  }
+
+  @override
+  String get host => 'Host';
+
+  @override
+  String get needSixPlayers => 'At least 6 players required to start.';
+
+  @override
+  String get startGame => 'Start game';
+
+  @override
+  String get backToLobby => 'Back to menu';
+
+  @override
+  String yourRole(String role) {
+    return 'Your role: $role';
+  }
+
+  @override
+  String lastVictim(String name) {
+    return 'Last eliminated: $name';
+  }
+
+  @override
+  String get eliminated => 'Eliminated';
 
   @override
   String get soloTitle => 'Solo';

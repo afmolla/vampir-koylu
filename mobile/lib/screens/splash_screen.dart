@@ -48,16 +48,25 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (token != null && token.isNotEmpty) {
-        final nick = await _session.getNick();
-        if (!mounted) return;
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => HomeScreen(nick: nick ?? 'Player')),
-        );
-      } else {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
+        try {
+          final me = await _api.getMe(token: token);
+          final nick =
+              (me['user'] as Map<String, dynamic>?)?['nick'] as String? ??
+                  await _session.getNick();
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => HomeScreen(nick: nick ?? 'Player')),
+          );
+          return;
+        } catch (_) {
+          await _session.clear();
+        }
       }
+
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

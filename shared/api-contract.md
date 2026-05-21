@@ -1,31 +1,35 @@
-# API sözleşmesi (özet)
+# API sözleşmesi (özet) — v0.2.2
 
 ## GET /api/version
 
 Query: `clientVersion`, `platform`
 
-Response:
+## GET /api/rooms
 
-```json
-{
-  "minRequiredVersion": "0.1.0",
-  "latestVersion": "0.1.0",
-  "forceUpdate": true,
-  "allowed": true,
-  "updateUrlAndroid": "https://github.com/.../releases/latest",
-  "message": null,
-  "platform": "android"
-}
-```
+Açık lobiler: `{ "rooms": [{ "code", "playerCount", "maxPlayers", "hostNick" }] }`
 
 ## POST /api/auth/guest
 
 Body: `{ "nick": "Ali", "locale": "tr" }`
 
-Response: `{ "token": "...", "user": { "id", "nick", "isGuest", "locale" } }`
+## GET /api/auth/me
+
+Header: `Authorization: Bearer <token>`
 
 ## WebSocket
 
-Auth handshake: `auth.clientVersion`, `auth.token`
+Auth: `auth.clientVersion`, `auth.token`
+
+| Event (client → server) | Açıklama |
+|-------------------------|----------|
+| `room:create` | `{ nick, maxPlayers: 6-8 }` |
+| `room:join` | `{ code, nick }` |
+| `room:leave` | — |
+| `room:start` | Kurucu, 6+ oyuncu |
+| `game:action` | `{ type: night_kill \| day_vote, targetId }` |
+
+| Event (server → client) | Açıklama |
+|-------------------------|----------|
+| `room:state` | Oda/oyun durumu (oyuncuya özel rol) |
 
 Errors: `VERSION_OUTDATED`, `UNAUTHORIZED`

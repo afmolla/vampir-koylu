@@ -35,8 +35,42 @@
   "soloPlay": "Tek başına oyna",
   "soloPlayDesc": "6 kişilik oda (sen + 5 bot) — hızlı maç",
   "onlinePlay": "Online oyna",
-  "onlinePlayDesc": "6–8 kişi, gerçek oyuncular",
+  "onlinePlayDesc": "6–8 kişi, gerçek oyuncular — oda kodu ile",
   "onlineSoon": "Online mod yakında",
+  "onlineLobbyTitle": "Online lobiler",
+  "onlineLobbyDesc": "Oda oluştur veya koda katıl. Oyun 6+ oyuncu ile başlar.",
+  "roomCodeHint": "Oda kodu",
+  "joinRoom": "Katıl",
+  "createRoom": "Oda oluştur",
+  "maxPlayers": "Maks. oyuncu",
+  "openRooms": "Açık odalar",
+  "noOpenRooms": "Açık oda yok — yeni oda oluştur.",
+  "hostLabel": "Kurucu: {nick}",
+  "@hostLabel": {
+    "placeholders": { "nick": { "type": "String" } }
+  },
+  "roomCode": "Oda",
+  "roomWaiting": "Oyuncular bekleniyor…",
+  "playersCount": "{current} / {max} oyuncu",
+  "@playersCount": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  },
+  "host": "Kurucu",
+  "needSixPlayers": "Başlatmak için en az 6 oyuncu gerekli.",
+  "startGame": "Oyunu başlat",
+  "backToLobby": "Ana menüye dön",
+  "yourRole": "Rolün: {role}",
+  "@yourRole": {
+    "placeholders": { "role": { "type": "String" } }
+  },
+  "lastVictim": "Son elenen: {name}",
+  "@lastVictim": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "eliminated": "Elenmiş",
   "soloTitle": "Tek oyuncu",
   "phaseNight": "Gece fazı",
   "phaseDay": "Gündüz oylaması",

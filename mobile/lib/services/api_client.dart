@@ -38,6 +38,20 @@ class ApiClient {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> getMe({required String token}) async {
+    final res = await _client.get(
+      _uri('/api/auth/me'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (res.statusCode == 401 || res.statusCode == 404) {
+      throw ApiException(res.statusCode, res.body);
+    }
+    if (res.statusCode != 200) {
+      throw ApiException(res.statusCode, res.body);
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> guestLogin({
     required String nick,
     required String locale,

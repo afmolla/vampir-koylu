@@ -3,6 +3,7 @@ import cors from 'cors';
 import { versionRouter } from './routes/version.js';
 import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
+import { roomsRouter } from './routes/rooms.js';
 
 export function createApp() {
   const app = express();
@@ -21,6 +22,7 @@ export function createApp() {
   app.use('/health', healthRouter);
   app.use('/api/version', versionRouter);
   app.use('/api/auth', authRouter);
+  app.use('/api/rooms', roomsRouter);
 
   app.use((err, _req, res, _next) => {
     console.error(err);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import 'login_screen.dart';
+import 'online_lobby_screen.dart';
 import 'solo_game_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -61,8 +62,10 @@ class HomeScreen extends StatelessWidget {
               label: l10n.onlinePlay,
               subtitle: l10n.onlinePlayDesc,
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(l10n.onlineSoon)),
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => OnlineLobbyScreen(nick: nick),
+                  ),
                 );
               },
             ),

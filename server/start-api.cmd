@@ -1,22 +1,24 @@
 @echo off
-title Vampir Koylu API
+title Vampir Koylu API - SABAH (v0.2.2)
 cd /d "%~dp0"
 
 echo Port 3000 temizleniyor...
 for /f "tokens=5" %%a in ('netstat -ano ^| findstr :3000 ^| findstr LISTENING') do taskkill /PID %%a /F 2>nul
 
 echo.
-echo === Vampir Koylu API (normal) ===
+echo === Vampir Koylu API v0.2.2 (normal kullanim) ===
 set PORT=3000
 set NODE_ENV=production
-set MIN_REQUIRED_VERSION=0.1.0
-set LATEST_VERSION=0.1.4
+set MIN_REQUIRED_VERSION=0.2.2
+set LATEST_VERSION=0.2.2
 set FORCE_UPDATE=true
-set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v0.1.9/app-release.apk
+set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v0.2.2/app-release.apk
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 
 echo MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
+echo LATEST_VERSION=%LATEST_VERSION%
+echo APK: %UPDATE_URL_ANDROID%
 echo Dinleniyor: http://0.0.0.0:3000
 echo Pencereyi KAPATMA - API durur.
 echo.
