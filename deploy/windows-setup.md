@@ -129,22 +129,13 @@ Production’da mümkünse sadece **80/443** aç; 3000’i sadece localhost’ta
 
 ---
 
-## Güncelleme
+## Güncelleme (GitHub'dan çek)
 
 ```powershell
-cd C:\apps\vampir-koylu
-git pull origin main
-cd server
-npm install
-pm2 restart vampir-api
+powershell -File C:\apps\vampir-koylu\deploy\scripts\windows-update.ps1
 ```
 
-Docker kullanıyorsan:
-
-```powershell
-cd deploy
-docker compose -f docker-compose.prod.yml up -d --build
-```
+Otomatik deploy: [deploy/github-deploy.md](github-deploy.md) → GitHub Actions + SSH Secrets.
 
 ---
 

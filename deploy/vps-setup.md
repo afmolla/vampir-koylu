@@ -131,22 +131,15 @@ GitHub Actions için repo **Secrets** → `API_BASE_URL` eklenebilir (ileride).
 
 ---
 
-## 9) Güncelleme (her deploy)
+## 9) Güncelleme (GitHub → sunucu)
 
-Sunucuda:
-
-```bash
-cd /opt/vampir-koylu
-bash deploy/scripts/vps-update.sh
-```
-
-Veya elle:
+**Manuel** (PC'de push ettikten sonra sunucuda):
 
 ```bash
-git pull origin main
-cd deploy
-docker compose -f docker-compose.prod.yml up -d --build
+bash /opt/vampir-koylu/deploy/scripts/vps-update.sh
 ```
+
+**Otomatik:** `main`'e push → GitHub Actions SSH deploy. Kurulum: [github-deploy.md](github-deploy.md)
 
 Yeni **zorunlu sürüm** için `server/.env` → `MIN_REQUIRED_VERSION` artır, container yeniden başlat.
 
