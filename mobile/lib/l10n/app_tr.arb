@@ -1,0 +1,18 @@
+{
+  "@@locale": "tr",
+  "appTitle": "Vampir Köylü",
+  "splashLoading": "Güncelleme kontrol ediliyor…",
+  "forceUpdateTitle": "Güncelleme gerekli",
+  "forceUpdateBody": "Bu sürüm artık desteklenmiyor. Oyuna devam etmek için lütfen en güncel sürümü yükleyin.",
+  "updateButton": "Güncellemeyi indir",
+  "loginTitle": "Giriş yap",
+  "guestNickHint": "Takma ad",
+  "guestPlay": "Misafir olarak oyna",
+  "googleSignIn": "Google ile giriş",
+  "facebookSignIn": "Facebook ile giriş",
+  "homeWelcome": "Hoş geldin, {nick}",
+  "homeSubtitle": "Online odalar (6–8 kişi) — yakında",
+  "language": "Dil",
+  "errorNetwork": "Bağlantı hatası. İnterneti kontrol edip tekrar dene.",
+  "errorGeneric": "Bir şeyler ters gitti. Lütfen tekrar dene."
+}

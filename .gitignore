@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Build / release
+*.apk
+*.aab
+*.ipa
+server/dist/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+Thumbs.db
+
+# Secrets
+*.jks
+*.keystore
+google-services.json
+GoogleService-Info.plist
+key.properties

@@ -1,0 +1,23 @@
+{
+  "@@locale": "en",
+  "appTitle": "Vampire Village",
+  "splashLoading": "Checking for updates…",
+  "forceUpdateTitle": "Update required",
+  "forceUpdateBody": "This version is no longer supported. Please install the latest release to continue.",
+  "updateButton": "Download update",
+  "loginTitle": "Sign in",
+  "guestNickHint": "Nickname",
+  "guestPlay": "Play as guest",
+  "googleSignIn": "Sign in with Google",
+  "facebookSignIn": "Sign in with Facebook",
+  "homeWelcome": "Welcome, {nick}",
+  "@homeWelcome": {
+    "placeholders": {
+      "nick": { "type": "String" }
+    }
+  },
+  "homeSubtitle": "Online rooms (6–8 players) — coming soon",
+  "language": "Language",
+  "errorNetwork": "Connection error. Check your network and try again.",
+  "errorGeneric": "Something went wrong. Please try again."
+}
