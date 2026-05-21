@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/config.dart';
 
@@ -15,10 +16,19 @@ class ApiClient {
     );
   }
 
+  Future<String> _appVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (info.version.isNotEmpty) return info.version;
+    } catch (_) {}
+    return AppConfig.clientVersion;
+  }
+
   Future<Map<String, dynamic>> getVersion() async {
+    final version = await _appVersion();
     final res = await _client.get(
       _uri('/api/version', {
-        'clientVersion': AppConfig.clientVersion,
+        'clientVersion': version,
         'platform': AppConfig.platform,
       }),
     );

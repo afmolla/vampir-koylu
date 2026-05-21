@@ -9,4 +9,5 @@ attachSocket(server);
 
 server.listen(config.port, '0.0.0.0', () => {
   console.log(`vampir-koylu server listening on http://0.0.0.0:${config.port}`);
+  console.log(`minRequiredVersion=${config.minRequiredVersion} latest=${config.latestVersion}`);
 });

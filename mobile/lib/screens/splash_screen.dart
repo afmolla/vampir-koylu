@@ -58,14 +58,15 @@ class _SplashScreenState extends State<SplashScreen> {
           MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.errorNetwork),
+          content: Text('${AppLocalizations.of(context)!.errorNetwork}\n$e'),
+          duration: const Duration(seconds: 4),
         ),
       );
-      await Future<void>.delayed(const Duration(seconds: 2));
+      await Future<void>.delayed(const Duration(seconds: 3));
       if (mounted) _bootstrap();
     }
   }
