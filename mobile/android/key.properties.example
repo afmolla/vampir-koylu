@@ -1,0 +1,4 @@
+storePassword=vampir_koylu_store
+keyPassword=vampir_koylu_key
+keyAlias=vampir
+storeFile=signing/release.keystore

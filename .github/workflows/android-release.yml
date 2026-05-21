@@ -35,6 +35,25 @@ jobs:
       - name: Accept Android licenses
         run: yes | flutter doctor --android-licenses || true
 
+      - name: Restore release keystore
+        uses: actions/cache@v4
+        id: release-keystore
+        with:
+          path: mobile/android/signing/release.keystore
+          key: vampir-release-keystore-v1
+
+      - name: Create release keystore (ilk kurulum / cache yoksa)
+        if: steps.release-keystore.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p mobile/android/signing
+          keytool -genkeypair -v \
+            -keystore mobile/android/signing/release.keystore \
+            -alias vampir \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "vampir_koylu_store" \
+            -keypass "vampir_koylu_key" \
+            -dname "CN=Vampir Koylu, OU=Mobile, O=MollaYazilim, L=Istanbul, ST=TR, C=TR"
+
       - name: Install dependencies & l10n
         working-directory: mobile
         run: |

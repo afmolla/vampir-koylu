@@ -40,6 +40,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Kurulum ekranı açıldı. «Yükle» / «Güncelle» ye dokun.';
 
   @override
+  String get installConflictHint =>
+      '«Paket çakışması» veya «ayrıştırma hatası» görürsen: önce uygulamayı kaldır, sonra bu ekrandan tekrar indir.';
+
+  @override
   String get installedVersion => 'Yüklü sürüm:';
 
   @override

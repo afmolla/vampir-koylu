@@ -35,12 +35,18 @@ class ApkInstaller {
     }
   }
 
+  static const _minApkBytes = 5 * 1024 * 1024; // ~5 MB; gercek APK ~50 MB
+
   Future<String> downloadApk({
     required String url,
     void Function(double progress)? onProgress,
   }) async {
     final dir = await getTemporaryDirectory();
     final path = '${dir.path}/vampir_koylu_update.apk';
+    final file = File(path);
+    if (await file.exists()) {
+      await file.delete();
+    }
 
     await _dio.download(
       url,
@@ -52,10 +58,25 @@ class ApkInstaller {
       },
     );
 
-    final file = File(path);
-    if (!await file.exists() || await file.length() < 1024) {
-      throw ApkInstallException('İndirilen dosya geçersiz.');
+    if (!await file.exists()) {
+      throw ApkInstallException('İndirilen dosya kaydedilemedi.');
     }
+
+    final size = await file.length();
+    if (size < _minApkBytes) {
+      throw ApkInstallException(
+        'İndirilen dosya geçersiz ($size bayt). Bağlantı veya APK adresini kontrol et.',
+      );
+    }
+
+    final header = await file.openRead(0, 4).first;
+    // APK = ZIP → PK\x03\x04
+    if (header.length < 2 || header[0] != 0x50 || header[1] != 0x4B) {
+      throw ApkInstallException(
+        'İndirilen dosya APK değil (bozuk veya HTML sayfası).',
+      );
+    }
+
     return path;
   }
 

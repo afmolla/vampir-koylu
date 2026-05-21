@@ -152,6 +152,12 @@ abstract class AppLocalizations {
   /// **'Installer opened. Tap Install / Update.'**
   String get installOpened;
 
+  /// No description provided for @installConflictHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If you see package conflict or parse error: uninstall the app first, then download again from this screen.'**
+  String get installConflictHint;
+
   /// No description provided for @installedVersion.
   ///
   /// In en, this message translates to:

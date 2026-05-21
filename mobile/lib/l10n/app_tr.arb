@@ -14,6 +14,7 @@
   },
   "downloadFailed": "İndirme başarısız",
   "installOpened": "Kurulum ekranı açıldı. «Yükle» / «Güncelle» ye dokun.",
+  "installConflictHint": "«Paket çakışması» veya «ayrıştırma hatası» görürsen: önce uygulamayı kaldır, sonra bu ekrandan tekrar indir.",
   "installedVersion": "Yüklü sürüm:",
   "openInBrowser": "Tarayıcıda aç (yedek)",
   "loginTitle": "Giriş yap",

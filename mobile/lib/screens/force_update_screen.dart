@@ -4,7 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/apk_installer.dart';
 
 const _defaultApkUrl =
-    'https://github.com/afmolla/flutter/releases/download/v0.1.8/app-release.apk';
+    'https://github.com/afmolla/flutter/releases/download/v0.1.9/app-release.apk';
 
 class ForceUpdateScreen extends StatefulWidget {
   const ForceUpdateScreen({
@@ -123,6 +123,20 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                 Text(
                   widget.message ?? l10n.forceUpdateBody,
                   textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber.withValues(alpha: 0.35)),
+                  ),
+                  child: Text(
+                    l10n.installConflictHint,
+                    style: const TextStyle(fontSize: 13, color: Colors.amber),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
                 if (_downloading) ...[
                   const SizedBox(height: 28),

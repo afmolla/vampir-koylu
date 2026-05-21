@@ -39,6 +39,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get installOpened => 'Installer opened. Tap Install / Update.';
 
   @override
+  String get installConflictHint =>
+      'If you see package conflict or parse error: uninstall the app first, then download again from this screen.';
+
+  @override
   String get installedVersion => 'Installed version:';
 
   @override
