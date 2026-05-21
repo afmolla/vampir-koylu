@@ -8,7 +8,7 @@
 class AppConfig {
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://api.mollayazilim.com',
+    defaultValue: 'http://85.95.251.204:3000',
   );
 
   static const String clientVersion = '0.1.0';

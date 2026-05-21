@@ -9,7 +9,7 @@ on:
       api_base_url:
         description: 'API_BASE_URL (sunucu IP veya domain)'
         required: false
-        default: 'https://api.mollayazilim.com'
+        default: 'http://85.95.251.204:3000'
 
 permissions:
   contents: write
@@ -33,7 +33,7 @@ jobs:
       - name: Build APK
         working-directory: mobile
         env:
-          API_BASE_URL: ${{ github.event.inputs.api_base_url || secrets.API_BASE_URL || 'https://api.mollayazilim.com' }}
+          API_BASE_URL: ${{ github.event.inputs.api_base_url || secrets.API_BASE_URL || 'http://85.95.251.204:3000' }}
         run: |
           echo "Building with API_BASE_URL=$API_BASE_URL"
           flutter build apk --release --dart-define=API_BASE_URL="$API_BASE_URL"

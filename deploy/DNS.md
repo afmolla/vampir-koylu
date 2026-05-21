@@ -1,28 +1,37 @@
 # api.mollayazilim.com
 
-## DNS
+| | |
+|---|---|
+| **Domain** | `api.mollayazilim.com` |
+| **Sunucu IP** | `85.95.251.204` |
+| **API (şimdilik)** | `http://85.95.251.204:3000` |
+| **API (hedef)** | `https://api.mollayazilim.com` |
 
-- **A kaydı:** `api.mollayazilim.com` → sunucu IP (yapıldı)
+## Kontrol
 
-## Sunucuda kontrol
+```powershell
+# API doğrudan (çalışıyor olmalı)
+curl http://85.95.251.204:3000/health
 
-```bash
-curl http://api.mollayazilim.com/health
-# SSL sonrası:
+# Domain (Nginx + SSL sonrası)
 curl https://api.mollayazilim.com/health
 ```
 
-## HTTPS (Linux + Nginx)
+## DNS
+
+A kaydı: `api` → `85.95.251.204`
+
+## Sonraki adım (domain + HTTPS)
+
+Nginx 80/443 → `127.0.0.1:3000` proxy, sonra:
 
 ```bash
 certbot --nginx -d api.mollayazilim.com
 ```
 
-## Mobil APK
+Windows: firewall **3000** (açık), **80/443** Nginx için aç.
 
-`https://api.mollayazilim.com` — tag `v0.1.1` veya üzeri Releases.
+## APK
 
-## Windows sunucu
-
-- Firewall: 80, 443 açık
-- Nginx/IIS veya Cloudflare → `127.0.0.1:3000` proxy
+- Test: `http://85.95.251.204:3000` (tag v0.1.2)
+- Prod: `https://api.mollayazilim.com` (SSL sonrası v0.1.3+)
