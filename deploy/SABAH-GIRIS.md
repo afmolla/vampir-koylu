@@ -20,7 +20,9 @@ Kontrol (PC veya telefon tarayıcısı):
 
 İndir: https://github.com/afmolla/flutter/releases  
 
-**Aktif sürümler (sadece bunlar):** `v0.1.8`, `v0.1.9`, `v0.2.2` — güncel olan **v0.2.2**  
+**Aktif sürümler (sadece bunlar):** `v0.1.8`, `v0.1.9`, `v0.2.2` — güncel olan **v0.2.2**
+
+APK yoksa: GitHub → **Actions** → **Android APK Release** → **Run workflow** → tag: `v0.1.9` veya `v0.2.2`  
 Dosya: **app-release.apk**
 
 ## 3. Uygulama akışı
