@@ -4,11 +4,13 @@
 name: Rebuild Missing APKs
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - '.github/workflows/android-release.yml'
       - '.github/workflows/rebuild-apks.yml'
+      - 'mobile/android/**'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
