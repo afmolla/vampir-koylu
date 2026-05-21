@@ -1,37 +1,36 @@
-# GitHub repo oluşturma
+# GitHub — afmolla/flutter
 
-Bu makinede `gh` oturumu açık değil. Aşağıdaki adımları bir kez çalıştır:
+Repo: https://github.com/afmolla/flutter
 
-## 1. GitHub CLI giriş
+## 1. GitHub CLI giriş (bir kez)
 
 ```powershell
 gh auth login
 ```
 
-(Browser veya token ile giriş)
-
-## 2. Repo oluştur ve push
+## 2. Push
 
 ```powershell
 cd c:\inetpub\wwwroot\video\vampir-koylu
-gh repo create vampir-koylu --public --source=. --remote=origin --push
+git branch -M main
+git push -u origin main
 ```
 
-Farklı isim istersen `vampir-koylu` yerine kendi adını yaz.
+Remote zaten ayarlı: `origin` → `https://github.com/afmolla/flutter.git`
 
-## 3. Sunucu .env güncelle
-
-`server/.env` içinde:
-
-```
-UPDATE_URL_ANDROID=https://github.com/KULLANICI_ADIN/vampir-koylu/releases/latest
-```
-
-## 4. İlk APK release
+## 3. İlk APK (GitHub Releases)
 
 ```powershell
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-GitHub Actions APK’yı Releases’a yükler.
+Actions sekmesinden build’i izle; APK **Releases** altında görünür.
+
+## 4. Sunucu
+
+`server/.env`:
+
+```
+UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/latest
+```

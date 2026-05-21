@@ -51,7 +51,9 @@ flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000
 
 `server/.env` içinde `MIN_REQUIRED_VERSION=99.0.0` yap → uygulama güncelleme ekranında kalır.
 
-## GitHub Releases (APK)
+## GitHub
+
+Repo: **https://github.com/afmolla/flutter**
 
 `v*` tag push edildiğinde GitHub Actions APK üretir (workflow: `.github/workflows/android-release.yml`).
 
