@@ -2,7 +2,7 @@
 
 Online vampir–köylü sosyal çıkarım oyunu (6–8 oyuncu). Flutter mobil + Node.js sunucu.
 
-**Sürüm:** `0.2.2` — Sabah giriş: [deploy/SABAH-GIRIS.md](deploy/SABAH-GIRIS.md)
+**Sürüm:** `0.2.3` — Sabah giriş: [deploy/SABAH-GIRIS.md](deploy/SABAH-GIRIS.md)
 
 ## Proje yapısı
 
