@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 $Root = if ($PSScriptRoot) {
     Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-} else { "C:\apps\vampir-koylu" }
+} else { "C:\apps\flutter" }
 $Server = Join-Path $Root "server"
 
 if (-not (Test-Path (Join-Path $Server "package.json"))) {

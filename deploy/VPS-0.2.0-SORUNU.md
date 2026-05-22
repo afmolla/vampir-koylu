@@ -19,7 +19,7 @@ Bu bir **mobil/APK hatası değil** — **VPS'teki Node süreci** güncellenmeli
 ### 1) Güncel kodu al
 
 ```powershell
-cd C:\apps\vampir-koylu
+cd C:\apps\flutter
 git pull
 ```
 
@@ -30,11 +30,12 @@ git pull
 **Yönetici PowerShell:**
 
 ```powershell
-cd C:\apps\vampir-koylu\deploy
-powershell -ExecutionPolicy Bypass -File .\VPS-API-GUNCELLE.ps1
+cd C:\apps\flutter
+git pull
+C:\apps\flutter\BASLAT-API.cmd
 ```
 
-Veya çift tık: `server\SUNUCU-GUNCELLEME-ACIL.cmd` (pencere açık kalsın veya NSSM ile servis).
+Tek dosya: `server\start-api.cmd` veya kökte `BASLAT-API.cmd`.
 
 ### 3) Doğrula
 

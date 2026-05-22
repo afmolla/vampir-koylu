@@ -1,20 +1,31 @@
-# Sunucuda API başlatma (.env gerekmez)
+# Sunucuyu başlat (tek dosya)
 
-## Normal oyun (v0.2.3)
+GitHub repo: **afmolla/flutter**  
+VPS klasörü: **C:\apps\flutter** (önerilen)
 
-`C:\apps\vampir-koylu\server\` içinde **`start-api.cmd`** dosyasına çift tıkla.
+## Tek adım
 
-```text
-MIN_REQUIRED_VERSION=0.2.3
-LATEST_VERSION=0.2.3
+```
+C:\apps\flutter\BASLAT-API.cmd
 ```
 
-Detaylı adımlar: [SABAH-GIRIS.md](SABAH-GIRIS.md)
+veya
 
-## Güncelleme testi
+```
+C:\apps\flutter\server\start-api.cmd
+```
 
-**`start-api-GUNCELLEME-TEST.cmd`** — 0.2.3 altı APK’ları engeller.
+Script otomatik yapar:
 
-## ZIP ile güncelleme
+1. Port 3000’deki eski Node’u kapatır  
+2. `npm install` (gerekirse)  
+3. Güncel sürüm ayarlarını yazar (`.env` + ortam)  
+4. API’yi başlatır  
 
-GitHub’dan ZIP veya `server` klasörünü kopyala; `npm install` sonra `start-api.cmd`.
+## Tarayıcı test
+
+http://85.95.251.204:3000/health → `serverBuild: "0.2.7"`
+
+Dışarıdan açılmıyorsa: `deploy\FIREWALL-PORT-3000.cmd` (**Yönetici**)
+
+Yollar: `deploy\REPO-VE-YOLLAR.md`
