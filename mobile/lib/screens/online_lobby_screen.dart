@@ -8,7 +8,7 @@ import '../core/config.dart';
 import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import '../services/socket_service.dart';
-import '../widgets/chat_panel.dart';
+import '../widgets/general_chat_hub.dart';
 import 'online_room_screen.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
@@ -335,13 +335,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
             ),
-            SizedBox(
-              height: 200,
-              child: ChatPanel(
-                socket: _socketService.socket,
-                channel: 'general',
-                nick: widget.nick,
-              ),
+            GeneralChatHub(
+              socket: _socketService.socket,
+              nick: widget.nick,
+              height: 220,
             ),
           ],
         ],

@@ -6,6 +6,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 
 import '../core/config.dart';
 import '../l10n/app_localizations.dart';
+import '../services/session_store.dart';
 
 class ChatMessage {
   final int id;
@@ -42,11 +43,17 @@ class ChatPanel extends StatefulWidget {
     required this.socket,
     required this.channel,
     required this.nick,
+    this.currentUserId,
+    this.onPeerTap,
+    this.isPrivate = false,
   });
 
   final io.Socket? socket;
   final String channel;
   final String nick;
+  final String? currentUserId;
+  final void Function(String userId, String nick)? onPeerTap;
+  final bool isPrivate;
 
   @override
   State<ChatPanel> createState() => _ChatPanelState();
@@ -97,8 +104,15 @@ class _ChatPanelState extends State<ChatPanel> {
 
   Future<void> _loadHistory() async {
     try {
+      final encoded = Uri.encodeComponent(widget.channel);
+      final headers = <String, String>{};
+      if (widget.channel.startsWith('dm:')) {
+        final token = await SessionStore().getToken();
+        if (token != null) headers['Authorization'] = 'Bearer $token';
+      }
       final res = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/api/chat/${widget.channel}'),
+        Uri.parse('${AppConfig.apiBaseUrl}/api/chat/$encoded'),
+        headers: headers,
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
@@ -158,17 +172,42 @@ class _ChatPanelState extends State<ChatPanel> {
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     final msg = _messages[index];
+                    final isMe = widget.currentUserId != null &&
+                        msg.userId == widget.currentUserId;
+                    final canTapPeer = !widget.isPrivate &&
+                        !isMe &&
+                        widget.onPeerTap != null &&
+                        msg.userId.isNotEmpty &&
+                        !msg.userId.startsWith('bot:');
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: RichText(
                         text: TextSpan(
                           children: [
-                            TextSpan(
-                              text: '${msg.nick}: ',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.amber,
-                                fontSize: 13,
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.baseline,
+                              baseline: TextBaseline.alphabetic,
+                              child: GestureDetector(
+                                onTap: canTapPeer
+                                    ? () => widget.onPeerTap!(
+                                          msg.userId,
+                                          msg.nick,
+                                        )
+                                    : null,
+                                child: Text(
+                                  '${msg.nick}: ',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: canTapPeer
+                                        ? Colors.lightBlueAccent
+                                        : Colors.amber,
+                                    fontSize: 13,
+                                    decoration: canTapPeer
+                                        ? TextDecoration.underline
+                                        : null,
+                                  ),
+                                ),
                               ),
                             ),
                             TextSpan(

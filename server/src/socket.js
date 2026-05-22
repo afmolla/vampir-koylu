@@ -18,6 +18,15 @@ import {
   chatRoomForSocket,
 } from './game/chatChannels.js';
 import { ensureProfile } from './services/progression.js';
+import {
+  buildDmChannelId,
+  joinSocketsToDmChannel,
+  joinUserToAllDmSockets,
+  listDmConversations,
+  peerUserId,
+  upsertDmSession,
+} from './services/dmChannels.js';
+import { getDb } from './db/database.js';
 
 function emitRoomState(io, room) {
   for (const { userId, view } of viewsForRoom(room)) {
@@ -84,6 +93,50 @@ export function attachSocket(httpServer) {
     socket.emit('connected', { ok: true, userId });
 
     socket.join('chat:general');
+    socket.join(`user:${userId}`);
+    joinUserToAllDmSockets(socket, userId);
+
+    socket.on('chat:dm:open', (payload, ack) => {
+      try {
+        const targetUserId = String(payload?.targetUserId ?? '').trim();
+        if (!targetUserId || targetUserId === userId) {
+          if (typeof ack === 'function') ack({ ok: false, error: 'invalid_target' });
+          return;
+        }
+        const channel = buildDmChannelId(userId, targetUserId);
+        upsertDmSession(channel, userId, targetUserId);
+        socket.join(`chat:${channel}`);
+        joinSocketsToDmChannel(io, channel, userId, targetUserId);
+
+        const db = getDb();
+        const peer = db.prepare('SELECT id, nick FROM users WHERE id = ?').get(targetUserId);
+
+        io.to(`user:${targetUserId}`).emit('chat:dm:opened', {
+          channel,
+          fromUserId: userId,
+          fromNick: payload?.myNick ?? 'Player',
+        });
+
+        if (typeof ack === 'function') {
+          ack({
+            ok: true,
+            channel,
+            peer: {
+              userId: targetUserId,
+              nick: peer?.nick ?? payload?.targetNick ?? '?',
+            },
+          });
+        }
+      } catch (err) {
+        console.error('chat:dm:open error:', err);
+        if (typeof ack === 'function') ack({ ok: false, error: 'server_error' });
+      }
+    });
+
+    socket.on('chat:dm:list', (_payload, ack) => {
+      const list = listDmConversations(userId);
+      if (typeof ack === 'function') ack({ ok: true, conversations: list });
+    });
 
     socket.on('room:create', (payload, ack) => {
       const maxPlayers = payload?.maxPlayers ?? 6;
@@ -178,6 +231,10 @@ export function attachSocket(httpServer) {
           if (!access.ok) {
             if (typeof ack === 'function') ack({ ok: false, error: access.error });
             return;
+          }
+          if (channel.startsWith('dm:')) {
+            const other = peerUserId(channel, userId);
+            if (other) upsertDmSession(channel, userId, other);
           }
         }
 

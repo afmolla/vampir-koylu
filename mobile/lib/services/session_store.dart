@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class SessionStore {
   static const _tokenKey = 'auth_token';
+  static const _userIdKey = 'user_id';
   static const _nickKey = 'nick';
   static const _localeKey = 'locale';
   static const _offlineKey = 'offline_mode';
@@ -9,11 +10,13 @@ class SessionStore {
 
   Future<void> saveSession({
     required String token,
+    required String userId,
     required String nick,
     required String locale,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
+    await prefs.setString(_userIdKey, userId);
     await prefs.setString(_nickKey, nick);
     await prefs.setString(_localeKey, locale);
     await prefs.setBool(_offlineKey, false);
@@ -34,6 +37,16 @@ class SessionStore {
   Future<bool> isOfflineMode() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_offlineKey) ?? false;
+  }
+
+  Future<void> saveUserId(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_userIdKey, userId);
+  }
+
+  Future<String?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_userIdKey);
   }
 
   Future<String?> getToken() async {
@@ -69,6 +82,7 @@ class SessionStore {
   Future<void> clear() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+    await prefs.remove(_userIdKey);
     await prefs.remove(_nickKey);
     await prefs.remove(_offlineKey);
   }

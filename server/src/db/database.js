@@ -104,6 +104,17 @@ function initTables() {
       FOREIGN KEY (winner_user_id) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS dm_sessions (
+      channel TEXT PRIMARY KEY,
+      user_a TEXT NOT NULL,
+      user_b TEXT NOT NULL,
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_a) REFERENCES users(id),
+      FOREIGN KEY (user_b) REFERENCES users(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_dm_sessions_users ON dm_sessions(user_a, user_b);
+
     CREATE TABLE IF NOT EXISTS tournament_entries (
       tournament_id TEXT NOT NULL,
       user_id TEXT NOT NULL,

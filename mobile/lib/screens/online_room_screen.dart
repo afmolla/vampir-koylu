@@ -7,6 +7,7 @@ import '../models/online_room.dart';
 import '../services/socket_service.dart';
 import '../widgets/animated_game_background.dart';
 import '../models/game_roles.dart';
+import '../widgets/general_chat_hub.dart';
 import '../widgets/multi_channel_chat.dart';
 import '../widgets/voice_chat_strip.dart';
 import 'match_summary_screen.dart';
@@ -207,6 +208,45 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       appBar: AppBar(
         title: Text('${l10n.roomCode} ${_room.code}'),
         backgroundColor: Colors.transparent,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.mark_chat_unread_outlined),
+            tooltip: 'Özel mesajlar',
+            onPressed: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: const Color(0xFF1A1218),
+                builder: (ctx) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                  ),
+                  child: SizedBox(
+                    height: MediaQuery.of(ctx).size.height * 0.55,
+                    child: Column(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Text(
+                            'Genel & özel sohbet',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Expanded(
+                          child: GeneralChatHub(
+                            socket: widget.socketService.socket,
+                            nick: widget.nick,
+                            height: MediaQuery.of(ctx).size.height * 0.45,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         fit: StackFit.expand,

@@ -1,8 +1,13 @@
 import { ROLES, isEvilTeam } from './roles.js';
+import {
+  canAccessDmChannel,
+  isDmChannel,
+} from '../services/dmChannels.js';
 
 /**
  * Kanallar:
  * - general
+ * - dm:UID_A:UID_B — kalici ozel ikili oda (oyundan bagimsiz)
  * - room:CODE — canlı oyuncu sohbeti
  * - dead:CODE — ölüler
  * - vampire:CODE — gece vampir gizli sohbet
@@ -11,6 +16,10 @@ import { ROLES, isEvilTeam } from './roles.js';
 export function parseChannel(channel) {
   if (!channel || typeof channel !== 'string') return { type: 'unknown' };
   if (channel === 'general') return { type: 'general' };
+  if (isDmChannel(channel)) {
+    const parts = channel.split(':');
+    return { type: 'dm', peerA: parts[1], peerB: parts[2] };
+  }
   const [kind, code] = channel.split(':');
   return { type: kind, code: code?.toUpperCase() };
 }
@@ -18,6 +27,7 @@ export function parseChannel(channel) {
 export function canAccessTextChannel({ channel, userId, room }) {
   const { type, code } = parseChannel(channel);
   if (type === 'general') return { ok: true };
+  if (type === 'dm') return canAccessDmChannel(channel, userId);
   if (!room || room.code !== code) return { ok: false, error: 'not_in_room' };
 
   const g = room.game;

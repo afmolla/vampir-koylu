@@ -1,11 +1,23 @@
-# v0.2.11 — Uygulama planı
+# v0.2.11 / v0.2.12 — Uygulama planı
 
-**Hedef sürüm:** `0.2.11+39`  
-**APK (şu an):** v0.2.10 yayında (~54 MB) — v0.2.11 tag ile yenilenecek.
+**Güncel hedef:** `0.2.12+40`  
+**v0.2.12:** Genel sohbette özel DM odaları (oyundan bağımsız, kalıcı).
 
 ---
 
-## Faz 1 — Oyun & sohbet & güncelleme (bu sprint)
+## v0.2.12 — Özel DM odaları ✅
+
+| Özellik | Durum |
+|---------|--------|
+| Genel sohbette isme tıkla → özel oda | ✅ |
+| Kanal `dm:uidA:uidB` — sadece 2 kişi | ✅ |
+| Oyuna girince oda kaybolmaz | ✅ |
+| Oyun içi mesajlar butonu (alt sayfa) | ✅ |
+| Sunucu: `dm_sessions` + `chat:dm:open` | ✅ |
+
+---
+
+## Faz 1 — Oyun & sohbet & güncelleme (v0.2.11)
 
 | # | Özellik | Durum |
 |---|---------|--------|

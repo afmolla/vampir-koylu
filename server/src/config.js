@@ -6,9 +6,9 @@ export const config = {
   port: Number(process.env.PORT ?? 3000),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
-  latestVersion: process.env.LATEST_VERSION ?? '0.2.11',
+  latestVersion: process.env.LATEST_VERSION ?? '0.2.12',
   /** GitHub'da yayinli APK — kilitle release.keystore ile ayni imza */
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.11',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.12',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??

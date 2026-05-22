@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import '../services/socket_service.dart';
-import '../widgets/chat_panel.dart';
+import '../widgets/general_chat_hub.dart';
 import 'login_screen.dart';
 import 'online_lobby_screen.dart';
 import 'profile_hub_screen.dart';
@@ -203,13 +203,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
             ),
-            SizedBox(
-              height: 180,
-              child: ChatPanel(
-                socket: _socketService.socket,
-                channel: 'general',
-                nick: widget.nick,
-              ),
+            GeneralChatHub(
+              socket: _socketService.socket,
+              nick: widget.nick,
+              height: 240,
             ),
           ],
         ],

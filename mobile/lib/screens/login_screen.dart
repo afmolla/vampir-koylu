@@ -53,6 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await _session.setRememberMe(_rememberMe);
       await _session.saveSession(
         token: token,
+        userId: user['id'] as String,
         nick: user['nick'] as String,
         locale: _locale,
       );

@@ -137,7 +137,11 @@ class _SplashScreenState extends State<SplashScreen> {
         final nick = await session.getNick();
         if (token != null && token.isNotEmpty && nick != null && nick.isNotEmpty) {
           try {
-            await _api.getMe(token: token);
+            final me = await _api.getMe(token: token);
+            final user = me['user'] as Map<String, dynamic>?;
+            if (user?['id'] != null) {
+              await session.saveUserId(user!['id'] as String);
+            }
             if (!mounted) return;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => HomeScreen(nick: nick)),
