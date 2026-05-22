@@ -1,14 +1,15 @@
 # GitHub → Sunucuya çekme
 
 Repo (GitHub’daki isim): **https://github.com/afmolla/flutter**  
-Sunucudaki klasör adı (senin seçtiğin): **`vampir-koylu`** — fark etmez, sorun olmaz.
+**VPS önerilen yol:** `C:\apps\flutter` (GitHub repoyla aynı isim)
 
-```text
-git clone https://github.com/afmolla/flutter.git vampir-koylu
-         ↑ GitHub repo adı              ↑ Bilgisayardaki klasör adı (istediğin gibi)
+```powershell
+git clone https://github.com/afmolla/flutter.git C:\apps\flutter
+cd C:\apps\flutter
+.\BASLAT-API.cmd
 ```
 
-İçerik aynı: `mobile/`, `server/`, `deploy/`. Klasör adı `flutter` olmak zorunda değil.
+İçerik: `mobile/`, `server/`, `deploy/`. Yol ayarı: `deploy\repo-paths.cmd` — [REPO-VE-YOLLAR.md](REPO-VE-YOLLAR.md)
 
 ---
 
