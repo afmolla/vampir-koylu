@@ -25,9 +25,11 @@ if [[ ! -f "$KS" ]]; then
     -destkeypass "$PASS" -destalias "$ALIAS"
 fi
 
+# SHA256 satiri "9D:A3:..." — awk -F: ile bolunurse yanlis parca alinir
 ACTUAL=$(keytool -list -v -keystore "$KS" -storepass "$PASS" -storetype PKCS12 -alias "$ALIAS" 2>/dev/null \
-  | awk -F: '/SHA256:/{gsub(/^ +/,"",$2); print $2; exit}' | tr -d ' ' | tr '[:lower:]' '[:upper:]')
-EXPECTED_CLEAN=$(echo "$EXPECTED_FP" | tr -d ' ' | tr '[:lower:]' '[:upper:]')
+  | sed -n 's/^[[:space:]]*SHA256:[[:space:]]*//p' | head -1 \
+  | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+EXPECTED_CLEAN=$(echo "$EXPECTED_FP" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
 
 if [[ "$ACTUAL" != "$EXPECTED_CLEAN" ]]; then
   echo "FATAL: Imza parmak izi degisti! Beklenen: $EXPECTED_FP"

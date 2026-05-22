@@ -1,30 +1,20 @@
-# Güncelleme / APK sorunları
+# Güncelleme APK
 
-## v0.2.9 APK yoksa (404)
+## v0.2.9
 
-GitHub Actions `v0.2.9` build başarısız veya henüz bitmemiş olabilir.
+**Git tag var, GitHub Release yok** — Actions build başarısız kaldı; atlanır.
 
-**Sunucu** `APK_PUBLISH_VERSION=0.2.8` ile **çalışan** APK linki döner; uygulama `latestVersion` yine 0.2.9 olabilir.
+Kullanılabilir APK: **v0.2.8** → https://github.com/afmolla/flutter/releases/download/v0.2.8/app-release.apk
 
-Kontrol:
+## v0.2.10 (sabit imza)
 
-- https://github.com/afmolla/flutter/releases/download/v0.2.8/app-release.apk → 200 OK
-- https://github.com/afmolla/flutter/releases/download/v0.2.9/app-release.apk → 404 ise Actions tetikle
+1. `main` + tag `v0.2.10` — Actions **Android APK Release**
+2. Yeşil olunca: https://github.com/afmolla/flutter/releases/download/v0.2.10/app-release.apk
+3. VPS `start-api.cmd`: `APK_PUBLISH_VERSION=0.2.10`
 
-## VPS
+Eski kurulumda **bir kez kaldır** → v0.2.10 kur (aynı `release.keystore`).
 
-```cmd
-C:\apps\flutter\BASLAT-API.cmd
-```
+## Sunucu
 
-`.env` içinde `APK_PUBLISH_VERSION=0.2.8` olmalı.
-
-## GitHub Actions yeniden build
-
-Actions → **Android APK Release** → Run workflow → tag `v0.2.9`
-
-Yeşil olunca v0.2.9 APK yayınlanır; sonra sunucuda `APK_PUBLISH_VERSION=0.2.9` yapılır.
-
-## Paket çakışması
-
-Eski kurulumu kaldır → yeni APK kur. Aynı imza ile sonraki güncellemeler üstüne kurulur.
+- `latestVersion`: hedef sürüm (uygulama güncelleme uyarısı)
+- `apkPublishVersion` + `updateUrlAndroid`: **indirilebilir** APK (404 olmamalı)
