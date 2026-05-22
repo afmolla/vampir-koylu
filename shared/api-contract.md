@@ -31,7 +31,7 @@ Auth: `auth.clientVersion`, `auth.token`
 
 | Event (client → server) | Açıklama |
 |-------------------------|----------|
-| `room:create` | `{ nick, maxPlayers: 2-8 }` |
+| `room:create` | `{ nick, maxPlayers: 2-8 }` (min 2, default 2) |
 | `room:join` | `{ code, nick }` |
 | `room:leave` | — |
 | `room:start` | Kurucu, min 2 oyuncu (test) |

@@ -27,17 +27,23 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   bool _loading = true;
   bool _socketReady = false;
   String? _error;
-  int _maxPlayers = 6;
+  int _maxPlayers = 2;
+  Timer? _roomRefreshTimer;
 
   @override
   void initState() {
     super.initState();
     _loadRooms();
     _connectSocket();
+    _roomRefreshTimer = Timer.periodic(
+      const Duration(seconds: 4),
+      (_) => _loadRooms(silent: true),
+    );
   }
 
   @override
   void dispose() {
+    _roomRefreshTimer?.cancel();
     _joinController.dispose();
     super.dispose();
   }
@@ -54,15 +60,17 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     }
   }
 
-  Future<void> _loadRooms() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+  Future<void> _loadRooms({bool silent = false}) async {
+    if (!silent && mounted) {
+      setState(() {
+        _loading = true;
+        _error = null;
+      });
+    }
     try {
-      final res = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/api/rooms'),
-      );
+      final res = await http
+          .get(Uri.parse('${AppConfig.apiBaseUrl}/api/rooms'))
+          .timeout(const Duration(seconds: 10));
       if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final list = data['rooms'] as List<dynamic>? ?? [];
@@ -70,12 +78,13 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         setState(() {
           _rooms = list.cast<Map<String, dynamic>>();
           _loading = false;
+          _error = null;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          if (!silent) _error = e.toString();
           _loading = false;
         });
       }
@@ -101,12 +110,17 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
             if (data is Map && data['ok'] == true) {
               completer.complete(data['room'] as Map<String, dynamic>?);
             } else {
-              completer.completeError(Exception(data?.toString() ?? 'create_failed'));
+              completer.completeError(
+                Exception(data?.toString() ?? 'create_failed'),
+              );
             }
           },
         );
-        final room = await completer.future.timeout(const Duration(seconds: 10));
+        final room =
+            await completer.future.timeout(const Duration(seconds: 10));
         if (!mounted || room == null) return;
+        await _loadRooms(silent: true);
+        if (!mounted) return;
         await Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => OnlineRoomScreen(
@@ -146,7 +160,8 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
             }
           },
         );
-        final room = await completer.future.timeout(const Duration(seconds: 10));
+        final room =
+            await completer.future.timeout(const Duration(seconds: 10));
         if (!mounted || room == null) return;
         await Navigator.of(context).push(
           MaterialPageRoute(
@@ -184,9 +199,15 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Text(l10n.onlineLobbyTitle, style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  l10n.onlineLobbyTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
-                Text(l10n.onlineLobbyDesc, style: const TextStyle(color: Colors.white70)),
+                Text(
+                  l10n.onlineLobbyDesc,
+                  style: const TextStyle(color: Colors.white70),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   children: [
@@ -201,7 +222,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    FilledButton(onPressed: () => _joinRoom(), child: Text(l10n.joinRoom)),
+                    FilledButton(
+                      onPressed: () => _joinRoom(),
+                      child: Text(l10n.joinRoom),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -211,10 +235,15 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                     const SizedBox(width: 12),
                     DropdownButton<int>(
                       value: _maxPlayers,
-                      items: const [2, 6, 7, 8]
-                          .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
+                      items: List.generate(7, (i) => i + 2)
+                          .map(
+                            (n) => DropdownMenuItem(
+                              value: n,
+                              child: Text('$n'),
+                            ),
+                          )
                           .toList(),
-                      onChanged: (v) => setState(() => _maxPlayers = v ?? 6),
+                      onChanged: (v) => setState(() => _maxPlayers = v ?? 2),
                     ),
                     const Spacer(),
                     FilledButton.icon(
@@ -224,20 +253,55 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.soloRoomHint,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.white54,
+                      ),
+                ),
                 const SizedBox(height: 24),
-                Text(l10n.openRooms, style: Theme.of(context).textTheme.titleMedium),
+                Row(
+                  children: [
+                    Text(
+                      l10n.openRooms,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const Spacer(),
+                    if (!_loading)
+                      Text(
+                        '${_rooms.length}',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 8),
                 if (_loading) const Center(child: CircularProgressIndicator()),
-                if (_error != null) Text(_error!, style: const TextStyle(color: Colors.redAccent)),
+                if (_error != null)
+                  Text(_error!, style: const TextStyle(color: Colors.redAccent)),
                 if (!_loading && _rooms.isEmpty)
-                  Text(l10n.noOpenRooms, style: const TextStyle(color: Colors.white54)),
+                  Text(
+                    l10n.noOpenRooms,
+                    style: const TextStyle(color: Colors.white54),
+                  ),
                 ..._rooms.map((r) {
+                  final count = r['playerCount'] as int? ?? 0;
+                  final max = r['maxPlayers'] as int? ?? 2;
                   return Card(
                     child: ListTile(
-                      title: Text('${r['code']} — ${r['playerCount']}/${r['maxPlayers']}'),
-                      subtitle: Text(l10n.hostLabel(r['hostNick'] as String? ?? '?')),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _joinRoom(r['code'] as String?),
+                      title: Text('${r['code']} — $count/$max'),
+                      subtitle: Text(
+                        l10n.hostLabel(r['hostNick'] as String? ?? '?'),
+                      ),
+                      trailing: count < max
+                          ? const Icon(Icons.chevron_right)
+                          : Text(
+                              l10n.roomFull,
+                              style: const TextStyle(color: Colors.white38),
+                            ),
+                      onTap: count < max
+                          ? () => _joinRoom(r['code'] as String?)
+                          : null,
                     ),
                   );
                 }),
@@ -248,7 +312,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
             Divider(height: 1, color: Colors.white.withValues(alpha: 0.12)),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: Text(l10n.chatGeneral, style: Theme.of(context).textTheme.labelLarge),
+              child: Text(
+                l10n.chatGeneral,
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
             ),
             SizedBox(
               height: 200,

@@ -19,6 +19,19 @@ class _LoginScreenState extends State<LoginScreen> {
   final _session = SessionStore();
   bool _loading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedNick();
+  }
+
+  Future<void> _loadSavedNick() async {
+    final nick = await _session.getNick();
+    if (nick != null && nick.isNotEmpty && mounted) {
+      _nickController.text = nick;
+    }
+  }
+
   String get _locale =>
       Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'tr';
 

@@ -15,6 +15,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashLoading => 'Checking for updates…';
 
   @override
+  String get splashConnectingServer => 'Checking server connection…';
+
+  @override
+  String get splashCheckingVersion => 'Checking app version…';
+
+  @override
+  String splashServerHost(String host) => 'Server: $host';
+
+  @override
+  String splashYourVersion(String version) => 'Installed: $version';
+
+  @override
+  String splashServerVersion(String version) => 'Server version: $version';
+
+  @override
+  String get splashRetry => 'Try again';
+
+  @override
   String get forceUpdateTitle => 'Update required';
 
   @override
@@ -91,7 +109,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onlinePlay => 'Play online';
 
   @override
-  String get onlinePlayDesc => '6–8 real players — join with room code';
+  String get onlinePlayDesc => '2–8 real players — join with room code';
 
   @override
   String get onlineSoon => 'Online mode coming soon';
@@ -101,7 +119,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onlineLobbyDesc =>
-      'Create a room or join with a code. Game starts with 6+ players.';
+      'Create a room or join open lobbies. Game starts with at least 2 players.';
+
+  @override
+  String get soloRoomHint =>
+      'You can open a room alone; it appears in the open rooms list while you wait.';
+
+  @override
+  String get roomFull => 'Full';
 
   @override
   String get roomCodeHint => 'Room code';
@@ -184,6 +209,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phaseDay => 'Day vote';
 
   @override
+  String get phaseDawn => 'Dawn breaks';
+
+  @override
+  String get phaseGameOver => 'Game over';
+
+  @override
+  String get phaseHintNight => 'The vampire is hunting…';
+
+  @override
+  String get phaseHintDayVote => 'Vote to eliminate a suspect.';
+
+  @override
+  String get roleRevealVampire => 'You are the Vampire';
+
+  @override
+  String get roleRevealVillager => 'You are a Villager';
+
+  @override
+  String get roleRevealVampireHint => 'Hunt at night. Keep your identity secret.';
+
+  @override
+  String get roleRevealVillagerHint => 'Vote by day to find the vampire.';
+
+  @override
   String get dayLabel => 'Day';
 
   @override
@@ -203,4 +252,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playAgain => 'Play again';
+
+  @override
+  String get matchSummaryTitle => 'Match summary';
+
+  @override
+  String get summaryKills => 'Who eliminated whom';
+
+  @override
+  String get summaryLies => 'Who lied';
+
+  @override
+  String get summaryMostAccused => 'Most accused';
+
+  @override
+  String get summaryMvp => 'MVP';
+
+  @override
+  String get summaryNone => 'No records';
 }

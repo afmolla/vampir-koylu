@@ -1,4 +1,22 @@
 import { randomBytes } from 'crypto';
+import {
+  assignRoles,
+  countEvilAlive,
+  countGoodAlive,
+  isEvilTeam,
+  ROLES,
+} from '../game/roles.js';
+import {
+  createMatchLog,
+  logEvent,
+  recordAccusation,
+  buildMatchSummary,
+} from '../game/matchLog.js';
+import { listClientChannels } from '../game/chatChannels.js';
+import {
+  applyMatchRewards,
+  incrementQuestMetric,
+} from '../services/progression.js';
 
 const rooms = new Map();
 const socketToRoom = new Map();
@@ -71,12 +89,18 @@ function playerView(room, userId) {
   const base = sanitizeRoom(room);
   if (!room.game) return base;
   const me = room.game.players.find((p) => p.userId === userId);
+  const g = room.game;
   base.game = {
     ...publicGameState(room),
     yourRole: me?.alive ? me.role : me?.role ?? null,
     canAct: canPlayerAct(room, userId),
     validTargets: validTargets(room, userId),
-    votes: room.game.phase === 'dayVote' ? room.game.votes : undefined,
+    votes: g.phase === 'dayVote' ? g.dayVotes : undefined,
+    chatChannels: listClientChannels(room, userId),
+    matchSummary:
+      g.phase === 'gameOver' || g.winner
+        ? buildMatchSummary(room)
+        : null,
   };
   return base;
 }
@@ -87,7 +111,8 @@ function canPlayerAct(room, userId) {
   const me = g.players.find((p) => p.userId === userId);
   if (!me?.alive) return false;
   if (g.phase === 'night') {
-    return me.role === 'vampire' && !g.nightChoices.has(userId);
+    const meta = ROLES[me.role];
+    return meta?.nightAction === 'kill' && !g.nightChoices.has(userId);
   }
   if (g.phase === 'dayVote') {
     return !g.dayVotes.has(userId);
@@ -101,8 +126,8 @@ function validTargets(room, userId) {
   const me = g.players.find((p) => p.userId === userId);
   if (!me?.alive) return [];
   const alive = g.players.filter((p) => p.alive && p.userId !== userId);
-  if (g.phase === 'night' && me.role === 'vampire') {
-    return alive.filter((p) => p.role !== 'vampire').map((p) => p.id);
+  if (g.phase === 'night' && ROLES[me.role]?.nightAction === 'kill') {
+    return alive.filter((p) => !isEvilTeam(p.role)).map((p) => p.id);
   }
   if (g.phase === 'dayVote') {
     return alive.map((p) => p.id);
@@ -110,8 +135,8 @@ function validTargets(room, userId) {
   return [];
 }
 
-export function createRoom({ hostId, hostNick, maxPlayers = 6, socketId }) {
-  const max = Math.min(8, Math.max(6, Number(maxPlayers) || 6));
+export function createRoom({ hostId, hostNick, maxPlayers = 2, socketId }) {
+  const max = Math.min(8, Math.max(2, Number(maxPlayers) || 2));
   const code = randomCode();
   const room = {
     code,
@@ -167,25 +192,19 @@ export function startGame(socketId, userId) {
   if (room.status !== 'lobby') return { error: 'already_started' };
   if (room.players.length < 2) return { error: 'need_two_players' };
 
-  const vampireCount = room.players.length >= 8 ? 2 : 1;
-  const roles = [
-    ...Array(vampireCount).fill('vampire'),
-    ...Array(room.players.length - vampireCount).fill('villager'),
-  ];
-  for (let i = roles.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [roles[i], roles[j]] = [roles[j], roles[i]];
-  }
+  const roles = assignRoles(room.players.length);
 
   room.status = 'playing';
   room.game = {
     phase: 'night',
     dayNumber: 1,
-    message: null,
+    message: 'night',
     lastVictimName: null,
     winner: null,
     nightChoices: new Map(),
     dayVotes: new Map(),
+    nightProtects: new Map(),
+    matchLog: createMatchLog(),
     players: room.players.map((p, idx) => ({
       id: idx,
       userId: p.userId,
@@ -195,16 +214,31 @@ export function startGame(socketId, userId) {
     })),
   };
 
+  logEvent(room.game.matchLog, 'game_start', {
+    playerCount: room.players.length,
+    roles: roles.length,
+  });
+
   return { room };
 }
 
 function checkWinner(game) {
   const alive = game.players.filter((p) => p.alive);
-  const vampires = alive.filter((p) => p.role === 'vampire').length;
-  const villagers = alive.length - vampires;
-  if (vampires === 0) return 'villager';
-  if (vampires >= villagers) return 'vampire';
+  const evil = countEvilAlive(alive);
+  const good = countGoodAlive(alive);
+  if (evil === 0) return 'villager';
+  if (evil >= good) return 'vampire';
   return null;
+}
+
+function finalizeMatch(room) {
+  const summary = buildMatchSummary(room);
+  summary.roomCode = room.code;
+  if (!summary) return;
+  for (const p of room.game.players) {
+    applyMatchRewards(p.userId, summary, p.role);
+  }
+  room.game.matchSummary = summary;
 }
 
 function resolveNight(room) {
@@ -221,10 +255,22 @@ function resolveNight(room) {
       best = id;
     }
   }
+  const killer = g.players.find((p) => [...g.nightChoices.keys()].includes(p.userId));
   const victim = g.players.find((p) => p.id === best);
   if (victim) {
-    victim.alive = false;
-    g.lastVictimName = victim.nick;
+    if (!g.nightProtects.has(victim.userId)) {
+      victim.alive = false;
+      g.lastVictimName = victim.nick;
+      logEvent(g.matchLog, 'night_kill', {
+        killerNick: killer?.nick,
+        victimNick: victim.nick,
+        phase: 'night',
+      });
+    } else {
+      incrementQuestMetric(g.nightProtects.get(victim.userId), 'saves', 1);
+      g.lastVictimName = null;
+      logEvent(g.matchLog, 'doctor_save', { victimNick: victim.nick });
+    }
   }
   g.nightChoices.clear();
   g.phase = 'dayVote';
@@ -253,8 +299,13 @@ function resolveDay(room) {
   }
   const victim = g.players.find((p) => p.id === best);
   if (victim) {
+    recordAccusation(g.matchLog, victim.userId);
     victim.alive = false;
     g.lastVictimName = victim.nick;
+    logEvent(g.matchLog, 'day_execute', {
+      victimNick: victim.nick,
+      phase: 'dayVote',
+    });
   }
   const winner = checkWinner(g);
   if (winner) {
@@ -262,6 +313,7 @@ function resolveDay(room) {
     g.phase = 'gameOver';
     g.message = 'game_over';
     room.status = 'finished';
+    finalizeMatch(room);
     return;
   }
   g.phase = 'night';
@@ -276,12 +328,21 @@ export function gameAction(socketId, userId, { type, targetId }) {
   const me = g.players.find((p) => p.userId === userId);
   if (!me?.alive) return { error: 'dead' };
 
-  if (type === 'night_kill' && g.phase === 'night' && me.role === 'vampire') {
+  if (type === 'night_kill' && g.phase === 'night' && ROLES[me.role]?.nightAction === 'kill') {
     const target = g.players.find((p) => p.id === targetId && p.alive);
-    if (!target || target.role === 'vampire') return { error: 'invalid_target' };
+    if (!target || isEvilTeam(target.role)) return { error: 'invalid_target' };
     g.nightChoices.set(userId, targetId);
-    const vampires = g.players.filter((p) => p.alive && p.role === 'vampire');
-    if (g.nightChoices.size >= vampires.length) resolveNight(room);
+    const killers = g.players.filter(
+      (p) => p.alive && ROLES[p.role]?.nightAction === 'kill',
+    );
+    if (g.nightChoices.size >= killers.length) resolveNight(room);
+    return { room };
+  }
+
+  if (type === 'doctor_protect' && g.phase === 'night' && me.role === 'doctor') {
+    const target = g.players.find((p) => p.id === targetId && p.alive);
+    if (!target) return { error: 'invalid_target' };
+    g.nightProtects.set(target.userId, userId);
     return { room };
   }
 
@@ -289,8 +350,15 @@ export function gameAction(socketId, userId, { type, targetId }) {
     const target = g.players.find((p) => p.id === targetId && p.alive);
     if (!target || target.userId === userId) return { error: 'invalid_target' };
     g.dayVotes.set(userId, targetId);
+    recordAccusation(g.matchLog, target.userId);
     const alive = g.players.filter((p) => p.alive);
     if (g.dayVotes.size >= alive.length) resolveDay(room);
+    return { room };
+  }
+
+  if (type === 'deception' && g.phase === 'dayVote') {
+    logEvent(g.matchLog, 'deception', { nick: me.nick, userId });
+    incrementQuestMetric(userId, 'deceptions', 1);
     return { room };
   }
 

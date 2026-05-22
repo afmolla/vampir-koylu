@@ -1,18 +1,18 @@
 @echo off
-title Vampir Koylu API - SABAH (v0.2.3)
+title Vampir Koylu API - v0.2.6
 cd /d "%~dp0"
 
 echo Port 3000 temizleniyor...
 for /f "tokens=5" %%a in ('netstat -ano ^| findstr :3000 ^| findstr LISTENING') do taskkill /PID %%a /F 2>nul
 
 echo.
-echo === Vampir Koylu API v0.2.3 (normal kullanim) ===
+echo === Vampir Koylu API v0.2.6 ===
 set PORT=3000
 set NODE_ENV=production
-set MIN_REQUIRED_VERSION=0.2.3
-set LATEST_VERSION=0.2.3
+set MIN_REQUIRED_VERSION=0.2.5
+set LATEST_VERSION=0.2.6
 set FORCE_UPDATE=true
-set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v0.2.3/app-release.apk
+set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v0.2.6/app-release.apk
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 

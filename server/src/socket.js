@@ -12,6 +12,12 @@ import {
   viewsForRoom,
   getRoomForSocket,
 } from './rooms/roomStore.js';
+import {
+  canAccessTextChannel,
+  canAccessVoiceProximity,
+  chatRoomForSocket,
+} from './game/chatChannels.js';
+import { ensureProfile } from './services/progression.js';
 
 function emitRoomState(io, room) {
   for (const { userId, view } of viewsForRoom(room)) {
@@ -19,6 +25,12 @@ function emitRoomState(io, room) {
     if (player?.socketId) {
       io.to(player.socketId).emit('room:state', view);
     }
+  }
+}
+
+function joinChatChannels(socket, room, userId) {
+  for (const ch of chatRoomForSocket(room, userId)) {
+    socket.join(ch);
   }
 }
 
@@ -60,6 +72,7 @@ export function attachSocket(httpServer) {
 
     try {
       socket.data.user = jwt.verify(token, config.jwtSecret);
+      ensureProfile(socket.data.user.sub);
       next();
     } catch {
       next(new Error('UNAUTHORIZED'));
@@ -73,7 +86,7 @@ export function attachSocket(httpServer) {
     socket.join('chat:general');
 
     socket.on('room:create', (payload, ack) => {
-      const maxPlayers = payload?.maxPlayers ?? 6;
+      const maxPlayers = payload?.maxPlayers ?? 2;
       const nick = payload?.nick ?? 'Player';
       const view = createRoom({
         hostId: userId,
@@ -81,9 +94,8 @@ export function attachSocket(httpServer) {
         maxPlayers,
         socketId: socket.id,
       });
-      if (view?.code) {
-        socket.join(`chat:room:${view.code}`);
-      }
+      const room = getRoomForSocket(socket.id);
+      if (room) joinChatChannels(socket, room, userId);
       if (typeof ack === 'function') ack({ ok: true, room: view });
       socket.emit('room:state', view);
     });
@@ -101,7 +113,7 @@ export function attachSocket(httpServer) {
       }
       const room = getRoomForSocket(socket.id);
       if (room) {
-        socket.join(`chat:room:${room.code}`);
+        joinChatChannels(socket, room, userId);
         emitRoomState(io, room);
       }
       if (typeof ack === 'function') ack({ ok: true, room: result.room });
@@ -110,7 +122,7 @@ export function attachSocket(httpServer) {
     socket.on('room:leave', (_payload, ack) => {
       const room = getRoomForSocket(socket.id);
       if (room) {
-        socket.leave(`chat:room:${room.code}`);
+        for (const ch of chatRoomForSocket(room, userId)) socket.leave(ch);
       }
       const result = leaveRoom(socket.id);
       if (result?.room && !result.deleted) {
@@ -126,7 +138,10 @@ export function attachSocket(httpServer) {
         return;
       }
       const room = getRoomForSocket(socket.id);
-      if (room) emitRoomState(io, room);
+      if (room) {
+        for (const ch of chatRoomForSocket(room, userId)) socket.join(ch);
+        emitRoomState(io, room);
+      }
       if (typeof ack === 'function') ack({ ok: true });
     });
 
@@ -151,11 +166,12 @@ export function attachSocket(httpServer) {
 
         const channel = payload?.channel ?? 'general';
         const nick = payload?.nick ?? 'Player';
+        const room = getRoomForSocket(socket.id);
 
-        if (channel.startsWith('room:')) {
-          const room = getRoomForSocket(socket.id);
-          if (!room || `room:${room.code}` !== channel) {
-            if (typeof ack === 'function') ack({ ok: false, error: 'not_in_room' });
+        if (channel !== 'general') {
+          const access = canAccessTextChannel({ channel, userId, room });
+          if (!access.ok) {
+            if (typeof ack === 'function') ack({ ok: false, error: access.error });
             return;
           }
         }
@@ -177,15 +193,52 @@ export function attachSocket(httpServer) {
 
     socket.on('chat:join', (payload) => {
       const channel = payload?.channel;
-      if (channel && typeof channel === 'string') {
-        socket.join(`chat:${channel}`);
+      if (!channel || typeof channel !== 'string') return;
+      const room = getRoomForSocket(socket.id);
+      if (channel !== 'general') {
+        const access = canAccessTextChannel({ channel, userId, room });
+        if (!access.ok) return;
+      }
+      socket.join(`chat:${channel}`);
+    });
+
+    /** Yakın ses — WebRTC sinyal relay (beta, kozmetik ses efekti client'ta) */
+    socket.on('voice:join', (payload, ack) => {
+      const room = getRoomForSocket(socket.id);
+      const access = canAccessVoiceProximity({ userId, room });
+      if (!access.ok) {
+        if (typeof ack === 'function') ack({ ok: false, error: access.error });
+        return;
+      }
+      socket.join(`voice:${access.channel}`);
+      socket.data.voiceChannel = access.channel;
+      if (typeof ack === 'function') ack({ ok: true, channel: access.channel });
+    });
+
+    socket.on('voice:leave', () => {
+      if (socket.data.voiceChannel) {
+        socket.leave(`voice:${socket.data.voiceChannel}`);
+        socket.data.voiceChannel = null;
       }
     });
 
+    socket.on('voice:signal', (payload) => {
+      const room = getRoomForSocket(socket.id);
+      if (!room?.game) return;
+      const channel = socket.data.voiceChannel ?? `proximity:${room.code}`;
+      socket.to(`voice:${channel}`).emit('voice:signal', {
+        from: userId,
+        ...payload,
+      });
+    });
+
     socket.on('disconnect', () => {
+      if (socket.data.voiceChannel) {
+        socket.leave(`voice:${socket.data.voiceChannel}`);
+      }
       const room = getRoomForSocket(socket.id);
       if (room) {
-        socket.leave(`chat:room:${room.code}`);
+        for (const ch of chatRoomForSocket(room, userId)) socket.leave(ch);
       }
       const result = leaveRoom(socket.id);
       if (result?.room && !result.deleted) {

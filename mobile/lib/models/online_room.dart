@@ -49,6 +49,8 @@ class OnlineGameState {
     this.yourRole,
     this.canAct = false,
     this.validTargets = const [],
+    this.chatChannels = const [],
+    this.matchSummary,
   });
 
   final String phase;
@@ -60,6 +62,8 @@ class OnlineGameState {
   final String? yourRole;
   final bool canAct;
   final List<int> validTargets;
+  final List<Map<String, dynamic>> chatChannels;
+  final Map<String, dynamic>? matchSummary;
 
   factory OnlineGameState.fromJson(Map<String, dynamic> j) {
     final list = j['players'] as List<dynamic>? ?? [];
@@ -76,6 +80,10 @@ class OnlineGameState {
       yourRole: j['yourRole'] as String?,
       canAct: j['canAct'] == true,
       validTargets: targets.map((e) => e as int).toList(),
+      chatChannels: (j['chatChannels'] as List<dynamic>? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
+      matchSummary: j['matchSummary'] as Map<String, dynamic>?,
     );
   }
 }

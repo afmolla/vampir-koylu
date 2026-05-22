@@ -15,6 +15,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get splashLoading => 'Güncelleme kontrol ediliyor…';
 
   @override
+  String get splashConnectingServer => 'Sunucu bağlantısı kontrol ediliyor…';
+
+  @override
+  String get splashCheckingVersion => 'Sürüm kontrol ediliyor…';
+
+  @override
+  String splashServerHost(String host) => 'Sunucu: $host';
+
+  @override
+  String splashYourVersion(String version) => 'Yüklü sürüm: $version';
+
+  @override
+  String splashServerVersion(String version) => 'Sunucu sürümü: $version';
+
+  @override
+  String get splashRetry => 'Tekrar dene';
+
+  @override
   String get forceUpdateTitle => 'Güncelleme gerekli';
 
   @override
@@ -92,7 +110,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get onlinePlay => 'Online oyna';
 
   @override
-  String get onlinePlayDesc => '6–8 kişi, gerçek oyuncular — oda kodu ile';
+  String get onlinePlayDesc => '2–8 kişi, gerçek oyuncular — oda kodu ile';
 
   @override
   String get onlineSoon => 'Online mod yakında';
@@ -102,7 +120,14 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get onlineLobbyDesc =>
-      'Oda oluştur veya koda katıl. Oyun 6+ oyuncu ile başlar.';
+      'Oda oluştur veya açık odalara katıl. Oyun en az 2 oyuncu ile başlar.';
+
+  @override
+  String get soloRoomHint =>
+      'Tek başına oda açabilirsin; odan açık odalar listesinde görünür, oyuncu bekleyebilirsin.';
+
+  @override
+  String get roomFull => 'Dolu';
 
   @override
   String get roomCodeHint => 'Oda kodu';
@@ -185,6 +210,30 @@ class AppLocalizationsTr extends AppLocalizations {
   String get phaseDay => 'Gündüz oylaması';
 
   @override
+  String get phaseDawn => 'Şafak vakti';
+
+  @override
+  String get phaseGameOver => 'Oyun bitti';
+
+  @override
+  String get phaseHintNight => 'Vampir avını seçiyor…';
+
+  @override
+  String get phaseHintDayVote => 'Şüpheliyi oylayarak elenebilir.';
+
+  @override
+  String get roleRevealVampire => 'Sen Vampirsin';
+
+  @override
+  String get roleRevealVillager => 'Sen Köylüsün';
+
+  @override
+  String get roleRevealVampireHint => 'Geceleri avlan. Kimliğini gizle.';
+
+  @override
+  String get roleRevealVillagerHint => 'Gündüz oylama ile vampiri bul.';
+
+  @override
   String get dayLabel => 'Gün';
 
   @override
@@ -204,4 +253,22 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get playAgain => 'Tekrar oyna';
+
+  @override
+  String get matchSummaryTitle => 'Maç özeti';
+
+  @override
+  String get summaryKills => 'Kim kimi öldürdü';
+
+  @override
+  String get summaryLies => 'Kim yalan söyledi';
+
+  @override
+  String get summaryMostAccused => 'En çok suçlanan';
+
+  @override
+  String get summaryMvp => 'MVP';
+
+  @override
+  String get summaryNone => 'Kayıt yok';
 }

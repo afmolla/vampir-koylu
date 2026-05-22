@@ -110,6 +110,24 @@ abstract class AppLocalizations {
   /// **'Checking for updates…'**
   String get splashLoading;
 
+  /// No description provided for @splashConnectingServer.
+  String get splashConnectingServer;
+
+  /// No description provided for @splashCheckingVersion.
+  String get splashCheckingVersion;
+
+  /// No description provided for @splashServerHost.
+  String splashServerHost(String host);
+
+  /// No description provided for @splashYourVersion.
+  String splashYourVersion(String version);
+
+  /// No description provided for @splashServerVersion.
+  String splashServerVersion(String version);
+
+  /// No description provided for @splashRetry.
+  String get splashRetry;
+
   /// No description provided for @forceUpdateTitle.
   ///
   /// In en, this message translates to:
@@ -267,10 +285,13 @@ abstract class AppLocalizations {
   String get onlineLobbyTitle;
 
   /// No description provided for @onlineLobbyDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Create a room or join with a code. Game starts with 6+ players.'**
   String get onlineLobbyDesc;
+
+  /// No description provided for @soloRoomHint.
+  String get soloRoomHint;
+
+  /// No description provided for @roomFull.
+  String get roomFull;
 
   /// No description provided for @roomCodeHint.
   ///
@@ -416,6 +437,22 @@ abstract class AppLocalizations {
   /// **'Day vote'**
   String get phaseDay;
 
+  String get phaseDawn;
+
+  String get phaseGameOver;
+
+  String get phaseHintNight;
+
+  String get phaseHintDayVote;
+
+  String get roleRevealVampire;
+
+  String get roleRevealVillager;
+
+  String get roleRevealVampireHint;
+
+  String get roleRevealVillagerHint;
+
   /// No description provided for @dayLabel.
   ///
   /// In en, this message translates to:
@@ -457,6 +494,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play again'**
   String get playAgain;
+
+  String get matchSummaryTitle;
+
+  String get summaryKills;
+
+  String get summaryLies;
+
+  String get summaryMostAccused;
+
+  String get summaryMvp;
+
+  String get summaryNone;
 }
 
 class _AppLocalizationsDelegate

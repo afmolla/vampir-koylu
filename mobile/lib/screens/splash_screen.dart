@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../core/config.dart';
+import '../core/version_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
-import '../services/session_store.dart';
 import 'force_update_screen.dart';
-import 'home_screen.dart';
 import 'login_screen.dart';
+
+enum _CheckStep { pending, running, ok, failed }
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,7 +18,12 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   final _api = ApiClient();
-  final _session = SessionStore();
+  _CheckStep _serverStep = _CheckStep.running;
+  _CheckStep _versionStep = _CheckStep.pending;
+  String _clientVersion = '…';
+  String? _latestVersion;
+  String? _errorMessage;
+  bool _retrying = false;
 
   @override
   void initState() {
@@ -24,14 +31,57 @@ class _SplashScreenState extends State<SplashScreen> {
     _bootstrap();
   }
 
+  void _setSteps({
+    required _CheckStep server,
+    required _CheckStep version,
+    String? latest,
+    String? error,
+  }) {
+    if (!mounted) return;
+    setState(() {
+      _serverStep = server;
+      _versionStep = version;
+      _latestVersion = latest;
+      _errorMessage = error;
+    });
+  }
+
   Future<void> _bootstrap() async {
+    if (!mounted) return;
+    setState(() {
+      _retrying = false;
+      _serverStep = _CheckStep.running;
+      _versionStep = _CheckStep.pending;
+      _errorMessage = null;
+      _latestVersion = null;
+    });
+
     try {
+      _clientVersion = await _api.currentVersion();
+      if (!mounted) return;
+      setState(() => _clientVersion = _clientVersion);
+
+      await _api.checkServer();
+      if (!mounted) return;
+      _setSteps(server: _CheckStep.ok, version: _CheckStep.running);
+
       final version = await _api.getVersion();
-      final allowed = version['allowed'] == true;
+      final needsUpdate = shouldForceUpdate(
+        clientVersion: _clientVersion,
+        versionResponse: version,
+      );
+      final latest = version['latestVersion'] as String?;
 
       if (!mounted) return;
 
-      if (!allowed) {
+      if (needsUpdate) {
+        _setSteps(
+          server: _CheckStep.ok,
+          version: _CheckStep.failed,
+          latest: latest,
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        if (!mounted) return;
         final url = version['updateUrlAndroid'] as String? ?? '';
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
@@ -44,40 +94,35 @@ class _SplashScreenState extends State<SplashScreen> {
         return;
       }
 
-      final token = await _session.getToken();
+      _setSteps(
+        server: _CheckStep.ok,
+        version: _CheckStep.ok,
+        latest: latest,
+      );
+
       if (!mounted) return;
-
-      if (token != null && token.isNotEmpty) {
-        try {
-          final me = await _api.getMe(token: token);
-          final nick =
-              (me['user'] as Map<String, dynamic>?)?['nick'] as String? ??
-                  await _session.getNick();
-          if (!mounted) return;
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => HomeScreen(nick: nick ?? 'Player')),
-          );
-          return;
-        } catch (_) {
-          await _session.clear();
-        }
-      }
-
+      await Future<void>.delayed(const Duration(milliseconds: 400));
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${AppLocalizations.of(context)!.errorNetwork}\n$e'),
-          duration: const Duration(seconds: 4),
-        ),
+      final l10n = AppLocalizations.of(context)!;
+      final failedServer = _serverStep != _CheckStep.ok;
+      _setSteps(
+        server: failedServer ? _CheckStep.failed : _CheckStep.ok,
+        version: failedServer ? _CheckStep.pending : _CheckStep.failed,
+        error: '${l10n.errorNetwork}\n$e',
       );
-      await Future<void>.delayed(const Duration(seconds: 3));
-      if (mounted) _bootstrap();
     }
+  }
+
+  void _onRetry() {
+    setState(() => _retrying = true);
+    _bootstrap().whenComplete(() {
+      if (mounted) setState(() => _retrying = false);
+    });
   }
 
   @override
@@ -86,9 +131,84 @@ class _SplashScreenState extends State<SplashScreen> {
     super.dispose();
   }
 
+  String _serverHostLabel() {
+    try {
+      return Uri.parse(AppConfig.apiBaseUrl).host;
+    } catch (_) {
+      return AppConfig.apiBaseUrl;
+    }
+  }
+
+  Widget _stepRow({
+    required _CheckStep step,
+    required String label,
+    String? detail,
+  }) {
+    final theme = Theme.of(context);
+    IconData icon;
+    Color? iconColor;
+    switch (step) {
+      case _CheckStep.pending:
+        icon = Icons.radio_button_unchecked;
+        iconColor = theme.colorScheme.onSurface.withValues(alpha: 0.4);
+      case _CheckStep.running:
+        icon = Icons.sync;
+        iconColor = theme.colorScheme.secondary;
+      case _CheckStep.ok:
+        icon = Icons.check_circle;
+        iconColor = Colors.greenAccent;
+      case _CheckStep.failed:
+        icon = Icons.error_outline;
+        iconColor = theme.colorScheme.error;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (step == _CheckStep.running)
+            Padding(
+              padding: const EdgeInsets.only(right: 12, top: 2),
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: theme.colorScheme.secondary,
+                ),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 12, top: 2),
+              child: Icon(icon, size: 22, color: iconColor),
+            ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: theme.textTheme.bodyLarge),
+                if (detail != null && detail.isNotEmpty)
+                  Text(
+                    detail,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.65),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final hasError = _errorMessage != null;
+
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -98,28 +218,83 @@ class _SplashScreenState extends State<SplashScreen> {
             colors: [Color(0xFF1A0F1E), Color(0xFF0D0A12)],
           ),
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.nightlight_round,
-                size: 72,
-                color: Theme.of(context).colorScheme.secondary,
-              ),
-              const SizedBox(height: 24),
-              Text(
-                l10n.appTitle,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-              ),
-              const SizedBox(height: 32),
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(l10n.splashLoading),
-            ],
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.nightlight_round,
+                  size: 72,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  l10n.appTitle,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                ),
+                const SizedBox(height: 32),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _stepRow(
+                        step: _serverStep,
+                        label: l10n.splashConnectingServer,
+                        detail: l10n.splashServerHost(_serverHostLabel()),
+                      ),
+                      _stepRow(
+                        step: _versionStep,
+                        label: l10n.splashCheckingVersion,
+                        detail: _clientVersion.isNotEmpty
+                            ? l10n.splashYourVersion(_clientVersion)
+                            : null,
+                      ),
+                      if (_latestVersion != null &&
+                          _versionStep == _CheckStep.ok)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 34, top: 4),
+                          child: Text(
+                            l10n.splashServerVersion(_latestVersion!),
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.greenAccent.withValues(
+                                    alpha: 0.85,
+                                  ),
+                                ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                if (hasError) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    _errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: _retrying ? null : _onRetry,
+                    icon: _retrying
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.refresh),
+                    label: Text(l10n.splashRetry),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),

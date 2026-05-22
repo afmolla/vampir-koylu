@@ -8,9 +8,14 @@ versionRouter.get('/', (req, res) => {
   const clientVersion = String(req.query.clientVersion ?? '0.0.0');
   const platform = String(req.query.platform ?? 'android');
 
-  const allowed =
-    semver.valid(clientVersion) &&
-    semver.gte(clientVersion, config.minRequiredVersion);
+  const validClient = semver.valid(clientVersion);
+  const meetsMin =
+    validClient && semver.gte(clientVersion, config.minRequiredVersion);
+  const meetsLatest =
+    validClient &&
+    semver.valid(config.latestVersion) &&
+    semver.gte(clientVersion, config.latestVersion);
+  const allowed = meetsMin && meetsLatest;
 
   res.json({
     minRequiredVersion: config.minRequiredVersion,

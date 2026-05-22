@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import 'login_screen.dart';
 import 'online_lobby_screen.dart';
+import 'profile_hub_screen.dart';
 import 'solo_game_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -27,6 +28,15 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.appTitle),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.military_tech_outlined),
+            tooltip: 'Profil & görevler',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ProfileHubScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => _logout(context),

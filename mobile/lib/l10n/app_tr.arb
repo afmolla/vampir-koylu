@@ -2,6 +2,21 @@
   "@@locale": "tr",
   "appTitle": "Vampir Köylü",
   "splashLoading": "Güncelleme kontrol ediliyor…",
+  "splashConnectingServer": "Sunucu bağlantısı kontrol ediliyor…",
+  "splashCheckingVersion": "Sürüm kontrol ediliyor…",
+  "splashServerHost": "Sunucu: {host}",
+  "@splashServerHost": {
+    "placeholders": { "host": { "type": "String" } }
+  },
+  "splashYourVersion": "Yüklü sürüm: {version}",
+  "@splashYourVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "splashServerVersion": "Sunucu sürümü: {version}",
+  "@splashServerVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "splashRetry": "Tekrar dene",
   "forceUpdateTitle": "Güncelleme gerekli",
   "forceUpdateBody": "Bu sürüm artık desteklenmiyor. Oyuna devam etmek için lütfen en güncel sürümü yükleyin.",
   "updateButton": "Güncellemeyi indir",
@@ -35,10 +50,12 @@
   "soloPlay": "Tek başına oyna",
   "soloPlayDesc": "6 kişilik oda (sen + 5 bot) — hızlı maç",
   "onlinePlay": "Online oyna",
-  "onlinePlayDesc": "6–8 kişi, gerçek oyuncular — oda kodu ile",
+  "onlinePlayDesc": "2–8 kişi, gerçek oyuncular — oda kodu ile",
   "onlineSoon": "Online mod yakında",
   "onlineLobbyTitle": "Online lobiler",
-  "onlineLobbyDesc": "Oda oluştur veya koda katıl. Oyun 6+ oyuncu ile başlar.",
+  "onlineLobbyDesc": "Oda oluştur veya açık odalara katıl. Oyun en az 2 oyuncu ile başlar.",
+  "soloRoomHint": "Tek başına oda açabilirsin; odan açık odalar listesinde görünür, oyuncu bekleyebilirsin.",
+  "roomFull": "Dolu",
   "roomCodeHint": "Oda kodu",
   "joinRoom": "Katıl",
   "createRoom": "Oda oluştur",
@@ -78,11 +95,25 @@
   "soloTitle": "Tek oyuncu",
   "phaseNight": "Gece fazı",
   "phaseDay": "Gündüz oylaması",
+  "phaseDawn": "Şafak vakti",
+  "phaseGameOver": "Oyun bitti",
+  "phaseHintNight": "Vampir avını seçiyor…",
+  "phaseHintDayVote": "Şüpheliyi oylayarak elenebilir.",
+  "roleRevealVampire": "Sen Vampirsin",
+  "roleRevealVillager": "Sen Köylüsün",
+  "roleRevealVampireHint": "Geceleri avlan. Kimliğini gizle.",
+  "roleRevealVillagerHint": "Gündüz oylama ile vampiri bul.",
   "dayLabel": "Gün",
   "you": "sen",
   "waitingVampire": "Vampir avını seçiyor…",
   "tapToVote": "Elenmesini istediğin oyuncuya dokun",
   "villagersWin": "Köylüler kazandı!",
   "vampiresWin": "Vampirler kazandı!",
-  "playAgain": "Tekrar oyna"
+  "playAgain": "Tekrar oyna",
+  "matchSummaryTitle": "Maç özeti",
+  "summaryKills": "Kim kimi öldürdü",
+  "summaryLies": "Kim yalan söyledi",
+  "summaryMostAccused": "En çok suçlanan",
+  "summaryMvp": "MVP",
+  "summaryNone": "Kayıt yok"
 }

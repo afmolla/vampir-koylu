@@ -2,6 +2,21 @@
   "@@locale": "en",
   "appTitle": "Vampire Village",
   "splashLoading": "Checking for updates…",
+  "splashConnectingServer": "Checking server connection…",
+  "splashCheckingVersion": "Checking app version…",
+  "splashServerHost": "Server: {host}",
+  "@splashServerHost": {
+    "placeholders": { "host": { "type": "String" } }
+  },
+  "splashYourVersion": "Installed: {version}",
+  "@splashYourVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "splashServerVersion": "Server version: {version}",
+  "@splashServerVersion": {
+    "placeholders": { "version": { "type": "String" } }
+  },
+  "splashRetry": "Try again",
   "forceUpdateTitle": "Update required",
   "forceUpdateBody": "This version is no longer supported. Please install the latest release to continue.",
   "updateButton": "Download update",
@@ -35,10 +50,12 @@
   "soloPlay": "Play solo",
   "soloPlayDesc": "6-player room (you + 5 bots) — quick match",
   "onlinePlay": "Play online",
-  "onlinePlayDesc": "6–8 real players — join with room code",
+  "onlinePlayDesc": "2–8 real players — join with room code",
   "onlineSoon": "Online mode coming soon",
   "onlineLobbyTitle": "Online lobbies",
-  "onlineLobbyDesc": "Create a room or join with a code. Game starts with 6+ players.",
+  "onlineLobbyDesc": "Create a room or join open lobbies. Game starts with at least 2 players.",
+  "soloRoomHint": "You can open a room alone; it appears in the open rooms list while you wait.",
+  "roomFull": "Full",
   "roomCodeHint": "Room code",
   "joinRoom": "Join",
   "createRoom": "Create room",
@@ -78,11 +95,25 @@
   "soloTitle": "Solo",
   "phaseNight": "Night phase",
   "phaseDay": "Day vote",
+  "phaseDawn": "Dawn breaks",
+  "phaseGameOver": "Game over",
+  "phaseHintNight": "The vampire is hunting…",
+  "phaseHintDayVote": "Vote to eliminate a suspect.",
+  "roleRevealVampire": "You are the Vampire",
+  "roleRevealVillager": "You are a Villager",
+  "roleRevealVampireHint": "Hunt at night. Keep your identity secret.",
+  "roleRevealVillagerHint": "Vote by day to find the vampire.",
   "dayLabel": "Day",
   "you": "you",
   "waitingVampire": "The vampire is choosing…",
   "tapToVote": "Tap a player to vote them out",
   "villagersWin": "Villagers win!",
   "vampiresWin": "Vampires win!",
-  "playAgain": "Play again"
+  "playAgain": "Play again",
+  "matchSummaryTitle": "Match summary",
+  "summaryKills": "Who eliminated whom",
+  "summaryLies": "Who lied",
+  "summaryMostAccused": "Most accused",
+  "summaryMvp": "MVP",
+  "summaryNone": "No records"
 }

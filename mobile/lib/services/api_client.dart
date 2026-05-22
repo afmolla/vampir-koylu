@@ -8,6 +8,8 @@ import '../core/config.dart';
 class ApiClient {
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
+  static const Duration requestTimeout = Duration(seconds: 15);
+
   final http.Client _client;
 
   Uri _uri(String path, [Map<String, String>? query]) {
@@ -15,6 +17,8 @@ class ApiClient {
       queryParameters: query,
     );
   }
+
+  Future<String> currentVersion() => _appVersion();
 
   Future<String> _appVersion() async {
     try {
@@ -24,14 +28,30 @@ class ApiClient {
     return AppConfig.clientVersion;
   }
 
+  /// Sunucunun ayakta olduğunu doğrular (`GET /health`).
+  Future<void> checkServer() async {
+    final res = await _client
+        .get(_uri('/health'))
+        .timeout(requestTimeout);
+    if (res.statusCode != 200) {
+      throw ApiException(res.statusCode, res.body);
+    }
+    final body = jsonDecode(res.body) as Map<String, dynamic>;
+    if (body['ok'] != true) {
+      throw ApiException(res.statusCode, 'health not ok');
+    }
+  }
+
   Future<Map<String, dynamic>> getVersion() async {
     final version = await _appVersion();
-    final res = await _client.get(
-      _uri('/api/version', {
-        'clientVersion': version,
-        'platform': AppConfig.platform,
-      }),
-    );
+    final res = await _client
+        .get(
+          _uri('/api/version', {
+            'clientVersion': version,
+            'platform': AppConfig.platform,
+          }),
+        )
+        .timeout(requestTimeout);
     if (res.statusCode != 200) {
       throw ApiException(res.statusCode, res.body);
     }
