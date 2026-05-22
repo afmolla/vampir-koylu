@@ -167,6 +167,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get eliminated => 'Elenmiş';
 
   @override
+  String get chatHint => 'Mesaj yaz…';
+
+  @override
+  String get chatGeneral => 'Genel sohbet';
+
+  @override
+  String get chatRoom => 'Oda sohbeti';
+
+  @override
   String get soloTitle => 'Tek oyuncu';
 
   @override

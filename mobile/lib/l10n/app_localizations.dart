@@ -380,6 +380,24 @@ abstract class AppLocalizations {
   /// **'Eliminated'**
   String get eliminated;
 
+  /// No description provided for @chatHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a message…'**
+  String get chatHint;
+
+  /// No description provided for @chatGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General chat'**
+  String get chatGeneral;
+
+  /// No description provided for @chatRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Room chat'**
+  String get chatRoom;
+
   /// No description provided for @soloTitle.
   ///
   /// In en, this message translates to:

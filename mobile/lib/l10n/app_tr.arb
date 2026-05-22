@@ -72,6 +72,9 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "eliminated": "Elenmiş",
+  "chatHint": "Mesaj yaz…",
+  "chatGeneral": "Genel sohbet",
+  "chatRoom": "Oda sohbeti",
   "soloTitle": "Tek oyuncu",
   "phaseNight": "Gece fazı",
   "phaseDay": "Gündüz oylaması",

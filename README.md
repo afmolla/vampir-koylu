@@ -58,12 +58,15 @@ Releases: https://github.com/afmolla/flutter/releases
 - [x] Tek oyuncu (6 kişi, botlar)
 - [x] **Online oda** — oluştur, katıl, liste, Socket.io
 - [x] **Online oyun** — 6–8 oyuncu, gece/gündüz, sunucu otoriter
+- [x] **SQLite** — kullanıcılar + mesajlar (`server/data/vampir_koylu.db`)
+- [x] **Sohbet** — genel lobi + oda içi (`ChatPanel`, `chat:send` / `GET /api/chat/:channel`)
+- [x] Test modu: 2 kişiyle oyun başlatma
 - [x] Sabit release imzası (OTA güncelleme)
 
 ### Sonraki sprint
 
 - [ ] Google / Facebook giriş
-- [ ] PostgreSQL kalıcı kullanıcı / odalar
+- [ ] PostgreSQL’e geçiş (opsiyonel; SQLite MVP’de aktif)
 - [ ] Reconnect, Play Store, IAP & turnuva
 
 ## Sunucu

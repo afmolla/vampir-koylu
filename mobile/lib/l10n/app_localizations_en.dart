@@ -166,6 +166,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eliminated => 'Eliminated';
 
   @override
+  String get chatHint => 'Type a message…';
+
+  @override
+  String get chatGeneral => 'General chat';
+
+  @override
+  String get chatRoom => 'Room chat';
+
+  @override
   String get soloTitle => 'Solo';
 
   @override

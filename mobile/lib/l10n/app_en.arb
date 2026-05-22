@@ -72,6 +72,9 @@
     "placeholders": { "name": { "type": "String" } }
   },
   "eliminated": "Eliminated",
+  "chatHint": "Type a message…",
+  "chatGeneral": "General chat",
+  "chatRoom": "Room chat",
   "soloTitle": "Solo",
   "phaseNight": "Night phase",
   "phaseDay": "Day vote",
