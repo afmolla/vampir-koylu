@@ -48,3 +48,20 @@ String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
   if (!raw.endsWith('.apk')) return AppConfig.defaultUpdateApkUrl;
   return raw;
 }
+
+/// Indirme basarisiz olursa denenecek APK adresleri (yeniden eskiye).
+List<String> apkDownloadCandidates(String primary) {
+  final seen = <String>{};
+  final out = <String>[];
+  for (final u in [
+    primary,
+    AppConfig.defaultUpdateApkUrl,
+    AppConfig.fallbackUpdateApkUrl,
+  ]) {
+    final t = u.trim();
+    if (t.isEmpty || !t.endsWith('.apk') || seen.contains(t)) continue;
+    seen.add(t);
+    out.add(t);
+  }
+  return out;
+}

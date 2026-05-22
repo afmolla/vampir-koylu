@@ -62,11 +62,18 @@ jobs:
           flutter pub get
           flutter gen-l10n --verbose
 
-      - name: Verify release signing (sabit imza = paket cakismasi yok)
+      - name: Cache release keystore
+        uses: actions/cache@v4
+        with:
+          path: |
+            mobile/android/signing/release.keystore
+            mobile/android/key.properties
+          key: vampir-android-keystore-v3
+
+      - name: Setup release signing (keytool — PFX alias sorunu yok)
         run: |
-          test -f mobile/android/key.properties
-          test -f mobile/android/signing/release.pfx
-          echo "Release signing OK"
+          chmod +x mobile/android/signing/setup-ci-keystore.sh
+          bash mobile/android/signing/setup-ci-keystore.sh
 
       - name: Build APK
         working-directory: mobile

@@ -1,5 +1,5 @@
 storePassword=vampir_koylu_store
 keyPassword=vampir_koylu_store
-keyAlias=1
-storeFile=signing/release.pfx
+keyAlias=vampir
+storeFile=signing/release.keystore
 storeType=PKCS12

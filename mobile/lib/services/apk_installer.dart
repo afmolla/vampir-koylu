@@ -5,6 +5,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../core/version_utils.dart';
+
 class ApkInstaller {
   ApkInstaller({Dio? dio})
       : _dio = dio ??
@@ -65,7 +67,8 @@ class ApkInstaller {
     final size = await file.length();
     if (size < _minApkBytes) {
       throw ApkInstallException(
-        'İndirilen dosya geçersiz ($size bayt). Bağlantı veya APK adresini kontrol et.',
+        'APK bulunamadı veya henüz yayınlanmadı ($size bayt). '
+        'GitHub Actions build bitene kadar bekleyin veya v0.2.7 yedeği deneniyor.',
       );
     }
 
@@ -108,8 +111,22 @@ class ApkInstaller {
     void Function(double progress)? onProgress,
   }) async {
     await _ensureInstallPermission();
-    final path = await downloadApk(url: url, onProgress: onProgress);
-    await openInstaller(path);
+    ApkInstallException? lastError;
+    final urls = apkDownloadCandidates(url);
+    for (var i = 0; i < urls.length; i++) {
+      try {
+        final path = await downloadApk(url: urls[i], onProgress: onProgress);
+        await openInstaller(path);
+        return;
+      } on ApkInstallException catch (e) {
+        lastError = e;
+        if (i < urls.length - 1) continue;
+      }
+    }
+    throw lastError ??
+        ApkInstallException(
+          'Güncelleme indirilemedi. İnternet veya GitHub release kontrol edin.',
+        );
   }
 }
 

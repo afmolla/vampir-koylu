@@ -14,6 +14,16 @@ val hasReleaseKeystore = keystorePropertiesFile.exists().also { exists ->
     }
 }
 
+fun resolveStoreFile(): java.io.File? {
+    if (!hasReleaseKeystore) return null
+    val rel = keystoreProperties.getProperty("storeFile") ?: return null
+    val primary = rootProject.file(rel)
+    if (primary.exists()) return primary
+    val pfx = rootProject.file("signing/release.pfx")
+    if (pfx.exists()) return pfx
+    return null
+}
+
 android {
     namespace = "com.vampirkoylu.vampir_koylu"
     compileSdk = flutter.compileSdkVersion
@@ -35,13 +45,16 @@ android {
     signingConfigs {
         if (hasReleaseKeystore) {
             create("release") {
-                val storePath = keystoreProperties.getProperty("storeFile")
-                    ?: error("key.properties: storeFile eksik")
-                storeFile = rootProject.file(storePath)
+                val store = resolveStoreFile()
+                    ?: error("Imza dosyasi yok: signing/release.keystore veya release.pfx")
+                storeFile = store
                 storePassword = keystoreProperties.getProperty("storePassword")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias") ?: "1"
-                keystoreProperties.getProperty("storeType")?.let { storeType = it }
+                val alias = keystoreProperties.getProperty("keyAlias") ?: "vampir"
+                keyAlias = alias
+                val type = keystoreProperties.getProperty("storeType")
+                    ?: if (store.extension.equals("pfx", ignoreCase = true)) "PKCS12" else "PKCS12"
+                storeType = type
             }
         }
     }

@@ -21,5 +21,9 @@ class AppConfig {
   static const String defaultUpdateApkUrl =
       'https://github.com/afmolla/flutter/releases/download/v0.2.8/app-release.apk';
 
+  /// v0.2.8 CI henüz yoksa yedek (GitHub'da mevcut).
+  static const String fallbackUpdateApkUrl =
+      'https://github.com/afmolla/flutter/releases/download/v0.2.7/app-release.apk';
+
   static const String platform = 'android';
 }
