@@ -86,13 +86,14 @@ export function attachSocket(httpServer) {
     socket.join('chat:general');
 
     socket.on('room:create', (payload, ack) => {
-      const maxPlayers = payload?.maxPlayers ?? 2;
+      const maxPlayers = payload?.maxPlayers ?? 6;
       const nick = payload?.nick ?? 'Player';
       const view = createRoom({
         hostId: userId,
         hostNick: String(nick).slice(0, 24),
         maxPlayers,
         socketId: socket.id,
+        fillWithBots: Boolean(payload?.fillWithBots),
       });
       const room = getRoomForSocket(socket.id);
       if (room) joinChatChannels(socket, room, userId);
@@ -128,11 +129,15 @@ export function attachSocket(httpServer) {
       if (result?.room && !result.deleted) {
         emitRoomState(io, result.room);
       }
-      if (typeof ack === 'function') ack({ ok: true });
+      if (typeof ack === 'function') {
+        ack({ ok: true, hostLeft: Boolean(result?.hostLeft) });
+      }
     });
 
-    socket.on('room:start', (_payload, ack) => {
-      const result = startGame(socket.id, userId);
+    socket.on('room:start', (payload, ack) => {
+      const result = startGame(socket.id, userId, {
+        fillWithBots: Boolean(payload?.fillWithBots),
+      });
       if (result.error) {
         if (typeof ack === 'function') ack({ ok: false, error: result.error });
         return;

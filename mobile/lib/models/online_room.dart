@@ -94,12 +94,14 @@ class OnlineRoomState {
     required this.status,
     required this.maxPlayers,
     required this.players,
+    this.fillWithBots = false,
     this.game,
   });
 
   final String code;
   final String status;
   final int maxPlayers;
+  final bool fillWithBots;
   final List<OnlineRoomPlayer> players;
   final OnlineGameState? game;
 
@@ -110,6 +112,7 @@ class OnlineRoomState {
       code: j['code'] as String? ?? '',
       status: j['status'] as String? ?? 'lobby',
       maxPlayers: j['maxPlayers'] as int? ?? 6,
+      fillWithBots: j['fillWithBots'] == true,
       players: list
           .map((e) => OnlineRoomPlayer.fromJson(e as Map<String, dynamic>))
           .toList(),

@@ -298,11 +298,48 @@ export function claimQuest(userId, questId) {
   return { ok: true, bundle: getProfileBundle(userId) };
 }
 
+export function isBotUserId(userId) {
+  return String(userId).startsWith('bot:');
+}
+
+/** Maça giriş ödülü (insan oyuncular). */
+export function grantMatchEntry(userId) {
+  if (isBotUserId(userId)) return;
+  const db = getDb();
+  ensureProfile(userId);
+  db.prepare(
+    `UPDATE user_profiles SET coins = coins + 8, xp = xp + 5 WHERE user_id = ?`,
+  ).run(userId);
+  syncRankTier(userId);
+}
+
+/** Kurucu oyundan kaçınca ceza. */
+export function applyHostLeavePenalty(userId) {
+  if (isBotUserId(userId)) return { penalty: 0 };
+  const db = getDb();
+  ensureProfile(userId);
+  const penalty = 25;
+  db.prepare(
+    `UPDATE user_profiles SET coins = MAX(0, coins - ?) WHERE user_id = ?`,
+  ).run(penalty, userId);
+  return { penalty };
+}
+
 export function applyMatchRewards(userId, summary, playerRole) {
+  if (isBotUserId(userId)) return;
   const db = getDb();
   ensureProfile(userId);
   let xp = 15;
   let coins = 10;
+  const evil = ['vampire', 'silent_killer', 'double_agent'].includes(playerRole);
+  const won =
+    (summary.winner === 'villager' && !evil) ||
+    (summary.winner === 'vampire' && evil);
+  if (won) {
+    xp += 35;
+    coins += 30;
+    incrementQuestMetric(userId, 'wins', 1);
+  }
   if (summary.mvp?.userId === userId) {
     xp += 25;
     coins += 15;
@@ -313,12 +350,6 @@ export function applyMatchRewards(userId, summary, playerRole) {
     userId,
   );
   syncRankTier(userId);
-
-  const evil = ['vampire', 'silent_killer', 'double_agent'].includes(playerRole);
-  const won =
-    (summary.winner === 'villager' && !evil) ||
-    (summary.winner === 'vampire' && evil);
-  if (won) incrementQuestMetric(userId, 'wins', 1);
 
   db.prepare(
     `INSERT INTO match_summaries (user_id, room_code, summary_json, created_at)

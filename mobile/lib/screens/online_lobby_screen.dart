@@ -27,7 +27,8 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   bool _loading = true;
   bool _socketReady = false;
   String? _error;
-  int _maxPlayers = 2;
+  int _maxPlayers = 6;
+  bool _fillWithBots = true;
   Timer? _roomRefreshTimer;
 
   @override
@@ -105,7 +106,11 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
         final completer = Completer<Map<String, dynamic>?>();
         socket.emitWithAck(
           'room:create',
-          {'nick': widget.nick, 'maxPlayers': _maxPlayers},
+          {
+            'nick': widget.nick,
+            'maxPlayers': _maxPlayers,
+            'fillWithBots': _fillWithBots,
+          },
           ack: (data) {
             if (data is Map && data['ok'] == true) {
               completer.complete(data['room'] as Map<String, dynamic>?);
@@ -235,7 +240,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                     const SizedBox(width: 12),
                     DropdownButton<int>(
                       value: _maxPlayers,
-                      items: List.generate(7, (i) => i + 2)
+                      items: [6, 7, 8]
                           .map(
                             (n) => DropdownMenuItem(
                               value: n,
@@ -243,7 +248,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                             ),
                           )
                           .toList(),
-                      onChanged: (v) => setState(() => _maxPlayers = v ?? 2),
+                      onChanged: (v) => setState(() => _maxPlayers = v ?? 6),
                     ),
                     const Spacer(),
                     FilledButton.icon(
@@ -254,8 +259,21 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
+                CheckboxListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    'Eksik oyuncuları bot ile doldur (en az 6 kişi)',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  subtitle: const Text(
+                    '2 gerçek oyuncu + botlar ile başlayabilirsin.',
+                    style: TextStyle(fontSize: 12, color: Colors.white54),
+                  ),
+                  value: _fillWithBots,
+                  onChanged: (v) => setState(() => _fillWithBots = v ?? true),
+                ),
                 Text(
-                  l10n.soloRoomHint,
+                  'En az 6 oyuncu gerekir. Tek başına oda açıp bekleyebilirsin.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white54,
                       ),

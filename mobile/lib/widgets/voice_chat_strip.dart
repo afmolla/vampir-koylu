@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 /// Yakın oyuncu sesi — WebRTC beta (sinyal relay sunucuda).
@@ -20,6 +21,24 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
   bool _joined = false;
   bool _muted = false;
 
+  Future<bool> _ensureMicPermission() async {
+    final status = await Permission.microphone.status;
+    if (status.isGranted) return true;
+    final result = await Permission.microphone.request();
+    if (result.isGranted) return true;
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Yakın ses için mikrofon izni gerekli. Ayarlardan izin ver.',
+          ),
+          duration: Duration(seconds: 4),
+        ),
+      );
+    }
+    return false;
+  }
+
   Future<void> _toggleVoice() async {
     final socket = widget.socket;
     if (socket == null || !widget.enabled) return;
@@ -29,6 +48,8 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
       setState(() => _joined = false);
       return;
     }
+
+    if (!await _ensureMicPermission()) return;
 
     socket.emitWithAck('voice:join', {}, ack: (data) {
       if (data is Map && data['ok'] == true && mounted) {

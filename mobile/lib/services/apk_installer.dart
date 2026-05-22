@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../core/version_utils.dart';
 
@@ -103,6 +104,13 @@ class ApkInstaller {
         throw ApkInstallException(
           result.message.isNotEmpty ? result.message : 'Kurulum ekranı açılamadı.',
         );
+    }
+  }
+
+  Future<void> openDownloadInBrowser(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      throw ApkInstallException('Tarayıcıda APK linki açılamadı.');
     }
   }
 

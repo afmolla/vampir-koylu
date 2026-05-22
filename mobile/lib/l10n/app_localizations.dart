@@ -111,43 +111,105 @@ abstract class AppLocalizations {
   String get splashLoading;
 
   /// No description provided for @splashConnectingServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking server connection…'**
   String get splashConnectingServer;
 
   /// No description provided for @splashCheckingVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking app version…'**
   String get splashCheckingVersion;
 
   /// No description provided for @splashServerHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Server: {host}'**
   String splashServerHost(String host);
 
   /// No description provided for @splashYourVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed: {version}'**
   String splashYourVersion(String version);
 
   /// No description provided for @splashServerVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Server version: {version}'**
   String splashServerVersion(String version);
 
   /// No description provided for @splashRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
   String get splashRetry;
 
+  /// No description provided for @splashServerUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reach the server. Check your internet or try again later.'**
   String get splashServerUnreachable;
 
+  /// No description provided for @continueOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue offline'**
   String get continueOffline;
 
+  /// No description provided for @continueOfflineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'6-player room: you + 5 bots. No server required.'**
   String get continueOfflineHint;
 
+  /// No description provided for @offlineModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline play'**
   String get offlineModeTitle;
 
+  /// No description provided for @offlineModeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Play vampire vs villagers with bots without the server. Reconnect from home when you\'re back online.'**
   String get offlineModeBody;
 
+  /// No description provided for @offlinePlayWithBots.
+  ///
+  /// In en, this message translates to:
+  /// **'Play with bots'**
   String get offlinePlayWithBots;
 
+  /// No description provided for @offlineBackToSplash.
+  ///
+  /// In en, this message translates to:
+  /// **'Back — retry connection'**
   String get offlineBackToSplash;
 
+  /// No description provided for @offlineModeBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode — bot matches only'**
   String get offlineModeBanner;
 
+  /// No description provided for @offlineTryOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to server'**
   String get offlineTryOnline;
 
+  /// No description provided for @offlineSoloDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You + 5 bots — full game offline'**
   String get offlineSoloDesc;
 
+  /// No description provided for @offlineOnlineDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Unavailable offline. Connect to the server first.'**
   String get offlineOnlineDisabled;
 
   /// No description provided for @forceUpdateTitle.
@@ -195,29 +257,67 @@ abstract class AppLocalizations {
   /// No description provided for @installConflictHint.
   ///
   /// In en, this message translates to:
-  /// **'If you see package conflict or parse error: uninstall the app first, then download again from this screen.'**
+  /// **'Package conflict means the old install was signed differently. Tap Uninstall, then Download and install.'**
   String get installConflictHint;
 
+  /// No description provided for @packageConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Package conflict'**
   String get packageConflictTitle;
 
+  /// No description provided for @packageConflictBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The app could not be installed because it conflicts with an existing package — the old version was signed differently. You must uninstall it first.'**
   String get packageConflictBody;
 
+  /// No description provided for @packageConflictAfterInstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Still conflicting? You may not have uninstalled. Tap Uninstall again, confirm, then download.'**
   String get packageConflictAfterInstall;
 
+  /// No description provided for @uninstallAppButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall app'**
   String get uninstallAppButton;
 
+  /// No description provided for @uninstallDialogOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall screen opened. Tap OK / Uninstall, return here, then check the box below.'**
   String get uninstallDialogOpened;
 
+  /// No description provided for @confirmUninstalled.
+  ///
+  /// In en, this message translates to:
+  /// **'I uninstalled — download the new version'**
   String get confirmUninstalled;
 
+  /// No description provided for @mustConfirmUninstall.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstall the app first and check «I uninstalled».'**
   String get mustConfirmUninstall;
 
+  /// No description provided for @uninstallSettingsOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings opened. Tap Uninstall, return here, then download the update.'**
   String get uninstallSettingsOpened;
 
   /// No description provided for @uninstallSettingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open settings. Go to Settings → Apps → Vampire Village → Uninstall.'**
   String get uninstallSettingsFailed;
 
   /// No description provided for @forceUpdateSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'1) Uninstall  2) Download and install  3) Future updates work in-app'**
   String get forceUpdateSteps;
 
   /// No description provided for @installedVersion.
@@ -226,6 +326,10 @@ abstract class AppLocalizations {
   /// **'Installed version:'**
   String get installedVersion;
 
+  /// No description provided for @updateApkTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Download version: v{version}'**
   String updateApkTarget(String version);
 
   /// No description provided for @openInBrowser.
@@ -315,7 +419,7 @@ abstract class AppLocalizations {
   /// No description provided for @onlinePlayDesc.
   ///
   /// In en, this message translates to:
-  /// **'6–8 real players — join with room code'**
+  /// **'2–8 real players — join with room code'**
   String get onlinePlayDesc;
 
   /// No description provided for @onlineSoon.
@@ -331,12 +435,21 @@ abstract class AppLocalizations {
   String get onlineLobbyTitle;
 
   /// No description provided for @onlineLobbyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a room or join open lobbies. Game starts with at least 2 players.'**
   String get onlineLobbyDesc;
 
   /// No description provided for @soloRoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can open a room alone; it appears in the open rooms list while you wait.'**
   String get soloRoomHint;
 
   /// No description provided for @roomFull.
+  ///
+  /// In en, this message translates to:
+  /// **'Full'**
   String get roomFull;
 
   /// No description provided for @roomCodeHint.
@@ -483,20 +596,52 @@ abstract class AppLocalizations {
   /// **'Day vote'**
   String get phaseDay;
 
+  /// No description provided for @phaseDawn.
+  ///
+  /// In en, this message translates to:
+  /// **'Dawn breaks'**
   String get phaseDawn;
 
+  /// No description provided for @phaseGameOver.
+  ///
+  /// In en, this message translates to:
+  /// **'Game over'**
   String get phaseGameOver;
 
+  /// No description provided for @phaseHintNight.
+  ///
+  /// In en, this message translates to:
+  /// **'The vampire is hunting…'**
   String get phaseHintNight;
 
+  /// No description provided for @phaseHintDayVote.
+  ///
+  /// In en, this message translates to:
+  /// **'Vote to eliminate a suspect.'**
   String get phaseHintDayVote;
 
+  /// No description provided for @roleRevealVampire.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the Vampire'**
   String get roleRevealVampire;
 
+  /// No description provided for @roleRevealVillager.
+  ///
+  /// In en, this message translates to:
+  /// **'You are a Villager'**
   String get roleRevealVillager;
 
+  /// No description provided for @roleRevealVampireHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Hunt at night. Keep your identity secret.'**
   String get roleRevealVampireHint;
 
+  /// No description provided for @roleRevealVillagerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Vote by day to find the vampire.'**
   String get roleRevealVillagerHint;
 
   /// No description provided for @dayLabel.
@@ -541,16 +686,40 @@ abstract class AppLocalizations {
   /// **'Play again'**
   String get playAgain;
 
+  /// No description provided for @matchSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Match summary'**
   String get matchSummaryTitle;
 
+  /// No description provided for @summaryKills.
+  ///
+  /// In en, this message translates to:
+  /// **'Who eliminated whom'**
   String get summaryKills;
 
+  /// No description provided for @summaryLies.
+  ///
+  /// In en, this message translates to:
+  /// **'Who lied'**
   String get summaryLies;
 
+  /// No description provided for @summaryMostAccused.
+  ///
+  /// In en, this message translates to:
+  /// **'Most accused'**
   String get summaryMostAccused;
 
+  /// No description provided for @summaryMvp.
+  ///
+  /// In en, this message translates to:
+  /// **'MVP'**
   String get summaryMvp;
 
+  /// No description provided for @summaryNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No records'**
   String get summaryNone;
 }
 

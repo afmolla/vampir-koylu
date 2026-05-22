@@ -4,7 +4,9 @@ import '../core/config.dart';
 import '../core/version_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
+import '../services/session_store.dart';
 import 'force_update_screen.dart';
+import 'home_screen.dart';
 import 'login_screen.dart';
 import 'offline_entry_screen.dart';
 
@@ -127,6 +129,26 @@ class _SplashScreenState extends State<SplashScreen> {
 
       if (!mounted) return;
       await Future<void>.delayed(const Duration(milliseconds: 400));
+      if (!mounted) return;
+
+      final session = SessionStore();
+      if (await session.getRememberMe()) {
+        final token = await session.getToken();
+        final nick = await session.getNick();
+        if (token != null && token.isNotEmpty && nick != null && nick.isNotEmpty) {
+          try {
+            await _api.getMe(token: token);
+            if (!mounted) return;
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => HomeScreen(nick: nick)),
+            );
+            return;
+          } catch (_) {
+            await session.clear();
+          }
+        }
+      }
+
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const LoginScreen()),

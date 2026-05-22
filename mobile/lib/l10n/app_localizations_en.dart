@@ -21,13 +21,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashCheckingVersion => 'Checking app version…';
 
   @override
-  String splashServerHost(String host) => 'Server: $host';
+  String splashServerHost(String host) {
+    return 'Server: $host';
+  }
 
   @override
-  String splashYourVersion(String version) => 'Installed: $version';
+  String splashYourVersion(String version) {
+    return 'Installed: $version';
+  }
 
   @override
-  String splashServerVersion(String version) => 'Server version: $version';
+  String splashServerVersion(String version) {
+    return 'Server version: $version';
+  }
 
   @override
   String get splashRetry => 'Try again';
@@ -116,8 +122,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Uninstall screen opened. Tap OK / Uninstall, return here, then check the box below.';
 
   @override
-  String get confirmUninstalled =>
-      'I uninstalled — download the new version';
+  String get confirmUninstalled => 'I uninstalled — download the new version';
 
   @override
   String get mustConfirmUninstall =>
@@ -139,7 +144,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get installedVersion => 'Installed version:';
 
   @override
-  String updateApkTarget(String version) => 'Download version: v$version';
+  String updateApkTarget(String version) {
+    return 'Download version: v$version';
+  }
 
   @override
   String get openInBrowser => 'Open in browser (fallback)';
@@ -305,7 +312,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleRevealVillager => 'You are a Villager';
 
   @override
-  String get roleRevealVampireHint => 'Hunt at night. Keep your identity secret.';
+  String get roleRevealVampireHint =>
+      'Hunt at night. Keep your identity secret.';
 
   @override
   String get roleRevealVillagerHint => 'Vote by day to find the vampire.';

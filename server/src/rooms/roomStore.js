@@ -15,8 +15,14 @@ import {
 import { listClientChannels } from '../game/chatChannels.js';
 import {
   applyMatchRewards,
+  applyHostLeavePenalty,
+  grantMatchEntry,
   incrementQuestMetric,
+  isBotUserId,
 } from '../services/progression.js';
+
+const MIN_PLAYERS = 6;
+const MIN_HUMANS_TO_START = 2;
 
 const rooms = new Map();
 const socketToRoom = new Map();
@@ -105,12 +111,14 @@ function sanitizeRoom(room) {
     status: room.status,
     maxPlayers: room.maxPlayers,
     hostId: room.hostId,
+    fillWithBots: Boolean(room.fillWithBots),
     isTournament: Boolean(room.isTournament),
     tournamentId: room.tournamentId ?? null,
     players: room.players.map((p) => ({
       userId: p.userId,
       nick: p.nick,
       isHost: p.userId === room.hostId,
+      isBot: Boolean(p.isBot) || isBotUserId(p.userId),
     })),
     game: room.game ? publicGameState(room) : null,
   };
@@ -183,14 +191,79 @@ function validTargets(room, userId) {
   return [];
 }
 
-export function createRoom({ hostId, hostNick, maxPlayers = 2, socketId }) {
-  const max = Math.min(8, Math.max(2, Number(maxPlayers) || 2));
+function addBotPlayers(room, targetCount) {
+  let n = 1;
+  while (room.players.length < targetCount) {
+    room.players.push({
+      userId: `bot:${room.code}:${n}`,
+      nick: `Bot ${n}`,
+      socketId: null,
+      isBot: true,
+    });
+    n += 1;
+  }
+}
+
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function tickBotActions(room) {
+  const g = room.game;
+  if (!g || g.winner) return;
+
+  const alive = g.players.filter((p) => p.alive);
+  const bots = alive.filter((p) => isBotUserId(p.userId));
+
+  if (g.phase === 'night') {
+    for (const bot of bots) {
+      if (ROLES[bot.role]?.nightAction === 'kill' && !g.nightChoices.has(bot.userId)) {
+        const targets = alive.filter(
+          (p) => p.userId !== bot.userId && !isEvilTeam(p.role),
+        );
+        if (targets.length) g.nightChoices.set(bot.userId, pickRandom(targets).id);
+      }
+      if (bot.role === 'doctor' && !g.nightProtects.has(bot.userId)) {
+        const others = alive.filter((p) => p.userId !== bot.userId);
+        if (others.length) g.nightProtects.set(pickRandom(others).userId, bot.userId);
+      }
+    }
+    const killers = g.players.filter(
+      (p) => p.alive && ROLES[p.role]?.nightAction === 'kill',
+    );
+    if (g.nightChoices.size >= killers.length) resolveNight(room);
+  }
+
+  if (g.phase === 'dayVote') {
+    for (const bot of bots) {
+      if (!g.dayVotes.has(bot.userId)) {
+        const targets = alive.filter((p) => p.userId !== bot.userId);
+        if (targets.length) {
+          const t = pickRandom(targets);
+          g.dayVotes.set(bot.userId, t.id);
+          recordAccusation(g.matchLog, t.userId);
+        }
+      }
+    }
+    if (g.dayVotes.size >= alive.length) resolveDay(room);
+  }
+}
+
+export function createRoom({
+  hostId,
+  hostNick,
+  maxPlayers = MIN_PLAYERS,
+  socketId,
+  fillWithBots = false,
+}) {
+  const max = Math.min(8, Math.max(MIN_PLAYERS, Number(maxPlayers) || MIN_PLAYERS));
   const code = randomCode();
   const room = {
     code,
     status: 'lobby',
     maxPlayers: max,
     hostId,
+    fillWithBots: Boolean(fillWithBots),
     players: [{ userId: hostId, nick: hostNick, socketId }],
     game: null,
   };
@@ -215,6 +288,14 @@ export function joinRoom({ code, userId, nick, socketId }) {
   return { room: playerView(room, userId) };
 }
 
+function cancelGameForHostLeave(room) {
+  if (!room.game) return;
+  room.game.winner = null;
+  room.game.phase = 'gameOver';
+  room.game.message = 'host_left';
+  room.status = 'finished';
+}
+
 export function leaveRoom(socketId) {
   const code = socketToRoom.get(socketId);
   if (!code) return null;
@@ -222,23 +303,52 @@ export function leaveRoom(socketId) {
   const room = rooms.get(code);
   if (!room) return null;
 
+  const leaving = room.players.find((p) => p.socketId === socketId);
+  const wasHostInGame =
+    room.status === 'playing' && leaving && leaving.userId === room.hostId;
+
   room.players = room.players.filter((p) => p.socketId !== socketId);
+
+  if (wasHostInGame) {
+    applyHostLeavePenalty(leaving.userId);
+    cancelGameForHostLeave(room);
+    const humans = room.players.filter((p) => !isBotUserId(p.userId));
+    if (humans.length === 0) {
+      rooms.delete(code);
+      return { deleted: true, code, hostLeft: true };
+    }
+    if (room.hostId && !room.players.some((p) => p.userId === room.hostId)) {
+      const nextHuman = humans[0];
+      if (nextHuman) room.hostId = nextHuman.userId;
+    }
+    return { deleted: false, code, room, hostLeft: true };
+  }
+
   if (room.players.length === 0) {
     rooms.delete(code);
     return { deleted: true, code };
   }
   if (room.hostId && !room.players.some((p) => p.userId === room.hostId)) {
-    room.hostId = room.players[0].userId;
+    const next = room.players.find((p) => !isBotUserId(p.userId)) ?? room.players[0];
+    if (next) room.hostId = next.userId;
   }
   return { deleted: false, code, room };
 }
 
-export function startGame(socketId, userId) {
+export function startGame(socketId, userId, { fillWithBots } = {}) {
   const room = getRoomForSocket(socketId);
   if (!room) return { error: 'not_in_room' };
   if (room.hostId !== userId) return { error: 'not_host' };
   if (room.status !== 'lobby') return { error: 'already_started' };
-  if (room.players.length < 2) return { error: 'need_two_players' };
+
+  const humans = room.players.filter((p) => !isBotUserId(p.userId));
+  if (humans.length < MIN_HUMANS_TO_START) return { error: 'need_two_humans' };
+
+  const useBots = fillWithBots ?? room.fillWithBots;
+  if (room.players.length < MIN_PLAYERS) {
+    if (!useBots) return { error: 'need_six_players' };
+    addBotPlayers(room, MIN_PLAYERS);
+  }
 
   const roles = assignRoles(room.players.length);
 
@@ -266,6 +376,12 @@ export function startGame(socketId, userId) {
     playerCount: room.players.length,
     roles: roles.length,
   });
+
+  for (const p of room.players) {
+    if (!isBotUserId(p.userId)) grantMatchEntry(p.userId);
+  }
+
+  tickBotActions(room);
 
   return { room };
 }
@@ -323,6 +439,7 @@ function resolveNight(room) {
   g.nightChoices.clear();
   g.phase = 'dayVote';
   g.message = 'day_vote';
+  tickBotActions(room);
 }
 
 function resolveDay(room) {
@@ -367,11 +484,13 @@ function resolveDay(room) {
   g.phase = 'night';
   g.dayNumber += 1;
   g.message = 'night';
+  tickBotActions(room);
 }
 
 export function gameAction(socketId, userId, { type, targetId }) {
   const room = getRoomForSocket(socketId);
   if (!room?.game) return { error: 'no_game' };
+  if (isBotUserId(userId)) return { error: 'bot_player' };
   const g = room.game;
   const me = g.players.find((p) => p.userId === userId);
   if (!me?.alive) return { error: 'dead' };
@@ -384,6 +503,7 @@ export function gameAction(socketId, userId, { type, targetId }) {
       (p) => p.alive && ROLES[p.role]?.nightAction === 'kill',
     );
     if (g.nightChoices.size >= killers.length) resolveNight(room);
+    tickBotActions(room);
     return { room };
   }
 
@@ -401,6 +521,7 @@ export function gameAction(socketId, userId, { type, targetId }) {
     recordAccusation(g.matchLog, target.userId);
     const alive = g.players.filter((p) => p.alive);
     if (g.dayVotes.size >= alive.length) resolveDay(room);
+    tickBotActions(room);
     return { room };
   }
 

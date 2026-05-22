@@ -21,13 +21,19 @@ class AppLocalizationsTr extends AppLocalizations {
   String get splashCheckingVersion => 'Sürüm kontrol ediliyor…';
 
   @override
-  String splashServerHost(String host) => 'Sunucu: $host';
+  String splashServerHost(String host) {
+    return 'Sunucu: $host';
+  }
 
   @override
-  String splashYourVersion(String version) => 'Yüklü sürüm: $version';
+  String splashYourVersion(String version) {
+    return 'Yüklü sürüm: $version';
+  }
 
   @override
-  String splashServerVersion(String version) => 'Sunucu sürümü: $version';
+  String splashServerVersion(String version) {
+    return 'Sunucu sürümü: $version';
+  }
 
   @override
   String get splashRetry => 'Tekrar dene';
@@ -140,7 +146,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get installedVersion => 'Yüklü sürüm:';
 
   @override
-  String updateApkTarget(String version) => 'İndirilecek sürüm: v$version';
+  String updateApkTarget(String version) {
+    return 'İndirilecek sürüm: v$version';
+  }
 
   @override
   String get openInBrowser => 'Tarayıcıda aç (yedek)';

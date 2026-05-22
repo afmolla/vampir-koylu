@@ -20,18 +20,22 @@ class _LoginScreenState extends State<LoginScreen> {
   final _api = ApiClient();
   final _session = SessionStore();
   bool _loading = false;
+  bool _rememberMe = true;
 
   @override
   void initState() {
     super.initState();
-    _loadSavedNick();
+    _loadSaved();
   }
 
-  Future<void> _loadSavedNick() async {
+  Future<void> _loadSaved() async {
     final nick = await _session.getNick();
-    if (nick != null && nick.isNotEmpty && mounted) {
-      _nickController.text = nick;
-    }
+    final remember = await _session.getRememberMe();
+    if (!mounted) return;
+    setState(() {
+      _rememberMe = remember;
+      if (nick != null && nick.isNotEmpty) _nickController.text = nick;
+    });
   }
 
   String get _locale =>
@@ -46,6 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
       final data = await _api.guestLogin(nick: nick, locale: _locale);
       final token = data['token'] as String;
       final user = data['user'] as Map<String, dynamic>;
+      await _session.setRememberMe(_rememberMe);
       await _session.saveSession(
         token: token,
         nick: user['nick'] as String,
@@ -141,7 +146,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _guestLogin(),
                       ),
-                      const SizedBox(height: 16),
+                      CheckboxListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Beni hatırla'),
+                        value: _rememberMe,
+                        onChanged: (v) =>
+                            setState(() => _rememberMe = v ?? true),
+                      ),
+                      const SizedBox(height: 8),
                       ElevatedButton(
                         onPressed: _loading ? null : _guestLogin,
                         child: _loading
@@ -152,7 +164,20 @@ class _LoginScreenState extends State<LoginScreen> {
                               )
                             : Text(l10n.guestPlay),
                       ),
-                      const SizedBox(height: 32),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: () => _showSoon('Hesap oluştur'),
+                            child: const Text('Hesap oluştur'),
+                          ),
+                          TextButton(
+                            onPressed: () => _showSoon('Şifremi unuttum'),
+                            child: const Text('Şifremi unuttum'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                       OutlinedButton.icon(
                         onPressed: () => _showSoon('Google'),
                         icon: const Icon(Icons.g_mobiledata, size: 28),

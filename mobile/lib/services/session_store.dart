@@ -5,6 +5,7 @@ class SessionStore {
   static const _nickKey = 'nick';
   static const _localeKey = 'locale';
   static const _offlineKey = 'offline_mode';
+  static const _rememberKey = 'remember_me';
 
   Future<void> saveSession({
     required String token,
@@ -53,6 +54,16 @@ class SessionStore {
   Future<void> setLocale(String locale) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_localeKey, locale);
+  }
+
+  Future<void> setRememberMe(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_rememberKey, value);
+  }
+
+  Future<bool> getRememberMe() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_rememberKey) ?? true;
   }
 
   Future<void> clear() async {

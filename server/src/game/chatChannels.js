@@ -34,7 +34,6 @@ export function canAccessTextChannel({ channel, userId, room }) {
   if (!gp) return { ok: false, error: 'not_in_game' };
 
   if (type === 'room') {
-    if (!gp.alive) return { ok: false, error: 'dead_use_dead_chat' };
     return { ok: true };
   }
 
@@ -74,6 +73,7 @@ export function listClientChannels(room, userId) {
     out.push({ id: `room:${room.code}`, type: 'room', voice: true });
     out.push({ id: `proximity:${room.code}`, type: 'proximity', voice: true });
   } else {
+    out.push({ id: `room:${room.code}`, type: 'room', voice: false });
     out.push({ id: `dead:${room.code}`, type: 'dead', voice: false });
   }
   if (isEvilTeam(gp.role)) {
@@ -88,8 +88,12 @@ export function chatRoomForSocket(room, userId) {
   const gp = g.players.find((p) => p.userId === userId);
   if (!gp) return [];
   const channels = [];
-  if (gp.alive) channels.push(`chat:room:${room.code}`);
-  else channels.push(`chat:dead:${room.code}`);
+  if (gp.alive) {
+    channels.push(`chat:room:${room.code}`);
+  } else {
+    channels.push(`chat:room:${room.code}`);
+    channels.push(`chat:dead:${room.code}`);
+  }
   if (isEvilTeam(gp.role)) channels.push(`chat:vampire:${room.code}`);
   return channels;
 }

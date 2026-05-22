@@ -34,23 +34,65 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
   late OnlineRoomState _room;
   bool _showRoleReveal = false;
   String? _bannerPhaseOverride;
+  late bool _fillWithBots;
 
   String get _roomChannel => 'room:${_room.code}';
+
+  bool get _isHost => _room.players.any(
+        (p) => p.isHost && p.nick == widget.nick,
+      );
+
+  int get _humanCount =>
+      _room.players.where((p) => !p.userId.startsWith('bot:')).length;
+
+  bool get _canStart =>
+      _isHost &&
+      _humanCount >= 2 &&
+      (_room.players.length >= 6 || _fillWithBots);
 
   @override
   void initState() {
     super.initState();
     _room = OnlineRoomState.fromJson(widget.initialRoom);
+    _fillWithBots = _room.fillWithBots;
     widget.socketService.onRoomState(_onRoomState);
     widget.socketService.socket?.emit('chat:join', {'channel': _roomChannel});
     _checkRoleReveal(_room);
   }
 
-  @override
-  void dispose() {
+  Future<bool> _confirmLeave() async {
+    if (_room.status != 'playing' || !_isHost) return true;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Oyundan çık?'),
+        content: const Text(
+          'Kurucu olarak çıkarsan oyun iptal olur ve 25 coin cezası uygulanır.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Kal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Çık (-25 coin)'),
+          ),
+        ],
+      ),
+    );
+    return ok == true;
+  }
+
+  void _leaveRoom() {
     widget.socketService.offRoomState();
     final socket = widget.socketService.socket;
     socket?.emitWithAck('room:leave', {}, ack: (_) {});
+  }
+
+  @override
+  void dispose() {
+    _leaveRoom();
     super.dispose();
   }
 
@@ -110,7 +152,9 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     final socket = widget.socketService.socket;
     if (socket == null) return;
     final completer = Completer<bool>();
-    socket.emitWithAck('room:start', {}, ack: (data) {
+    socket.emitWithAck('room:start', {
+      'fillWithBots': _fillWithBots,
+    }, ack: (data) {
       if (data is Map && data['ok'] == true) {
         completer.complete(true);
       } else {
@@ -149,7 +193,16 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     final activeGame = inGame ? game : null;
     final showVoice = activeGame != null && activeGame.winner == null;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (!await _confirmLeave()) return;
+        _leaveRoom();
+        if (!context.mounted) return;
+        Navigator.of(context).pop();
+      },
+      child: Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text('${l10n.roomCode} ${_room.code}'),
@@ -252,16 +305,32 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                         ),
                         if (inLobby) ...[
                           Text(
-                            l10n.needTwoPlayers,
+                            '${_room.players.length}/${_room.maxPlayers} oyuncu · en az 6 kişi',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.amber),
                           ),
-                          const SizedBox(height: 12),
-                          FilledButton(
-                            onPressed:
-                                _room.players.length >= 2 ? _startGame : null,
-                            child: Text(l10n.startGame),
-                          ),
+                          if (_isHost) ...[
+                            CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text(
+                                'Eksikleri bot ile doldur',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              value: _fillWithBots,
+                              onChanged: (v) =>
+                                  setState(() => _fillWithBots = v ?? true),
+                            ),
+                            const SizedBox(height: 8),
+                            FilledButton(
+                              onPressed: _canStart ? _startGame : null,
+                              child: Text(l10n.startGame),
+                            ),
+                          ] else
+                            const Text(
+                              'Oyunu kurucu başlatır.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white54),
+                            ),
                         ],
                         if (game?.winner != null)
                           FilledButton(
@@ -311,6 +380,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
             ),
         ],
       ),
+    ),
     );
   }
 }

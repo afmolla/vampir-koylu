@@ -236,6 +236,23 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _downloading
+                        ? null
+                        : () async {
+                            try {
+                              await _installer.openDownloadInBrowser(_apkUrl);
+                            } on ApkInstallException catch (e) {
+                              _showError(e.message);
+                            }
+                          },
+                    icon: const Icon(Icons.open_in_browser),
+                    label: const Text('Tarayıcıdan indir (yedek)'),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: (_confirmedUninstalled && !_downloading)
                         ? _downloadAndInstall
