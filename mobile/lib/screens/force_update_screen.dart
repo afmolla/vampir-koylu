@@ -6,7 +6,7 @@ import '../services/app_settings_launcher.dart';
 
 import '../core/config.dart';
 
-const _defaultApkUrl = AppConfig.defaultUpdateApkUrl;
+final _defaultApkUrl = AppConfig.defaultUpdateApkUrl;
 
 class ForceUpdateScreen extends StatefulWidget {
   const ForceUpdateScreen({
