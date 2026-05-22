@@ -11,11 +11,11 @@ class AppConfig {
     defaultValue: 'http://85.95.251.204:3000',
   );
 
-  static const String clientVersion = '0.2.9';
+  static const String clientVersion = '0.2.10';
 
   static const String updateTargetVersion = String.fromEnvironment(
     'UPDATE_TARGET_VERSION',
-    defaultValue: '0.2.9',
+    defaultValue: '0.2.10',
   );
 
   /// Güncelleme APK — her zaman hedef sürüm (v0.2.7 yedek yok).

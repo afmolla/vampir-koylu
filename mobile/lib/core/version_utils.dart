@@ -59,8 +59,8 @@ List<String> apkDownloadCandidates(String primary) {
   final out = <String>[];
   for (final u in [
     primary,
+    AppConfig.apkUrlForVersion('0.2.10'),
     AppConfig.apkUrlForVersion('0.2.8'),
-    AppConfig.apkUrlForVersion('0.2.9'),
   ]) {
     final t = u.trim();
     if (t.isEmpty || !t.endsWith('.apk') || seen.contains(t)) continue;

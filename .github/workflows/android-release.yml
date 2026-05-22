@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Build edilecek tag (ornek v0.1.9, v0.2.2)'
         required: false
-        default: 'v0.2.9'
+        default: 'v0.2.10'
       api_base_url:
         description: 'API_BASE_URL (sunucu)'
         required: false
@@ -62,16 +62,9 @@ jobs:
           flutter pub get
           flutter gen-l10n --verbose
 
-      - name: Cache release keystore
-        uses: actions/cache@v4
-        with:
-          path: |
-            mobile/android/signing/release.keystore
-            mobile/android/key.properties
-          key: vampir-android-keystore-v3
-
-      - name: Setup release signing (keytool — PFX alias sorunu yok)
+      - name: Verify permanent release keystore (sabit imza)
         run: |
+          test -f mobile/android/signing/release.keystore || (echo "release.keystore repoda olmali" && exit 1)
           chmod +x mobile/android/signing/setup-ci-keystore.sh
           bash mobile/android/signing/setup-ci-keystore.sh
 
@@ -98,4 +91,4 @@ jobs:
           files: mobile/build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
           fail_on_unmatched_files: true
-          make_latest: ${{ steps.ref.outputs.tag == 'v0.2.9' }}
+          make_latest: ${{ steps.ref.outputs.tag == 'v0.2.10' }}

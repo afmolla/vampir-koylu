@@ -2,24 +2,20 @@
 
 ## Neden olur?
 
-Telefonda yüklü APK ile indirilen APK **farklı imza** ile üretilmişse Android «Paket çakışması» der. Üstüne kurulum yapılamaz.
+Eski APK'lar **farklı imza** ile kurulmuştu. Android üstüne farklı imzalı güncellemeye izin vermez.
 
-Eski GitHub build'leri CI'da **debug** imza kullanıyordu (her build farklı olabiliyordu). **v0.2.8+** sabit `release.pfx` ile imzalanır.
+**v0.2.10+** tüm build'ler **aynı** `release.keystore` ile imzalanır (repoda kilitli, CI yeni anahtar üretmez).
 
-## Kullanıcı ne yapar? (bir kez)
+## Kullanıcı — bir kez
 
-Telefonda: **«Paket mevcut bir paketle çakıştığından uygulama yüklenemedi»**
+1. **Vampir Köylü → Kaldır**
+2. **v0.2.10** kur: https://github.com/afmolla/flutter/releases/download/v0.2.10/app-release.apk
+3. Sonraki güncellemeler **üstüne** kurulur (çakışma yok)
 
-1. **Ayarlar → Uygulamalar → Vampir Köylü → Kaldır**  
-   veya güncelleme ekranında **Uygulamayı kaldır** (kırmızı buton)
-2. Kaldırdıktan sonra kutuyu işaretle: **Uygulamayı kaldırdım**
-3. **İndir ve yükle**
-4. Sonraki sürümler (aynı imza) üstüne kurulur
+## Geliştirici — imzayı değiştirme
 
-Manuel APK (sadece v0.2.8): https://github.com/afmolla/flutter/releases/download/v0.2.8/app-release.apk
+- `mobile/android/signing/release.keystore` — **KİLİTLİ**
+- `SIGNING_FINGERPRINT.txt` — CI doğrular
+- `SIGNING-LOCKED.md` — kurallar
 
-## Geliştirici
-
-- `mobile/android/signing/release.pfx` + `key.properties` repoda
-- Yeni APK: GitHub Actions `android-release.yml` → tag `v0.2.8`
-- Sunucu: `BASLAT-API.cmd` → `latestVersion` 0.2.8
+Yeni APK: tag `v0.2.10` → `android-release.yml`
