@@ -176,6 +176,18 @@ abstract class AppLocalizations {
   /// **'If you see package conflict or parse error: uninstall the app first, then download again from this screen.'**
   String get installConflictHint;
 
+  /// No description provided for @uninstallAppButton.
+  String get uninstallAppButton;
+
+  /// No description provided for @uninstallSettingsOpened.
+  String get uninstallSettingsOpened;
+
+  /// No description provided for @uninstallSettingsFailed.
+  String get uninstallSettingsFailed;
+
+  /// No description provided for @forceUpdateSteps.
+  String get forceUpdateSteps;
+
   /// No description provided for @installedVersion.
   ///
   /// In en, this message translates to:

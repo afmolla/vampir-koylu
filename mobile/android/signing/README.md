@@ -1,17 +1,26 @@
 # Release imzası (APK güncellemesi)
 
-Tüm GitHub Releases APK'ları **aynı** `release.keystore` ile imzalanır.
+Tüm GitHub Releases APK'ları **aynı** `release.pfx` ile imzalanır (`key.properties` + Gradle).
 Böylece uygulama içinden indirilen güncellemeler «paket çakışması» vermez.
 
-## Eski sürüm (v0.1.8 ve öncesi) yüklüyse — bir kez
+## Eski sürüm (0.2.7 ve öncesi, farklı imza) — bir kez
 
-Eski APK'lar farklı (debug) imza ile kurulmuş olabilir. **Bir kez:**
+Eski APK'lar CI'da her seferinde farklı **debug** imza ile üretilmiş olabilir. **Bir kez:**
 
-1. Telefondan **Vampir Köylü** uygulamasını kaldır
-2. [Releases](https://github.com/afmolla/flutter/releases) üzerinden **en yeni** `app-release.apk` kur
-3. Sonraki güncellemeler uygulama içinden çalışır
+1. Güncelleme ekranında **«Uygulamayı kaldır»** → Ayarlarda **Kaldır**
+2. **«İndir ve yükle»** ile **v0.2.8** kur
+3. Sonraki güncellemeler üstüne kurulur (çakışma olmaz)
 
 ## Yerel build
 
-CI ile aynı imza için `release.keystore` bu klasörde olmalı (CI cache veya repo).
-`key.properties` örneği: `key.properties.example`
+`mobile/android/key.properties` ve `signing/release.pfx` repoda (sabit imza).
+
+Yeniden üretmek (Windows):
+
+```powershell
+$cert = New-SelfSignedCertificate -Type Custom -Subject "CN=Vampir Koylu" -KeyAlgorithm RSA -KeyLength 2048 -CertStoreLocation Cert:\CurrentUser\My -NotAfter (Get-Date).AddYears(30)
+$pwd = ConvertTo-SecureString "vampir_koylu_store" -AsPlainText -Force
+Export-PfxCertificate -Cert $cert -FilePath signing\release.pfx -Password $pwd
+```
+
+Sonra `key.properties` içindeki şifrelerle aynı olmalı.

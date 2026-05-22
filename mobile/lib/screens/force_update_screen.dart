@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../l10n/app_localizations.dart';
 import '../services/apk_installer.dart';
+import '../services/app_settings_launcher.dart';
 
 import '../core/config.dart';
 
@@ -31,9 +32,6 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
   void initState() {
     super.initState();
     _loadVersion();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_downloading) _downloadAndInstall();
-    });
   }
 
   Future<void> _loadVersion() async {
@@ -49,6 +47,22 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
       return _defaultApkUrl;
     }
     return u;
+  }
+
+  Future<void> _openUninstallSettings() async {
+    final l10n = AppLocalizations.of(context)!;
+    final ok = await AppSettingsLauncher.openUninstallSettings();
+    if (!mounted) return;
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.uninstallSettingsOpened),
+          duration: const Duration(seconds: 6),
+        ),
+      );
+    } else {
+      _showError(l10n.uninstallSettingsFailed);
+    }
   }
 
   Future<void> _downloadAndInstall() async {
@@ -142,13 +156,32 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _downloading ? null : _openUninstallSettings,
+                    icon: const Icon(Icons.delete_outline),
+                    label: Text(l10n.uninstallAppButton),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.amber,
+                      side: const BorderSide(color: Colors.amber),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.forceUpdateSteps,
+                  style: const TextStyle(fontSize: 12, color: Colors.white54),
+                  textAlign: TextAlign.center,
+                ),
                 if (_downloading) ...[
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
                   LinearProgressIndicator(value: _progress > 0 ? _progress : null),
                   const SizedBox(height: 12),
                   Text(l10n.downloading(percent)),
                 ],
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
                 if (!_downloading)
                   SizedBox(
                     width: double.infinity,

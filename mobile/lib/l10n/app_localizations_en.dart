@@ -58,7 +58,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get installConflictHint =>
-      'If you see package conflict or parse error: uninstall the app first, then download again from this screen.';
+      'Package conflict means the old install was signed differently. Tap Uninstall, then Download and install.';
+
+  @override
+  String get uninstallAppButton => 'Uninstall app (settings)';
+
+  @override
+  String get uninstallSettingsOpened =>
+      'Settings opened. Tap Uninstall, return here, then download the update.';
+
+  @override
+  String get uninstallSettingsFailed =>
+      'Could not open settings. Go to Settings → Apps → Vampire Village → Uninstall.';
+
+  @override
+  String get forceUpdateSteps =>
+      '1) Uninstall  2) Download and install  3) Future updates work in-app';
 
   @override
   String get installedVersion => 'Installed version:';

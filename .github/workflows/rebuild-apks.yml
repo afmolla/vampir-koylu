@@ -31,7 +31,7 @@ jobs:
               workflow_id: 'android-release.yml',
               ref: 'main',
               inputs: {
-                tag: 'v0.2.3',
+                tag: 'v0.2.8',
                 api_base_url: 'http://85.95.251.204:3000',
               },
             });

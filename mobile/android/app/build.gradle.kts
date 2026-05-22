@@ -1,6 +1,17 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+val hasReleaseKeystore = keystorePropertiesFile.exists().also { exists ->
+    if (exists) {
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    }
 }
 
 android {
@@ -21,10 +32,27 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                val storePath = keystoreProperties.getProperty("storeFile")
+                    ?: error("key.properties: storeFile eksik")
+                storeFile = rootProject.file(storePath)
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias") ?: "1"
+                keystoreProperties.getProperty("storeType")?.let { storeType = it }
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // CI'da stabil; tum GitHub APK'lari ayni debug imzasi (v0.1.8 gibi)
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

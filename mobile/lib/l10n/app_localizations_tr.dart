@@ -59,7 +59,22 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get installConflictHint =>
-      '«Paket çakışması» veya «ayrıştırma hatası» görürsen: önce uygulamayı kaldır, sonra bu ekrandan tekrar indir.';
+      '«Paket çakışması» = eski kurulum farklı imzalı. Önce «Uygulamayı kaldır» ile sil, sonra «İndir ve yükle».';
+
+  @override
+  String get uninstallAppButton => 'Uygulamayı kaldır (ayarlar)';
+
+  @override
+  String get uninstallSettingsOpened =>
+      'Ayarlar açıldı. «Kaldır»a dokun, sonra bu ekrana dönüp güncellemeyi indir.';
+
+  @override
+  String get uninstallSettingsFailed =>
+      'Ayarlar açılamadı. Telefonda Ayarlar → Uygulamalar → Vampir Köylü → Kaldır.';
+
+  @override
+  String get forceUpdateSteps =>
+      '1) Kaldır  2) İndir ve yükle  3) Sonraki güncellemeler otomatik olur';
 
   @override
   String get installedVersion => 'Yüklü sürüm:';

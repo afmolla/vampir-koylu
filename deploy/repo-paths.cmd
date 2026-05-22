@@ -7,5 +7,5 @@ set GITHUB_CLONE_URL=https://github.com/afmolla/flutter.git
 set VPS_APP_DIR=C:\apps\flutter
 set PUBLIC_IP=85.95.251.204
 set API_PORT=3000
-set LATEST_VERSION=0.2.7
+set LATEST_VERSION=0.2.8
 set MIN_REQUIRED_VERSION=0.2.6
