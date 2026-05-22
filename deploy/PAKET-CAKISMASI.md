@@ -8,10 +8,15 @@ Eski GitHub build'leri CI'da **debug** imza kullanıyordu (her build farklı ola
 
 ## Kullanıcı ne yapar? (bir kez)
 
-1. Uygulamada güncelleme ekranı → **Uygulamayı kaldır (ayarlar)**
-2. Ayarlarda **Kaldır**
-3. **İndir ve yükle** → v0.2.8
-4. Sonraki sürümler doğrudan güncellenir
+Telefonda: **«Paket mevcut bir paketle çakıştığından uygulama yüklenemedi»**
+
+1. **Ayarlar → Uygulamalar → Vampir Köylü → Kaldır**  
+   veya güncelleme ekranında **Uygulamayı kaldır** (kırmızı buton)
+2. Kaldırdıktan sonra kutuyu işaretle: **Uygulamayı kaldırdım**
+3. **İndir ve yükle**
+4. Sonraki sürümler (aynı imza) üstüne kurulur
+
+Manuel APK: https://github.com/afmolla/flutter/releases/download/v0.2.7/app-release.apk
 
 ## Geliştirici
 

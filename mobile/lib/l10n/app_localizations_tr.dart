@@ -99,7 +99,30 @@ class AppLocalizationsTr extends AppLocalizations {
       '«Paket çakışması» = eski kurulum farklı imzalı. Önce «Uygulamayı kaldır» ile sil, sonra «İndir ve yükle».';
 
   @override
-  String get uninstallAppButton => 'Uygulamayı kaldır (ayarlar)';
+  String get packageConflictTitle => 'Paket çakışması';
+
+  @override
+  String get packageConflictBody =>
+      'Mevcut bir paketle çakıştığından uygulama yüklenemedi — eski sürüm farklı imzayla kurulu. Önce uygulamayı tamamen kaldırman gerekir.';
+
+  @override
+  String get packageConflictAfterInstall =>
+      'Kurulum yine çakıştıysa: uygulamayı kaldırmayı unutmuş olabilirsin. Tekrar «Uygulamayı kaldır» → onayla → indir.';
+
+  @override
+  String get uninstallAppButton => 'Uygulamayı kaldır';
+
+  @override
+  String get uninstallDialogOpened =>
+      'Kaldır ekranı açıldı. «Tamam» / «Kaldır» de, sonra bu ekrana dön ve kutuyu işaretle.';
+
+  @override
+  String get confirmUninstalled =>
+      'Uygulamayı kaldırdım — şimdi yeni sürümü indir';
+
+  @override
+  String get mustConfirmUninstall =>
+      'Önce uygulamayı kaldır ve «Uygulamayı kaldırdım» kutusunu işaretle.';
 
   @override
   String get uninstallSettingsOpened =>

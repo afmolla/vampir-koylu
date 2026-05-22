@@ -14,15 +14,25 @@ class MainActivity : FlutterActivity() {
             flutterEngine.dartExecutor.binaryMessenger,
             "com.vampirkoylu.vampir_koylu/app",
         ).setMethodCallHandler { call, result ->
-            if (call.method == "openAppSettings") {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.parse("package:$packageName")
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            when (call.method) {
+                // Doğrudan «Kaldır» onayı (paket çakışması için)
+                "openUninstallDialog" -> {
+                    val intent = Intent(Intent.ACTION_DELETE).apply {
+                        data = Uri.parse("package:$packageName")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
+                    result.success(null)
                 }
-                startActivity(intent)
-                result.success(null)
-            } else {
-                result.notImplemented()
+                "openAppSettings" -> {
+                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.parse("package:$packageName")
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    startActivity(intent)
+                    result.success(null)
+                }
+                else -> result.notImplemented()
             }
         }
     }

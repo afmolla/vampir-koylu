@@ -98,7 +98,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'Package conflict means the old install was signed differently. Tap Uninstall, then Download and install.';
 
   @override
-  String get uninstallAppButton => 'Uninstall app (settings)';
+  String get packageConflictTitle => 'Package conflict';
+
+  @override
+  String get packageConflictBody =>
+      'The app could not be installed because it conflicts with an existing package — the old version was signed differently. You must uninstall it first.';
+
+  @override
+  String get packageConflictAfterInstall =>
+      'Still conflicting? You may not have uninstalled. Tap Uninstall again, confirm, then download.';
+
+  @override
+  String get uninstallAppButton => 'Uninstall app';
+
+  @override
+  String get uninstallDialogOpened =>
+      'Uninstall screen opened. Tap OK / Uninstall, return here, then check the box below.';
+
+  @override
+  String get confirmUninstalled =>
+      'I uninstalled — download the new version';
+
+  @override
+  String get mustConfirmUninstall =>
+      'Uninstall the app first and check «I uninstalled».';
 
   @override
   String get uninstallSettingsOpened =>
