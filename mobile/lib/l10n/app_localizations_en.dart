@@ -144,6 +144,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get needSixPlayers => 'At least 6 players required to start.';
 
   @override
+  String get needTwoPlayers => 'At least 2 players required to start.';
+
+  @override
   String get startGame => 'Start game';
 
   @override

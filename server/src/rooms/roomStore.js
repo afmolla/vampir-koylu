@@ -165,7 +165,7 @@ export function startGame(socketId, userId) {
   if (!room) return { error: 'not_in_room' };
   if (room.hostId !== userId) return { error: 'not_host' };
   if (room.status !== 'lobby') return { error: 'already_started' };
-  if (room.players.length < 6) return { error: 'need_six_players' };
+  if (room.players.length < 2) return { error: 'need_two_players' };
 
   const vampireCount = room.players.length >= 8 ? 2 : 1;
   const roles = [

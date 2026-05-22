@@ -2,11 +2,9 @@ import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from '../config.js';
+import { getDb } from '../db/database.js';
 
 export const authRouter = Router();
-
-/** In-memory store until PostgreSQL is wired (Faz 1). */
-const users = new Map();
 
 function signToken(user) {
   return jwt.sign(
@@ -17,10 +15,22 @@ function signToken(user) {
 }
 
 function upsertUser(payload) {
-  const existing = users.get(payload.id);
-  if (existing) return existing;
-  users.set(payload.id, payload);
+  const db = getDb();
+  const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(payload.id);
+  if (existing) return { ...existing, isGuest: existing.is_guest === 1 };
+
+  db.prepare(
+    'INSERT INTO users (id, nick, is_guest, locale, created_at) VALUES (?, ?, ?, ?, ?)',
+  ).run(payload.id, payload.nick, payload.isGuest ? 1 : 0, payload.locale, payload.createdAt);
+
   return payload;
+}
+
+function getUserById(id) {
+  const db = getDb();
+  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+  if (!row) return null;
+  return { id: row.id, nick: row.nick, isGuest: row.is_guest === 1, locale: row.locale };
 }
 
 authRouter.post('/guest', (req, res) => {
@@ -64,7 +74,7 @@ authRouter.get('/me', (req, res) => {
 
   try {
     const payload = jwt.verify(token, config.jwtSecret);
-    const user = users.get(payload.sub);
+    const user = getUserById(payload.sub);
     if (!user) return res.status(404).json({ error: 'user_not_found' });
     res.json({
       user: {

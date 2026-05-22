@@ -60,6 +60,7 @@
   },
   "host": "Host",
   "needSixPlayers": "At least 6 players required to start.",
+  "needTwoPlayers": "At least 2 players required to start.",
   "startGame": "Start game",
   "backToLobby": "Back to menu",
   "yourRole": "Your role: {role}",

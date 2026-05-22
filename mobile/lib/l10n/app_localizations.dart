@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'At least 6 players required to start.'**
   String get needSixPlayers;
 
+  /// No description provided for @needTwoPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 2 players required to start.'**
+  String get needTwoPlayers;
+
   /// No description provided for @startGame.
   ///
   /// In en, this message translates to:

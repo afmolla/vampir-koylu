@@ -179,19 +179,19 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                 ],
               ),
             ),
-            if (inLobby) ...[
-              Text(
-                l10n.needSixPlayers,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.amber),
-              ),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed:
-                    _room.players.length >= 6 ? _startGame : null,
-                child: Text(l10n.startGame),
-              ),
-            ],
+                  if (inLobby) ...[
+                    Text(
+                      l10n.needTwoPlayers,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.amber),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed:
+                          _room.players.length >= 2 ? _startGame : null,
+                      child: Text(l10n.startGame),
+                    ),
+                  ],
             if (g?.winner != null)
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(),

@@ -11,6 +11,6 @@ class AppConfig {
     defaultValue: 'http://85.95.251.204:3000',
   );
 
-  static const String clientVersion = '0.2.2';
+  static const String clientVersion = '0.2.3';
   static const String platform = 'android';
 }

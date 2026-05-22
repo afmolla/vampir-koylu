@@ -25,7 +25,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   List<Map<String, dynamic>> _rooms = [];
   bool _loading = true;
   String? _error;
-  int _maxPlayers = 6;
+  int _maxPlayers = 2;
 
   @override
   void initState() {

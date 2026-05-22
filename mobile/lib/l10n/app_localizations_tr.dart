@@ -145,6 +145,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get needSixPlayers => 'Başlatmak için en az 6 oyuncu gerekli.';
 
   @override
+  String get needTwoPlayers => 'Başlatmak için en az 2 oyuncu gerekli.';
+
+  @override
   String get startGame => 'Oyunu başlat';
 
   @override
