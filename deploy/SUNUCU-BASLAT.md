@@ -17,10 +17,13 @@ C:\apps\flutter\server\start-api.cmd
 
 Script otomatik yapar:
 
+0. `git pull origin main` (GitHub’dan son kod)  
 1. Port 3000’deki eski Node’u kapatır  
 2. `npm install` (gerekirse)  
 3. Güncel sürüm ayarlarını yazar (`.env` + ortam)  
 4. API’yi başlatır  
+
+`git pull` atlamak için: `set SKIP_GIT_PULL=1` sonra scripti çalıştır.
 
 ## Tarayıcı test
 

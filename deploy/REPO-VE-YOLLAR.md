@@ -18,20 +18,19 @@ cd flutter
 git pull
 ```
 
-## Her güncellemede (tek komut)
+## Her güncellemede (tek komut — git pull dahil)
 
 ```powershell
-cd C:\apps\flutter
-git pull
-.\BASLAT-API.cmd
+C:\apps\flutter\BASLAT-API.cmd
 ```
 
 veya:
 
 ```powershell
-cd C:\apps\flutter\server
-.\start-api.cmd
+C:\apps\flutter\server\start-api.cmd
 ```
+
+`start-api.cmd` sırayla: **git pull** → port temizle → npm → Node başlat.
 
 ## Repo adını değiştirmek istersen (ileride)
 

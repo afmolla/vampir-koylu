@@ -1,27 +1,56 @@
 @echo off
 setlocal EnableExtensions
 title Vampir Koylu API
-cd /d "%~dp0"
 
-REM --- Ortak yollar (GitHub repo: afmolla/flutter, VPS klasor: C:\apps\flutter) ---
+REM --- Ortak yollar (GitHub: afmolla/flutter, VPS: C:\apps\flutter) ---
 if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 
+if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
 if not defined API_PORT set API_PORT=3000
 if not defined LATEST_VERSION set LATEST_VERSION=0.2.7
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
 if not defined GITHUB_REPO set GITHUB_REPO=afmolla/flutter
 
+REM VPS klasoru varsa oraya gec (tek cmd: cd + git pull + API)
+if exist "%VPS_APP_DIR%\.git" (
+  cd /d "%VPS_APP_DIR%"
+) else (
+  cd /d "%~dp0.."
+  set VPS_APP_DIR=%CD%
+)
+
 echo.
 echo ============================================================
 echo   Vampir Koylu API - TEK BASLATMA
 echo   GitHub repo: %GITHUB_REPO%
-echo   Bu klasor:   %CD%
+echo   Repo klasoru: %CD%
 echo ============================================================
 echo.
 
+REM --- 0) GitHub'dan son kod ---
+if not "%SKIP_GIT_PULL%"=="1" (
+  echo [0/5] git pull...
+  git pull origin main
+  if errorlevel 1 (
+    echo       UYARI: git pull basarisiz - mevcut kodla devam ediliyor.
+  ) else (
+    echo       git pull OK
+  )
+) else (
+  echo [0/5] git pull atlandi (SKIP_GIT_PULL=1)
+)
+echo.
+
+cd /d "%VPS_APP_DIR%\server"
+if not exist "src\index.js" (
+  echo HATA: server klasoru bulunamadi: %CD%
+  pause
+  exit /b 1
+)
+
 REM --- 1) Port temizle (eski node) ---
-echo [1/4] Port %API_PORT% temizleniyor...
+echo [1/5] Port %API_PORT% temizleniyor...
 for /L %%i in (1,1,3) do (
   for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":%API_PORT% " ^| findstr LISTENING') do (
     echo       PID %%a sonlandiriliyor...
@@ -31,7 +60,7 @@ for /L %%i in (1,1,3) do (
 )
 
 REM --- 2) npm ---
-echo [2/4] Bagimliliklar...
+echo [2/5] Bagimliliklar...
 if not exist "node_modules\better-sqlite3" (
   echo       npm install calisiyor...
   call npm install
@@ -44,8 +73,8 @@ if not exist "node_modules\better-sqlite3" (
   echo       node_modules OK
 )
 
-REM --- 3) Ortam degiskenleri (guncel surum - .env'den once node'a gider) ---
-echo [3/4] Surum ayarlari: MIN=%MIN_REQUIRED_VERSION%  LATEST=%LATEST_VERSION%
+REM --- 3) Ortam degiskenleri ---
+echo [3/5] Surum ayarlari: MIN=%MIN_REQUIRED_VERSION%  LATEST=%LATEST_VERSION%
 set PORT=%API_PORT%
 set NODE_ENV=production
 set MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
@@ -55,7 +84,6 @@ set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v%LA
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 
-REM .env dosyasini da senkron tut (istege bagli okuma)
 (
   echo PORT=%API_PORT%
   echo NODE_ENV=production
@@ -68,14 +96,13 @@ REM .env dosyasini da senkron tut (istege bagli okuma)
 ) > .env
 
 REM --- 4) Node baslat ---
-echo [4/4] API baslatiliyor...
+echo [4/5] API baslatiliyor...
 echo.
 echo   Yerel test:  http://127.0.0.1:%API_PORT%/health
 echo   Dis test:    http://%PUBLIC_IP%:%API_PORT%/health
 echo   Surum test:  http://%PUBLIC_IP%:%API_PORT%/api/version?clientVersion=0.2.4^&platform=android
 echo.
 echo   Beklenen health: serverBuild "%LATEST_VERSION%", latestVersion "%LATEST_VERSION%"
-echo   Beklenen version: needsUpdate true (client 0.2.4 icin)
 echo.
 echo   ONEMLI: Bu pencereyi KAPATMA - API durur.
 echo   Tarayici acilmiyorsa: deploy\FIREWALL-PORT-3000.cmd (Yonetici)
