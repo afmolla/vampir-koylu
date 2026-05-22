@@ -107,9 +107,8 @@ set NODE_ENV=production
 set MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
 set LATEST_VERSION=%LATEST_VERSION%
 set FORCE_UPDATE=true
-set APK_PUBLISH_VERSION=0.2.8
+set APK_PUBLISH_VERSION=0.2.10
 set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v%APK_PUBLISH_VERSION%/app-release.apk
-REM 0.2.10 APK Actions'ta yayinlaninca: set APK_PUBLISH_VERSION=0.2.10
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 

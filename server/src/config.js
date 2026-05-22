@@ -8,8 +8,7 @@ export const config = {
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
   latestVersion: process.env.LATEST_VERSION ?? '0.2.10',
   /** GitHub'da yayinli APK — kilitle release.keystore ile ayni imza */
-  /** GitHub'da APK olan surum (0.2.10 Actions bitene kadar 0.2.8) */
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.8',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.10',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
