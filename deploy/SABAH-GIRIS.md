@@ -1,4 +1,4 @@
-# Sabah giriş — Vampir Köylü v0.2.2
+# Sabah giriş — Vampir Köylü v0.2.3
 
 ## 1. Sunucuyu aç (VPS / Windows)
 
@@ -8,44 +8,45 @@
 start-api.cmd
 ```
 
-Yeşil çıktı: `MIN_REQUIRED_VERSION=0.2.2`, port **3000**.
+İlk kurulumda: `npm install` (SQLite için `better-sqlite3`).
 
-Kontrol (PC veya telefon tarayıcısı):
+Yeşil çıktı: `MIN_REQUIRED_VERSION=0.2.3`, port **3000**.
 
-- http://85.95.251.204:3000/health → `{"ok":true,...}`
+Kontrol: http://85.95.251.204:3000/health → `{"ok":true,...}`
 
 ## 2. Telefonda APK
 
-**Sürüm 0.2.2** yüklü olmalı (eski 0.1.x ile paket çakışması olur → önce kaldır).
+**Sürüm 0.2.3** yüklü olmalı.
 
-İndir: https://github.com/afmolla/flutter/releases  
+İndir: https://github.com/afmolla/flutter/releases/tag/v0.2.3  
+Direkt: https://github.com/afmolla/flutter/releases/download/v0.2.3/app-release.apk
 
-**Aktif sürümler (sadece bunlar):** `v0.1.8`, `v0.1.9`, `v0.2.2` — güncel olan **v0.2.2**
+Eski sürüm (0.2.2 ve altı) varsa önce kaldır → paket çakışması olmasın.
 
-APK yoksa: GitHub → **Actions** → **Android APK Release** → **Run workflow** → tag: `v0.1.9` veya `v0.2.2`  
-Dosya: **app-release.apk**
+## 3. Güncelleme testi (opsiyonel)
 
-## 3. Uygulama akışı
+Eski APK ile zorunlu güncelleme ekranını görmek için:
+
+- `start-api-GUNCELLEME-TEST.cmd` (MIN=0.2.3)
+- Telefonda 0.2.2 APK → güncelleme ekranı → otomatik indirme → 0.2.3 kur
+
+Normal oyun için **`start-api.cmd`** kullan.
+
+## 4. Uygulama akışı
 
 1. Aç → splash → sürüm OK  
 2. Misafir nick → giriş  
 3. Ana menü:  
-   - **Tek başına oyna** — 6 kişi, botlarla (sunucu gerekmez, sadece giriş için API)  
-   - **Online oyna** — oda oluştur / koda katıl (6+ oyuncu ile başlar)
-
-## 4. Online test (2+ telefon)
-
-1. Her telefonda 0.2.2 APK + misafir giriş  
-2. Birinde **Oda oluştur** → kodu diğerine ver  
-3. 6 kişi dolunca kurucu **Oyunu başlat**
+   - **Tek başına oyna** — botlarla  
+   - **Online oyna** — lobi + **genel sohbet** (altta)  
+4. Oda oluştur / katıl → **oda sohbeti** (altta)  
+5. 2+ oyuncu → **Oyunu başlat** (test modu)
 
 ## Sorun
 
 | Belirti | Çözüm |
 |--------|--------|
-| Bağlantı hatası | Sunucu `start-api.cmd` çalışıyor mu? |
-| Güncelleme ekranı | 0.2.2 APK kur; `start-api.cmd` kullan (test cmd değil) |
-| Paket çakışması | Eski APK’yı kaldır, 0.2.2 kur |
-| Online 6 kişi yok | Solo mod veya daha fazla cihaz |
-
-İyi oyunlar.
+| Bağlantı hatası | `start-api.cmd` + port 3000 |
+| Güncelleme ekranı | 0.2.3 APK kur |
+| Sohbet yok | Socket bağlı mı? Sunucu güncel mi? |
+| Paket çakışması | Eski APK kaldır, 0.2.3 kur |

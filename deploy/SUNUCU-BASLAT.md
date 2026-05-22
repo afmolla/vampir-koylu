@@ -1,22 +1,20 @@
 # Sunucuda API başlatma (.env gerekmez)
 
-## Sabah / normal oyun (v0.2.2)
+## Normal oyun (v0.2.3)
 
 `C:\apps\vampir-koylu\server\` içinde **`start-api.cmd`** dosyasına çift tıkla.
 
-Pencerede gör:
-
 ```text
-MIN_REQUIRED_VERSION=0.2.2
-LATEST_VERSION=0.2.2
+MIN_REQUIRED_VERSION=0.2.3
+LATEST_VERSION=0.2.3
 ```
 
 Detaylı adımlar: [SABAH-GIRIS.md](SABAH-GIRIS.md)
 
 ## Güncelleme testi
 
-**`start-api-GUNCELLEME-TEST.cmd`** — aynı 0.2.2 kapısı; eski APK’ları test için kullan.
+**`start-api-GUNCELLEME-TEST.cmd`** — 0.2.3 altı APK’ları engeller.
 
 ## ZIP ile güncelleme
 
-GitHub’dan ZIP veya `server` klasörünü PC’den kopyala; `start-api.cmd` mutlaka güncel olsun.
+GitHub’dan ZIP veya `server` klasörünü kopyala; `npm install` sonra `start-api.cmd`.

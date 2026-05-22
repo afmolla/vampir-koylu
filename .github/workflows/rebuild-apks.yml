@@ -1,5 +1,4 @@
-# Eksik APK'lari otomatik yeniden uretir (main'e workflow push edilince bir kez).
-# v0.1.9 ve v0.2.2
+# v0.2.3 APK build tetikler (workflow dosyasi degisince).
 
 name: Rebuild Missing APKs
 
@@ -10,7 +9,7 @@ on:
     paths:
       - '.github/workflows/android-release.yml'
       - '.github/workflows/rebuild-apks.yml'
-      - 'mobile/android/**'
+      - 'mobile/pubspec.yaml'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -20,7 +19,7 @@ permissions:
   actions: write
 
 jobs:
-  trigger-v019:
+  trigger-v023:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v7
@@ -32,27 +31,8 @@ jobs:
               workflow_id: 'android-release.yml',
               ref: 'main',
               inputs: {
-                tag: 'v0.1.9',
+                tag: 'v0.2.3',
                 api_base_url: 'http://85.95.251.204:3000',
               },
             });
-            core.info('Triggered android-release for v0.1.9');
-
-  trigger-v022:
-    runs-on: ubuntu-latest
-    needs: trigger-v019
-    steps:
-      - uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'android-release.yml',
-              ref: 'main',
-              inputs: {
-                tag: 'v0.2.2',
-                api_base_url: 'http://85.95.251.204:3000',
-              },
-            });
-            core.info('Triggered android-release for v0.2.2');
+            core.info('Triggered android-release for v0.2.3');

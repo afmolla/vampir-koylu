@@ -25,7 +25,7 @@ npm install
 npm run dev
 ```
 
-Windows üretim: `server\start-api.cmd` (v0.2.2)
+Windows üretim: `server\start-api.cmd` (v0.2.3)
 
 Sağlık: http://localhost:3000/health
 
@@ -44,7 +44,7 @@ flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000
 ### 3. APK (GitHub Actions)
 
 ```bash
-git tag v0.2.2 && git push origin v0.2.2
+git tag v0.2.3 && git push origin v0.2.3
 ```
 
 Releases: https://github.com/afmolla/flutter/releases
