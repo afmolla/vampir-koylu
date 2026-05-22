@@ -2,11 +2,15 @@
 
 ## 0.2.4 APK indir
 
-Önce GitHub’da **v0.2.4** tag’i ile CI build alınmalı. Hazır olunca:
+Tag `v0.2.4` ve `v0.2.5` GitHub’a push edildi — Actions bitince APK hazır olur (~15 dk).
 
 **https://github.com/afmolla/flutter/releases/download/v0.2.4/app-release.apk**
 
-(Release yoksa: Actions → android-release → tag `v0.2.4` workflow_dispatch)
+Tüm sürümler: **https://github.com/afmolla/flutter/releases**
+
+Build takip: **https://github.com/afmolla/flutter/actions** (workflow: Android APK Release)
+
+Manuel tetikleme: Actions → Run workflow → tag: `v0.2.4` veya `v0.2.5`
 
 ## Sunucu (güncelleme sorusu için)
 
