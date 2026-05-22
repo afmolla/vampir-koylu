@@ -23,15 +23,16 @@ versionRouter.get('/', (req, res) => {
     semver.valid(config.latestVersion) &&
     semver.lt(clientVersion, config.latestVersion);
 
+  const apkVer = config.apkPublishVersion ?? config.latestVersion;
   const updateUrlAndroid =
-    config.updateUrlAndroid?.includes(`/v${config.latestVersion}/`) === true
-      ? config.updateUrlAndroid
-      : `https://github.com/afmolla/flutter/releases/download/v${config.latestVersion}/app-release.apk`;
+    config.updateUrlAndroid ??
+    `https://github.com/afmolla/flutter/releases/download/v${apkVer}/app-release.apk`;
 
   res.json({
     serverBuild: SERVER_BUILD,
     minRequiredVersion: config.minRequiredVersion,
     latestVersion: config.latestVersion,
+    apkPublishVersion: apkVer,
     forceUpdate: config.forceUpdate,
     allowed,
     needsUpdate,

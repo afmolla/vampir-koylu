@@ -6,6 +6,8 @@ import {
   getTournament,
   registerForTournament,
   confirmTournamentPayment,
+  openTournamentLobby,
+  getTournamentLobby,
 } from '../services/tournaments.js';
 
 export const tournamentsRouter = Router();
@@ -48,6 +50,20 @@ tournamentsRouter.post('/:id/register', (req, res) => {
 });
 
 /** Geliştirme: IAP onayı simülasyonu */
+tournamentsRouter.get('/:id/lobby', (req, res) => {
+  const result = getTournamentLobby(req.params.id);
+  if (result.error === 'not_found') return res.status(404).json(result);
+  res.json(result);
+});
+
+tournamentsRouter.post('/:id/open-lobby', (req, res) => {
+  const userId = authUserId(req);
+  if (!userId) return res.status(401).json({ error: 'unauthorized' });
+  const result = openTournamentLobby(req.params.id, userId);
+  if (result.error) return res.status(400).json(result);
+  res.json(result);
+});
+
 tournamentsRouter.post('/:id/confirm-payment', (req, res) => {
   const userId = authUserId(req);
   if (!userId) return res.status(401).json({ error: 'unauthorized' });

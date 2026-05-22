@@ -34,13 +34,59 @@ function randomCode() {
 
 export function listPublicRooms() {
   return [...rooms.values()]
-    .filter((r) => r.status === 'lobby')
+    .filter((r) => r.status === 'lobby' && !r.isTournament)
     .map((r) => ({
       code: r.code,
       playerCount: r.players.length,
       maxPlayers: r.maxPlayers,
       hostNick: r.players.find((p) => p.userId === r.hostId)?.nick ?? '?',
     }));
+}
+
+/** Turnuva lobisi — kod T ile baslar */
+export function createTournamentRoom({ tournamentId, hostId, hostNick, maxPlayers }) {
+  const max = Math.min(8, Math.max(2, Number(maxPlayers) || 6));
+  let code;
+  do {
+    code = `T${randomCode().slice(0, 5)}`;
+  } while (rooms.has(code));
+
+  const room = {
+    code,
+    status: 'lobby',
+    maxPlayers: max,
+    hostId: hostId ?? null,
+    tournamentId,
+    isTournament: true,
+    players: [],
+    game: null,
+  };
+  if (hostId && hostNick) {
+    room.players.push({ userId: hostId, nick: hostNick, socketId: null });
+  }
+  rooms.set(code, room);
+  return code;
+}
+
+export function getTournamentRoomSnapshot(code) {
+  const room = getRoomByCode(code);
+  if (!room || !room.isTournament) return null;
+  return {
+    code: room.code,
+    tournamentId: room.tournamentId,
+    status: room.status,
+    maxPlayers: room.maxPlayers,
+    hostId: room.hostId,
+    players: room.players.map((p) => ({
+      userId: p.userId,
+      nick: p.nick,
+      connected: Boolean(p.socketId),
+    })),
+    canStart:
+      room.status === 'lobby' &&
+      room.players.length >= 2 &&
+      room.players.every((p) => p.socketId),
+  };
 }
 
 export function getRoomByCode(code) {
@@ -59,6 +105,8 @@ function sanitizeRoom(room) {
     status: room.status,
     maxPlayers: room.maxPlayers,
     hostId: room.hostId,
+    isTournament: Boolean(room.isTournament),
+    tournamentId: room.tournamentId ?? null,
     players: room.players.map((p) => ({
       userId: p.userId,
       nick: p.nick,

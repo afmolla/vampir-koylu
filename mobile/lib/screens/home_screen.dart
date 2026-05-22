@@ -106,7 +106,9 @@ class HomeScreen extends StatelessWidget {
                 subtitle: 'Coin veya ücretli katılım · ödül havuzu',
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => TournamentsScreen(nick: nick),
+                    ),
                   );
                 },
               ),

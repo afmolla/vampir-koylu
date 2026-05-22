@@ -1,6 +1,10 @@
 import { randomUUID } from 'crypto';
 import { getDb } from '../db/database.js';
 import { ensureProfile, syncRankTier } from './progression.js';
+import {
+  createTournamentRoom,
+  getTournamentRoomSnapshot,
+} from '../rooms/roomStore.js';
 
 const IAP_PRODUCT_PREFIX = 'tournament_entry_';
 
@@ -72,9 +76,20 @@ function mapTournament(row, entryCount = 0) {
     registrationDeadline: row.registration_deadline,
     startsAt: row.starts_at,
     winnerUserId: row.winner_user_id,
+    lobbyRoomCode: row.lobby_room_code,
+    hostUserId: row.host_user_id,
     entryCount,
     iapProductId: row.entry_fee_try ? `${IAP_PRODUCT_PREFIX}${row.id}` : null,
   };
+}
+
+function countPaidEntries(db, tournamentId) {
+  return db
+    .prepare(
+      `SELECT COUNT(*) AS c FROM tournament_entries
+       WHERE tournament_id = ? AND payment_status = 'paid'`,
+    )
+    .get(tournamentId).c;
 }
 
 export function listTournaments(userId) {
@@ -84,7 +99,7 @@ export function listTournaments(userId) {
     .prepare(
       `SELECT t.*, (SELECT COUNT(*) FROM tournament_entries e WHERE e.tournament_id = t.id) AS entry_count
        FROM tournaments t
-       WHERE t.status IN ('registration', 'live')
+       WHERE t.status IN ('registration', 'lobby', 'live')
        ORDER BY t.registration_deadline ASC`,
     )
     .all();
@@ -226,6 +241,7 @@ export function registerForTournament(userId, tournamentId, method = 'coins') {
   ).run(tournamentId, userId);
 
   syncRankTier(userId);
+  tryAutoOpenLobby(tournamentId);
 
   return {
     ok: true,
@@ -249,5 +265,93 @@ export function confirmTournamentPayment(userId, tournamentId, paymentRef) {
     `UPDATE tournament_entries SET payment_status = 'paid' WHERE tournament_id = ? AND user_id = ?`,
   ).run(tournamentId, userId);
 
+  tryAutoOpenLobby(tournamentId);
   return { ok: true, tournament: getTournament(tournamentId, userId) };
+}
+
+function tryAutoOpenLobby(tournamentId) {
+  const db = getDb();
+  const t = db.prepare('SELECT * FROM tournaments WHERE id = ?').get(tournamentId);
+  if (!t || t.lobby_room_code) return;
+  const paid = countPaidEntries(db, tournamentId);
+  if (paid < t.min_players) return;
+  const first = db
+    .prepare(
+      `SELECT user_id FROM tournament_entries
+       WHERE tournament_id = ? AND payment_status = 'paid' ORDER BY joined_at LIMIT 1`,
+    )
+    .get(tournamentId);
+  if (first) openTournamentLobby(tournamentId, first.user_id);
+}
+
+export function openTournamentLobby(tournamentId, userId) {
+  const db = getDb();
+  const t = db.prepare('SELECT * FROM tournaments WHERE id = ?').get(tournamentId);
+  if (!t) return { error: 'not_found' };
+  if (t.lobby_room_code) {
+    return { ok: true, roomCode: t.lobby_room_code, alreadyOpen: true };
+  }
+
+  const paid = countPaidEntries(db, tournamentId);
+  if (paid < t.min_players) {
+    return { error: 'not_enough_players', required: t.min_players, current: paid };
+  }
+
+  const entry = db
+    .prepare(
+      `SELECT 1 FROM tournament_entries
+       WHERE tournament_id = ? AND user_id = ? AND payment_status = 'paid'`,
+    )
+    .get(tournamentId, userId);
+  if (!entry) return { error: 'not_registered' };
+
+  const host = db.prepare('SELECT nick FROM users WHERE id = ?').get(userId);
+  const code = createTournamentRoom({
+    tournamentId,
+    hostId: userId,
+    hostNick: host?.nick ?? 'Host',
+    maxPlayers: t.max_players,
+  });
+
+  db.prepare(
+    `UPDATE tournaments SET status = 'lobby', lobby_room_code = ?, host_user_id = ? WHERE id = ?`,
+  ).run(code, userId, tournamentId);
+
+  return { ok: true, roomCode: code };
+}
+
+export function getTournamentLobby(tournamentId) {
+  const db = getDb();
+  const t = db.prepare('SELECT * FROM tournaments WHERE id = ?').get(tournamentId);
+  if (!t) return { error: 'not_found' };
+  if (!t.lobby_room_code) {
+    const paid = countPaidEntries(db, tournamentId);
+    return {
+      open: false,
+      paidEntries: paid,
+      minPlayers: t.min_players,
+      status: t.status,
+    };
+  }
+
+  const snap = getTournamentRoomSnapshot(t.lobby_room_code);
+  const registered = db
+    .prepare(
+      `SELECT e.user_id, u.nick FROM tournament_entries e
+       JOIN users u ON u.id = e.user_id
+       WHERE e.tournament_id = ? AND e.payment_status = 'paid'
+       ORDER BY e.joined_at`,
+    )
+    .all(tournamentId);
+
+  return {
+    open: true,
+    tournamentId,
+    roomCode: t.lobby_room_code,
+    status: t.status,
+    snapshot: snap,
+    registered: registered.map((r) => ({ userId: r.user_id, nick: r.nick })),
+    minPlayers: t.min_players,
+    maxPlayers: t.max_players,
+  };
 }

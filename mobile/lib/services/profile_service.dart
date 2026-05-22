@@ -65,5 +65,11 @@ class ProfileService {
   ) =>
       _post('/api/tournaments/$id/confirm-payment', {'paymentRef': paymentRef});
 
+  Future<Map<String, dynamic>> fetchTournamentLobby(String id) =>
+      _get('/api/tournaments/$id/lobby');
+
+  Future<Map<String, dynamic>> openTournamentLobby(String id) =>
+      _post('/api/tournaments/$id/open-lobby');
+
   void dispose() => _client.close();
 }

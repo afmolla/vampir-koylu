@@ -40,9 +40,32 @@ bool shouldForceUpdate({
   return isVersionOlder(clientVersion, latest);
 }
 
-/// Güncelleme APK: sunucunun latestVersion'ına göre (asla 0.2.7'ye düşmez).
+/// Güncelleme APK: sunucunun updateUrlAndroid (yayinli surum) oncelikli.
 String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
+  final raw = (versionResponse['updateUrlAndroid'] as String? ?? '').trim();
+  if (raw.isNotEmpty && raw.endsWith('.apk') && !raw.contains('/releases/latest')) {
+    return raw;
+  }
+  final apkVer = (versionResponse['apkPublishVersion'] as String? ?? '').trim();
+  if (apkVer.isNotEmpty) return AppConfig.apkUrlForVersion(apkVer);
   final latest = (versionResponse['latestVersion'] as String? ?? '').trim();
   final ver = latest.isNotEmpty ? latest : AppConfig.updateTargetVersion;
   return AppConfig.apkUrlForVersion(ver);
+}
+
+/// Indirme basarisizsa denenecek URL'ler (or. v0.2.9 henuz yok -> 0.2.8).
+List<String> apkDownloadCandidates(String primary) {
+  final seen = <String>{};
+  final out = <String>[];
+  for (final u in [
+    primary,
+    AppConfig.apkUrlForVersion('0.2.8'),
+    AppConfig.apkUrlForVersion('0.2.9'),
+  ]) {
+    final t = u.trim();
+    if (t.isEmpty || !t.endsWith('.apk') || seen.contains(t)) continue;
+    seen.add(t);
+    out.add(t);
+  }
+  return out;
 }

@@ -5,6 +5,8 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../core/version_utils.dart';
+
 
 class ApkInstaller {
   ApkInstaller({Dio? dio})
@@ -109,8 +111,18 @@ class ApkInstaller {
     void Function(double progress)? onProgress,
   }) async {
     await _ensureInstallPermission();
-    final path = await downloadApk(url: url, onProgress: onProgress);
-    await openInstaller(path);
+    ApkInstallException? last;
+    for (final u in apkDownloadCandidates(url)) {
+      try {
+        final path = await downloadApk(url: u, onProgress: onProgress);
+        await openInstaller(path);
+        return;
+      } on ApkInstallException catch (e) {
+        last = e;
+      }
+    }
+    throw last ??
+        ApkInstallException('Güncelleme indirilemedi. GitHub release kontrol edin.');
   }
 }
 

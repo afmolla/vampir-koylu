@@ -98,6 +98,8 @@ function initTables() {
       registration_deadline TEXT,
       starts_at TEXT,
       winner_user_id TEXT,
+      lobby_room_code TEXT,
+      host_user_id TEXT,
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (winner_user_id) REFERENCES users(id)
     );
@@ -116,6 +118,17 @@ function initTables() {
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
   `);
+
+  try {
+    db.exec(`ALTER TABLE tournaments ADD COLUMN lobby_room_code TEXT`);
+  } catch {
+    /* exists */
+  }
+  try {
+    db.exec(`ALTER TABLE tournaments ADD COLUMN host_user_id TEXT`);
+  } catch {
+    /* exists */
+  }
 }
 
 export function closeDb() {

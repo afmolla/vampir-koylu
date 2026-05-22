@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../services/profile_service.dart';
+import '../services/session_store.dart';
+import 'tournament_lobby_screen.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
-  const TournamentDetailScreen({super.key, required this.tournamentId});
+  const TournamentDetailScreen({
+    super.key,
+    required this.tournamentId,
+    this.nick,
+  });
 
   final String tournamentId;
+  final String? nick;
 
   @override
   State<TournamentDetailScreen> createState() => _TournamentDetailScreenState();
@@ -93,6 +100,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     final registered = my != null;
     final pending = my?['paymentStatus'] == 'pending';
     final entries = t['entries'] as List<dynamic>? ?? [];
+    final lobbyCode = t['lobbyRoomCode'] as String?;
+    final status = t['status'] as String? ?? 'registration';
+    final paidOk = registered && !pending;
 
     return Scaffold(
       appBar: AppBar(title: Text(t['title'] as String? ?? 'Turnuva')),
@@ -137,15 +147,31 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
                 subtitle: Text('Play Store onayından sonra turnuvaya dahil olursun.'),
               ),
             )
-          else
+          else ...[
             const Card(
               color: Color(0xFF1B3D2F),
               child: ListTile(
                 leading: Icon(Icons.check_circle, color: Colors.greenAccent),
                 title: Text('Kayıtlısın'),
-                subtitle: Text('Turnuva başlayınca bildirim gelecek (yakında).'),
+                subtitle: Text('Min oyuncu dolunca lobi otomatik açılır.'),
               ),
             ),
+            if (paidOk) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => _goLobby(t),
+                  icon: const Icon(Icons.meeting_room),
+                  label: Text(
+                    lobbyCode != null || status == 'lobby'
+                        ? 'Turnuva lobisine git'
+                        : 'Lobiyi bekle / aç',
+                  ),
+                ),
+              ),
+            ],
+          ],
           const Padding(
             padding: EdgeInsets.only(top: 24, bottom: 8),
             child: Text('Kayıtlı oyuncular', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -167,6 +193,21 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _goLobby(Map<String, dynamic> t) async {
+    final nick = widget.nick ?? await SessionStore().getNick() ?? 'Oyuncu';
+    if (!mounted) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TournamentLobbyScreen(
+          tournamentId: widget.tournamentId,
+          title: t['title'] as String? ?? 'Turnuva',
+          nick: nick,
+        ),
+      ),
+    );
+    _load();
   }
 
   Widget _infoRow(String label, String value) {

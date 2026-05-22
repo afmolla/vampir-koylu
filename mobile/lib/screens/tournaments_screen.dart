@@ -4,7 +4,9 @@ import '../services/profile_service.dart';
 import 'tournament_detail_screen.dart';
 
 class TournamentsScreen extends StatefulWidget {
-  const TournamentsScreen({super.key});
+  const TournamentsScreen({super.key, this.nick = 'Oyuncu'});
+
+  final String nick;
 
   @override
   State<TournamentsScreen> createState() => _TournamentsScreenState();
@@ -82,6 +84,7 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
                             MaterialPageRoute(
                               builder: (_) => TournamentDetailScreen(
                                 tournamentId: t['id'] as String,
+                                nick: widget.nick,
                               ),
                             ),
                           );
