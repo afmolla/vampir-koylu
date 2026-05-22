@@ -144,6 +144,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get needSixPlayers => 'At least 6 players required to start.';
 
   @override
+  String get needTwoPlayers => 'At least 2 players required to start.';
+
+  @override
   String get startGame => 'Start game';
 
   @override
@@ -191,19 +194,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playAgain => 'Play again';
-
-  @override
-  String get chat => 'Chat';
-
-  @override
-  String get generalChat => 'General chat';
-
-  @override
-  String get roomChat => 'Room chat';
-
-  @override
-  String get chatHint => 'Type a message…';
-
-  @override
-  String get send => 'Send';
 }

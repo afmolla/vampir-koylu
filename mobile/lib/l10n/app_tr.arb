@@ -60,6 +60,7 @@
   },
   "host": "Kurucu",
   "needSixPlayers": "Başlatmak için en az 6 oyuncu gerekli.",
+  "needTwoPlayers": "Başlatmak için en az 2 oyuncu gerekli.",
   "startGame": "Oyunu başlat",
   "backToLobby": "Ana menüye dön",
   "yourRole": "Rolün: {role}",
@@ -80,10 +81,5 @@
   "tapToVote": "Elenmesini istediğin oyuncuya dokun",
   "villagersWin": "Köylüler kazandı!",
   "vampiresWin": "Vampirler kazandı!",
-  "playAgain": "Tekrar oyna",
-  "chat": "Sohbet",
-  "generalChat": "Genel sohbet",
-  "roomChat": "Oda sohbeti",
-  "chatHint": "Mesaj yaz…",
-  "send": "Gönder"
+  "playAgain": "Tekrar oyna"
 }

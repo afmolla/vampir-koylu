@@ -344,6 +344,12 @@ abstract class AppLocalizations {
   /// **'At least 6 players required to start.'**
   String get needSixPlayers;
 
+  /// No description provided for @needTwoPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 2 players required to start.'**
+  String get needTwoPlayers;
+
   /// No description provided for @startGame.
   ///
   /// In en, this message translates to:
@@ -433,36 +439,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Play again'**
   String get playAgain;
-
-  /// No description provided for @chat.
-  ///
-  /// In en, this message translates to:
-  /// **'Chat'**
-  String get chat;
-
-  /// No description provided for @generalChat.
-  ///
-  /// In en, this message translates to:
-  /// **'General chat'**
-  String get generalChat;
-
-  /// No description provided for @roomChat.
-  ///
-  /// In en, this message translates to:
-  /// **'Room chat'**
-  String get roomChat;
-
-  /// No description provided for @chatHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Type a message…'**
-  String get chatHint;
-
-  /// No description provided for @send.
-  ///
-  /// In en, this message translates to:
-  /// **'Send'**
-  String get send;
 }
 
 class _AppLocalizationsDelegate
