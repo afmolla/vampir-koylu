@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Build edilecek tag (ornek v0.1.9, v0.2.2)'
         required: false
-        default: 'v0.2.3'
+        default: 'v0.2.7'
       api_base_url:
         description: 'API_BASE_URL (sunucu)'
         required: false
@@ -85,4 +85,4 @@ jobs:
           files: mobile/build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
           fail_on_unmatched_files: true
-          make_latest: ${{ steps.ref.outputs.tag == 'v0.2.5' }}
+          make_latest: ${{ steps.ref.outputs.tag == 'v0.2.7' }}

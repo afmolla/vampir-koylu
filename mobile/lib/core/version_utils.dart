@@ -39,3 +39,12 @@ bool shouldForceUpdate({
 
   return isVersionOlder(clientVersion, latest);
 }
+
+/// Sunucudan gelen APK linki boş veya /latest ise doğru release URL kullan.
+String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
+  final raw = (versionResponse['updateUrlAndroid'] as String? ?? '').trim();
+  if (raw.isEmpty) return AppConfig.defaultUpdateApkUrl;
+  if (raw.contains('/releases/latest')) return AppConfig.defaultUpdateApkUrl;
+  if (!raw.endsWith('.apk')) return AppConfig.defaultUpdateApkUrl;
+  return raw;
+}

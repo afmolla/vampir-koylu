@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/app_version_footer.dart';
 import '../services/api_client.dart';
 import '../services/session_store.dart';
 import 'home_screen.dart';
@@ -91,64 +92,72 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                Text(
-                  l10n.appTitle,
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 40),
+                      Text(
+                        l10n.appTitle,
+                        style:
+                            Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                        textAlign: TextAlign.center,
                       ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.loginTitle,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white70,
+                      const SizedBox(height: 8),
+                      Text(
+                        l10n.loginTitle,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Colors.white70,
+                            ),
                       ),
-                ),
-                const SizedBox(height: 24),
-                _LanguageRow(locale: _locale),
-                const SizedBox(height: 32),
-                TextField(
-                  controller: _nickController,
-                  decoration: InputDecoration(
-                    hintText: l10n.guestNickHint,
-                    prefixIcon: const Icon(Icons.person_outline),
+                      const SizedBox(height: 24),
+                      _LanguageRow(locale: _locale),
+                      const SizedBox(height: 32),
+                      TextField(
+                        controller: _nickController,
+                        decoration: InputDecoration(
+                          hintText: l10n.guestNickHint,
+                          prefixIcon: const Icon(Icons.person_outline),
+                        ),
+                        textInputAction: TextInputAction.done,
+                        onSubmitted: (_) => _guestLogin(),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loading ? null : _guestLogin,
+                        child: _loading
+                            ? const SizedBox(
+                                height: 22,
+                                width: 22,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Text(l10n.guestPlay),
+                      ),
+                      const SizedBox(height: 32),
+                      OutlinedButton.icon(
+                        onPressed: () => _showSoon('Google'),
+                        icon: const Icon(Icons.g_mobiledata, size: 28),
+                        label: Text(l10n.googleSignIn),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: () => _showSoon('Facebook'),
+                        icon: const Icon(Icons.facebook),
+                        label: Text(l10n.facebookSignIn),
+                      ),
+                    ],
                   ),
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _guestLogin(),
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _loading ? null : _guestLogin,
-                  child: _loading
-                      ? const SizedBox(
-                          height: 22,
-                          width: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.guestPlay),
-                ),
-                const SizedBox(height: 32),
-                OutlinedButton.icon(
-                  onPressed: () => _showSoon('Google'),
-                  icon: const Icon(Icons.g_mobiledata, size: 28),
-                  label: Text(l10n.googleSignIn),
-                ),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: () => _showSoon('Facebook'),
-                  icon: const Icon(Icons.facebook),
-                  label: Text(l10n.facebookSignIn),
-                ),
-              ],
-            ),
+              ),
+              const AppVersionFooter(),
+            ],
           ),
         ),
       ),

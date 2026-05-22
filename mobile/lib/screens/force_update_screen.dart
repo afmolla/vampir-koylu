@@ -45,7 +45,10 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
 
   String get _apkUrl {
     final u = widget.updateUrl.trim();
-    return u.isNotEmpty ? u : _defaultApkUrl;
+    if (u.isEmpty || u.contains('/releases/latest') || !u.endsWith('.apk')) {
+      return _defaultApkUrl;
+    }
+    return u;
   }
 
   Future<void> _downloadAndInstall() async {

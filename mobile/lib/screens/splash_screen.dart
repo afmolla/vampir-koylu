@@ -86,7 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
         );
         await Future<void>.delayed(const Duration(milliseconds: 400));
         if (!mounted) return;
-        final url = version['updateUrlAndroid'] as String? ?? '';
+        final url = resolveUpdateApkUrl(version);
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => ForceUpdateScreen(
