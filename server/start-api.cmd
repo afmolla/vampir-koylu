@@ -30,15 +30,42 @@ echo.
 
 REM --- 0) GitHub'dan son kod ---
 if not "%SKIP_GIT_PULL%"=="1" (
-  echo [0/5] git pull...
-  git pull origin main
+  echo [0/5] Git senkron...
+  git fetch origin main 2>nul
   if errorlevel 1 (
-    echo       UYARI: git pull basarisiz - mevcut kodla devam ediliyor.
+    echo       UYARI: git fetch basarisiz - mevcut kodla devam.
   ) else (
-    echo       git pull OK
+    git rev-parse HEAD >nul 2>&1
+    if errorlevel 1 (
+      echo       UYARI: gecersiz repo.
+    ) else (
+      git merge-base --is-ancestor HEAD origin/main >nul 2>&1
+      if errorlevel 1 (
+        echo       Dal uyusmuyor - origin/main ile hizalaniyor...
+        git reset --hard origin/main
+        if errorlevel 1 (
+          echo       HATA: reset basarisiz. Calistir: deploy\VPS-GIT-DUZELT.cmd
+        ) else (
+          echo       git reset --hard origin/main OK
+        )
+      ) else (
+        git pull origin main
+        if errorlevel 1 (
+          echo       pull basarisiz - reset deneniyor...
+          git reset --hard origin/main
+          if errorlevel 1 (
+            echo       HATA: deploy\VPS-GIT-DUZELT.cmd calistir
+          ) else (
+            echo       git pull/reset OK
+          )
+        ) else (
+          echo       git pull OK
+        )
+      )
+    )
   )
 ) else (
-  echo [0/5] git pull atlandi (SKIP_GIT_PULL=1)
+  echo [0/5] git atlandi (SKIP_GIT_PULL=1)
 )
 echo.
 
