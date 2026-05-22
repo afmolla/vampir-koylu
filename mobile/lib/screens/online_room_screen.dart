@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../models/online_room.dart';
 import '../services/socket_service.dart';
+import '../widgets/chat_panel.dart';
 
 class OnlineRoomScreen extends StatefulWidget {
   const OnlineRoomScreen({
@@ -24,11 +25,14 @@ class OnlineRoomScreen extends StatefulWidget {
 
 class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
   late OnlineRoomState _room;
+  bool _showChat = false;
+  String _chatChannel = 'general';
 
   @override
   void initState() {
     super.initState();
     _room = OnlineRoomState.fromJson(widget.initialRoom);
+    _chatChannel = 'room:${_room.code}';
     widget.socketService.onRoomState(_onRoomState);
   }
 
@@ -100,105 +104,204 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${l10n.roomCode} ${_room.code}'),
+        actions: [
+          IconButton(
+            icon: Icon(_showChat ? Icons.people : Icons.chat),
+            onPressed: () => setState(() => _showChat = !_showChat),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              _phaseLabel(l10n),
-              style: Theme.of(context).textTheme.headlineSmall,
-              textAlign: TextAlign.center,
-            ),
-            if (g != null) ...[
-              const SizedBox(height: 8),
-              Text(
-                '${l10n.dayLabel} ${g.dayNumber}',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white54),
-              ),
-              if (g.yourRole != null)
-                Text(
-                  l10n.yourRole(g.yourRole!),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: g.yourRole == 'vampire'
-                        ? Colors.redAccent
-                        : Colors.greenAccent,
-                  ),
-                ),
-              if (g.lastVictimName != null)
-                Text(
-                  l10n.lastVictim(g.lastVictimName!),
-                  textAlign: TextAlign.center,
-                ),
-            ],
-            const SizedBox(height: 16),
-            Text(
-              l10n.playersCount(_room.players.length, _room.maxPlayers),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView(
+      body: Row(
+        children: [
+          Expanded(
+            flex: _showChat ? 1 : 1,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (inLobby)
-                    ..._room.players.map(
-                      (p) => ListTile(
-                        leading: Icon(
-                          p.isHost ? Icons.star : Icons.person,
-                          color: p.isHost ? Colors.amber : null,
-                        ),
-                        title: Text(p.nick),
-                        subtitle: p.isHost ? Text(l10n.host) : null,
-                      ),
+                  Text(
+                    _phaseLabel(l10n),
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    textAlign: TextAlign.center,
+                  ),
+                  if (g != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      '${l10n.dayLabel} ${g.dayNumber}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.white54),
                     ),
-                  if (g != null)
-                    ...g.players.map((p) {
-                      final canTarget =
-                          g.canAct && g.validTargets.contains(p.id) && p.alive;
-                      return ListTile(
-                        title: Text(p.nick),
-                        trailing: p.alive
-                            ? null
-                            : Text(l10n.eliminated, style: const TextStyle(color: Colors.grey)),
-                        tileColor: canTarget
-                            ? Colors.white.withValues(alpha: 0.06)
-                            : null,
-                        onTap: canTarget
-                            ? () {
-                                final type = g.phase == 'night'
-                                    ? 'night_kill'
-                                    : 'day_vote';
-                                _gameAction(type, p.id);
-                              }
-                            : null,
-                      );
-                    }),
+                    if (g.yourRole != null)
+                      Text(
+                        l10n.yourRole(g.yourRole!),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: g.yourRole == 'vampire'
+                              ? Colors.redAccent
+                              : Colors.greenAccent,
+                        ),
+                      ),
+                    if (g.lastVictimName != null)
+                      Text(
+                        l10n.lastVictim(g.lastVictimName!),
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                  const SizedBox(height: 12),
+                  Text(
+                    l10n.playersCount(_room.players.length, _room.maxPlayers),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView(
+                      children: [
+                        if (inLobby)
+                          ..._room.players.map(
+                            (p) => ListTile(
+                              leading: Icon(
+                                p.isHost ? Icons.star : Icons.person,
+                                color: p.isHost ? Colors.amber : null,
+                              ),
+                              title: Text(p.nick),
+                              subtitle: p.isHost ? Text(l10n.host) : null,
+                            ),
+                          ),
+                        if (g != null)
+                          ...g.players.map((p) {
+                            final canTarget =
+                                g.canAct && g.validTargets.contains(p.id) && p.alive;
+                            return ListTile(
+                              title: Text(p.nick),
+                              trailing: p.alive
+                                  ? null
+                                  : Text(l10n.eliminated,
+                                      style: const TextStyle(color: Colors.grey)),
+                              tileColor: canTarget
+                                  ? Colors.white.withValues(alpha: 0.06)
+                                  : null,
+                              onTap: canTarget
+                                  ? () {
+                                      final type = g.phase == 'night'
+                                          ? 'night_kill'
+                                          : 'day_vote';
+                                      _gameAction(type, p.id);
+                                    }
+                                  : null,
+                            );
+                          }),
+                      ],
+                    ),
+                  ),
+                  if (inLobby) ...[
+                    Text(
+                      l10n.needSixPlayers,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.amber),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed:
+                          _room.players.length >= 6 ? _startGame : null,
+                      child: Text(l10n.startGame),
+                    ),
+                  ],
+                  if (g?.winner != null)
+                    FilledButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text(l10n.backToLobby),
+                    ),
                 ],
               ),
             ),
-            if (inLobby) ...[
-              Text(
-                l10n.needSixPlayers,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.amber),
+          ),
+          if (_showChat)
+            Container(
+              width: MediaQuery.of(context).size.width * 0.45,
+              decoration: BoxDecoration(
+                border: Border(left: BorderSide(color: Colors.white12)),
+                color: Colors.black12,
               ),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed:
-                    _room.players.length >= 6 ? _startGame : null,
-                child: Text(l10n.startGame),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _chatChannel = 'room:${_room.code}'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: _chatChannel.startsWith('room:')
+                                      ? Colors.amber
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.roomChat,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: _chatChannel.startsWith('room:')
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: _chatChannel.startsWith('room:')
+                                    ? Colors.amber
+                                    : Colors.white54,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => setState(() => _chatChannel = 'general'),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: _chatChannel == 'general'
+                                      ? Colors.amber
+                                      : Colors.transparent,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.generalChat,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: _chatChannel == 'general'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: _chatChannel == 'general'
+                                    ? Colors.amber
+                                    : Colors.white54,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: ChatPanel(
+                      socket: widget.socketService.socket,
+                      channel: _chatChannel,
+                      nick: widget.nick,
+                    ),
+                  ),
+                ],
               ),
-            ],
-            if (g?.winner != null)
-              FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text(l10n.backToLobby),
-              ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

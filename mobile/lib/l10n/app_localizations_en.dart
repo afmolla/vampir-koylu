@@ -191,4 +191,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get playAgain => 'Play again';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get generalChat => 'General chat';
+
+  @override
+  String get roomChat => 'Room chat';
+
+  @override
+  String get chatHint => 'Type a message…';
+
+  @override
+  String get send => 'Send';
 }

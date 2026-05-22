@@ -8,6 +8,7 @@ import '../core/config.dart';
 import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import '../services/socket_service.dart';
+import '../widgets/chat_panel.dart';
 import 'online_room_screen.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
@@ -26,17 +27,28 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   bool _loading = true;
   String? _error;
   int _maxPlayers = 6;
+  bool _socketConnected = false;
 
   @override
   void initState() {
     super.initState();
     _loadRooms();
+    _connectSocket();
   }
 
   @override
   void dispose() {
     _joinController.dispose();
     super.dispose();
+  }
+
+  Future<void> _connectSocket() async {
+    try {
+      final token = await SessionStore().getToken();
+      if (token == null || token.isEmpty) return;
+      await _socketService.connect(token: token);
+      if (mounted) setState(() => _socketConnected = true);
+    } catch (_) {}
   }
 
   Future<void> _loadRooms() async {
@@ -71,6 +83,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
     final token = await SessionStore().getToken();
     if (token == null || token.isEmpty) throw Exception('no_token');
     final socket = await _socketService.connect(token: token);
+    if (mounted) setState(() => _socketConnected = true);
     await fn(socket);
   }
 
@@ -163,66 +176,115 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadRooms),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
+      body: Column(
         children: [
-          Text(l10n.onlineLobbyTitle, style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 8),
-          Text(l10n.onlineLobbyDesc, style: const TextStyle(color: Colors.white70)),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _joinController,
-                  textCapitalization: TextCapitalization.characters,
-                  decoration: InputDecoration(
-                    labelText: l10n.roomCodeHint,
-                    hintText: 'ABC123',
+          Expanded(
+            flex: 3,
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                Text(l10n.onlineLobbyTitle, style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                Text(l10n.onlineLobbyDesc, style: const TextStyle(color: Colors.white70)),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _joinController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          labelText: l10n.roomCodeHint,
+                          hintText: 'ABC123',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(onPressed: () => _joinRoom(), child: Text(l10n.joinRoom)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Text(l10n.maxPlayers),
+                    const SizedBox(width: 12),
+                    DropdownButton<int>(
+                      value: _maxPlayers,
+                      items: const [6, 7, 8]
+                          .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
+                          .toList(),
+                      onChanged: (v) => setState(() => _maxPlayers = v ?? 6),
+                    ),
+                    const Spacer(),
+                    FilledButton.icon(
+                      onPressed: _createRoom,
+                      icon: const Icon(Icons.add),
+                      label: Text(l10n.createRoom),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(l10n.openRooms, style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                if (_loading) const Center(child: CircularProgressIndicator()),
+                if (_error != null) Text(_error!, style: const TextStyle(color: Colors.redAccent)),
+                if (!_loading && _rooms.isEmpty)
+                  Text(l10n.noOpenRooms, style: const TextStyle(color: Colors.white54)),
+                ..._rooms.map((r) {
+                  return Card(
+                    child: ListTile(
+                      title: Text('${r['code']} — ${r['playerCount']}/${r['maxPlayers']}'),
+                      subtitle: Text(l10n.hostLabel(r['hostNick'] as String? ?? '?')),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => _joinRoom(r['code'] as String?),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: Colors.white12)),
+              color: Colors.black12,
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.chat_bubble_outline, size: 16, color: Colors.amber),
+                      const SizedBox(width: 6),
+                      Text(
+                        l10n.generalChat,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              FilledButton(onPressed: () => _joinRoom(), child: Text(l10n.joinRoom)),
-            ],
+                Expanded(
+                  child: _socketConnected
+                      ? ChatPanel(
+                          socket: _socketService.socket,
+                          channel: 'general',
+                          nick: widget.nick,
+                        )
+                      : const Center(
+                          child: Text(
+                            '...',
+                            style: TextStyle(color: Colors.white38),
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Text(l10n.maxPlayers),
-              const SizedBox(width: 12),
-              DropdownButton<int>(
-                value: _maxPlayers,
-                items: const [6, 7, 8]
-                    .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
-                    .toList(),
-                onChanged: (v) => setState(() => _maxPlayers = v ?? 6),
-              ),
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: _createRoom,
-                icon: const Icon(Icons.add),
-                label: Text(l10n.createRoom),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Text(l10n.openRooms, style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          if (_loading) const Center(child: CircularProgressIndicator()),
-          if (_error != null) Text(_error!, style: const TextStyle(color: Colors.redAccent)),
-          if (!_loading && _rooms.isEmpty)
-            Text(l10n.noOpenRooms, style: const TextStyle(color: Colors.white54)),
-          ..._rooms.map((r) {
-            return Card(
-              child: ListTile(
-                title: Text('${r['code']} — ${r['playerCount']}/${r['maxPlayers']}'),
-                subtitle: Text(l10n.hostLabel(r['hostNick'] as String? ?? '?')),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _joinRoom(r['code'] as String?),
-              ),
-            );
-          }),
         ],
       ),
     );

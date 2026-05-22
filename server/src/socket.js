@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import semver from 'semver';
 import jwt from 'jsonwebtoken';
 import { config } from './config.js';
+import { getDb } from './db/database.js';
 import {
   createRoom,
   joinRoom,
@@ -10,7 +11,6 @@ import {
   gameAction,
   viewsForRoom,
   getRoomForSocket,
-  playerView,
 } from './rooms/roomStore.js';
 
 function emitRoomState(io, room) {
@@ -20,6 +20,22 @@ function emitRoomState(io, room) {
       io.to(player.socketId).emit('room:state', view);
     }
   }
+}
+
+function saveMessage({ channel, userId, nick, content }) {
+  const db = getDb();
+  const stmt = db.prepare(
+    'INSERT INTO messages (channel, user_id, nick, content) VALUES (?, ?, ?, ?)',
+  );
+  const result = stmt.run(channel, userId, nick, content);
+  return {
+    id: Number(result.lastInsertRowid),
+    channel,
+    user_id: userId,
+    nick,
+    content,
+    created_at: new Date().toISOString(),
+  };
 }
 
 export function attachSocket(httpServer) {
@@ -54,6 +70,8 @@ export function attachSocket(httpServer) {
     const userId = socket.data.user.sub;
     socket.emit('connected', { ok: true, userId });
 
+    socket.join('chat:general');
+
     socket.on('room:create', (payload, ack) => {
       const maxPlayers = payload?.maxPlayers ?? 6;
       const nick = payload?.nick ?? 'Player';
@@ -63,6 +81,9 @@ export function attachSocket(httpServer) {
         maxPlayers,
         socketId: socket.id,
       });
+      if (view?.code) {
+        socket.join(`chat:room:${view.code}`);
+      }
       if (typeof ack === 'function') ack({ ok: true, room: view });
       socket.emit('room:state', view);
     });
@@ -79,11 +100,18 @@ export function attachSocket(httpServer) {
         return;
       }
       const room = getRoomForSocket(socket.id);
-      if (room) emitRoomState(io, room);
+      if (room) {
+        socket.join(`chat:room:${room.code}`);
+        emitRoomState(io, room);
+      }
       if (typeof ack === 'function') ack({ ok: true, room: result.room });
     });
 
     socket.on('room:leave', (_payload, ack) => {
+      const room = getRoomForSocket(socket.id);
+      if (room) {
+        socket.leave(`chat:room:${room.code}`);
+      }
       const result = leaveRoom(socket.id);
       if (result?.room && !result.deleted) {
         emitRoomState(io, result.room);
@@ -113,7 +141,52 @@ export function attachSocket(httpServer) {
       if (typeof ack === 'function') ack({ ok: true });
     });
 
+    socket.on('chat:send', (payload, ack) => {
+      try {
+        const content = String(payload?.content ?? '').trim();
+        if (!content || content.length > 500) {
+          if (typeof ack === 'function') ack({ ok: false, error: 'invalid_message' });
+          return;
+        }
+
+        const channel = payload?.channel ?? 'general';
+        const nick = payload?.nick ?? 'Player';
+
+        if (channel.startsWith('room:')) {
+          const room = getRoomForSocket(socket.id);
+          if (!room || `room:${room.code}` !== channel) {
+            if (typeof ack === 'function') ack({ ok: false, error: 'not_in_room' });
+            return;
+          }
+        }
+
+        const message = saveMessage({
+          channel,
+          userId,
+          nick: String(nick).slice(0, 24),
+          content,
+        });
+
+        io.to(`chat:${channel}`).emit('chat:message', message);
+        if (typeof ack === 'function') ack({ ok: true, message });
+      } catch (err) {
+        console.error('chat:send error:', err);
+        if (typeof ack === 'function') ack({ ok: false, error: 'server_error' });
+      }
+    });
+
+    socket.on('chat:join', (payload) => {
+      const channel = payload?.channel;
+      if (channel && typeof channel === 'string') {
+        socket.join(`chat:${channel}`);
+      }
+    });
+
     socket.on('disconnect', () => {
+      const room = getRoomForSocket(socket.id);
+      if (room) {
+        socket.leave(`chat:room:${room.code}`);
+      }
       const result = leaveRoom(socket.id);
       if (result?.room && !result.deleted) {
         emitRoomState(io, result.room);

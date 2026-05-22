@@ -192,4 +192,19 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get playAgain => 'Tekrar oyna';
+
+  @override
+  String get chat => 'Sohbet';
+
+  @override
+  String get generalChat => 'Genel sohbet';
+
+  @override
+  String get roomChat => 'Oda sohbeti';
+
+  @override
+  String get chatHint => 'Mesaj yaz…';
+
+  @override
+  String get send => 'Gönder';
 }

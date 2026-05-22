@@ -24,6 +24,10 @@ mobile/.flutter-plugins-dependencies
 server/dist/
 coverage/
 
+# SQLite journal files
+*.db-shm
+*.db-wal
+
 # Logs
 *.log
 npm-debug.log*

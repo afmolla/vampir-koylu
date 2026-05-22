@@ -4,6 +4,7 @@ import { versionRouter } from './routes/version.js';
 import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
 import { roomsRouter } from './routes/rooms.js';
+import { chatRouter } from './routes/chat.js';
 
 export function createApp() {
   const app = express();
@@ -23,6 +24,7 @@ export function createApp() {
   app.use('/api/version', versionRouter);
   app.use('/api/auth', authRouter);
   app.use('/api/rooms', roomsRouter);
+  app.use('/api/chat', chatRouter);
 
   app.use((err, _req, res, _next) => {
     console.error(err);

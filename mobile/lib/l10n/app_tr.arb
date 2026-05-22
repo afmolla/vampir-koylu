@@ -80,5 +80,10 @@
   "tapToVote": "Elenmesini istediğin oyuncuya dokun",
   "villagersWin": "Köylüler kazandı!",
   "vampiresWin": "Vampirler kazandı!",
-  "playAgain": "Tekrar oyna"
+  "playAgain": "Tekrar oyna",
+  "chat": "Sohbet",
+  "generalChat": "Genel sohbet",
+  "roomChat": "Oda sohbeti",
+  "chatHint": "Mesaj yaz…",
+  "send": "Gönder"
 }

@@ -80,5 +80,10 @@
   "tapToVote": "Tap a player to vote them out",
   "villagersWin": "Villagers win!",
   "vampiresWin": "Vampires win!",
-  "playAgain": "Play again"
+  "playAgain": "Play again",
+  "chat": "Chat",
+  "generalChat": "General chat",
+  "roomChat": "Room chat",
+  "chatHint": "Type a message…",
+  "send": "Send"
 }
