@@ -3,8 +3,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../l10n/app_localizations.dart';
 import '../services/apk_installer.dart';
 
-const _defaultApkUrl =
-    'https://github.com/afmolla/flutter/releases/download/v0.2.6/app-release.apk';
+import '../core/config.dart';
+
+const _defaultApkUrl = AppConfig.defaultUpdateApkUrl;
 
 class ForceUpdateScreen extends StatefulWidget {
   const ForceUpdateScreen({

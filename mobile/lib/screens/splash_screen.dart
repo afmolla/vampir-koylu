@@ -71,6 +71,10 @@ class _SplashScreenState extends State<SplashScreen> {
         versionResponse: version,
       );
       final latest = version['latestVersion'] as String?;
+      final serverMisconfigured = latest != null &&
+          latest.isNotEmpty &&
+          !isVersionOlder(_clientVersion, latest) &&
+          isVersionOlder(latest, AppConfig.updateTargetVersion);
 
       if (!mounted) return;
 
@@ -99,6 +103,17 @@ class _SplashScreenState extends State<SplashScreen> {
         version: _CheckStep.ok,
         latest: latest,
       );
+
+      if (serverMisconfigured && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Sunucu eski ayar ($latest). VPS\'te SUNUCU-GUNCELLEME-ACIL.cmd çalıştır.',
+            ),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+      }
 
       if (!mounted) return;
       await Future<void>.delayed(const Duration(milliseconds: 400));

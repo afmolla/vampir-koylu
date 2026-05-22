@@ -12,5 +12,15 @@ class AppConfig {
   );
 
   static const String clientVersion = '0.2.6';
+
+  /// Sunucu eski ayarlı olsa bile bu sürümün altı güncelleme görür (test: 0.2.4 → 0.2.5).
+  static const String updateTargetVersion = String.fromEnvironment(
+    'UPDATE_TARGET_VERSION',
+    defaultValue: '0.2.5',
+  );
+
+  static const String defaultUpdateApkUrl =
+      'https://github.com/afmolla/flutter/releases/download/v0.2.5/app-release.apk';
+
   static const String platform = 'android';
 }

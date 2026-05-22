@@ -16,16 +16,24 @@ versionRouter.get('/', (req, res) => {
     semver.valid(config.latestVersion) &&
     semver.gte(clientVersion, config.latestVersion);
   const allowed = meetsMin && meetsLatest;
+  const needsUpdate =
+    config.forceUpdate &&
+    validClient &&
+    semver.valid(config.latestVersion) &&
+    semver.lt(clientVersion, config.latestVersion);
 
   res.json({
     minRequiredVersion: config.minRequiredVersion,
     latestVersion: config.latestVersion,
     forceUpdate: config.forceUpdate,
     allowed,
+    needsUpdate,
     updateUrlAndroid: config.updateUrlAndroid,
-    message: allowed
-      ? null
-      : 'Bu sürüm artık desteklenmiyor. Lütfen güncelleyin.',
+    message: needsUpdate
+      ? 'Yeni sürüm mevcut. Lütfen güncelleyin.'
+      : allowed
+        ? null
+        : 'Bu sürüm artık desteklenmiyor. Lütfen güncelleyin.',
     platform,
   });
 });

@@ -1,3 +1,5 @@
+import 'config.dart';
+
 /// Basit semver karsilastirma (major.minor.patch).
 bool isVersionOlder(String client, String latest) {
   List<int> parse(String v) {
@@ -21,7 +23,13 @@ bool shouldForceUpdate({
   required String clientVersion,
   required Map<String, dynamic> versionResponse,
 }) {
+  if (versionResponse['needsUpdate'] == true) return true;
   if (versionResponse['allowed'] != true) return true;
+
+  // Sunucu yanlış "0.2.0" dönse bile hedef sürüme göre zorla (0.2.4 → 0.2.5 testi).
+  if (isVersionOlder(clientVersion, AppConfig.updateTargetVersion)) {
+    return true;
+  }
 
   final force = versionResponse['forceUpdate'] == true;
   if (!force) return false;
