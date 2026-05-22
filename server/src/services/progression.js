@@ -1,10 +1,12 @@
 import { getDb } from '../db/database.js';
 
 export const RANKS = [
-  { id: 'bronze', minXp: 0, theme: 'Bronze' },
-  { id: 'silver', minXp: 500, theme: 'Silver' },
-  { id: 'gold', minXp: 2000, theme: 'Gold' },
-  { id: 'immortal_vampire', minXp: 5000, theme: 'Immortal Vampire' },
+  { id: 'bronze', minXp: 0, theme: 'Bronze', labelTr: 'Bronz Köylü', labelEn: 'Bronze Villager', perkTr: 'Temel oyun', perkEn: 'Core play' },
+  { id: 'silver', minXp: 300, theme: 'Silver', labelTr: 'Gümüş Avcı', labelEn: 'Silver Hunter', perkTr: '+%5 maç coin', perkEn: '+5% match coins' },
+  { id: 'gold', minXp: 1000, theme: 'Gold', labelTr: 'Altın Stratej', labelEn: 'Gold Strategist', perkTr: 'Turnuva erişimi', perkEn: 'Tournament access' },
+  { id: 'platinum', minXp: 2500, theme: 'Platinum', labelTr: 'Platin Usta', labelEn: 'Platinum Master', perkTr: 'Turnuva ücreti -%10', perkEn: '-10% tournament fee' },
+  { id: 'diamond', minXp: 4500, theme: 'Diamond', labelTr: 'Elmas Efsane', labelEn: 'Diamond Legend', perkTr: 'Özel çerçeve', perkEn: 'Exclusive frame' },
+  { id: 'immortal_vampire', minXp: 8000, theme: 'Immortal', labelTr: 'Ölümsüz Vampir', labelEn: 'Immortal Vampire', perkTr: 'Efsane rozeti', perkEn: 'Legend badge' },
 ];
 
 /** Kozmetik — pay-to-win yok, sadece görünüm. */
@@ -25,12 +27,39 @@ const DAILY_QUESTS = [
   { id: 'doctor_save', metric: 'saves', goal: 1, rewardCoins: 35, rewardXp: 20 },
 ];
 
-function rankForXp(xp) {
+export function rankForXp(xp) {
   let rank = RANKS[0];
   for (const r of RANKS) {
     if (xp >= r.minXp) rank = r;
   }
   return rank;
+}
+
+export function rankProgress(xp) {
+  const current = rankForXp(xp);
+  const idx = RANKS.findIndex((r) => r.id === current.id);
+  const next = RANKS[idx + 1] ?? null;
+  if (!next) {
+    return { current, next: null, xpIntoTier: xp - current.minXp, xpToNext: 0, percent: 100 };
+  }
+  const xpIntoTier = xp - current.minXp;
+  const xpSpan = next.minXp - current.minXp;
+  const percent = Math.min(100, Math.floor((xpIntoTier / xpSpan) * 100));
+  return {
+    current,
+    next,
+    xpIntoTier,
+    xpToNext: next.minXp - xp,
+    percent,
+  };
+}
+
+export function syncRankTier(userId) {
+  const db = getDb();
+  const row = db.prepare('SELECT xp FROM user_profiles WHERE user_id = ?').get(userId);
+  if (!row) return;
+  const rank = rankForXp(row.xp);
+  db.prepare('UPDATE user_profiles SET rank_tier = ? WHERE user_id = ?').run(rank.id, userId);
 }
 
 export function ensureProfile(userId) {
@@ -58,6 +87,8 @@ export function getProfileBundle(userId) {
   const db = getDb();
   const profile = ensureProfile(userId);
   const rank = rankForXp(profile.xp);
+  const progress = rankProgress(profile.xp);
+  const stats = getUserStats(userId);
   const today = new Date().toISOString().slice(0, 10);
 
   const quests = db
@@ -87,6 +118,10 @@ export function getProfileBundle(userId) {
       coins: profile.coins,
       rankTier: rank.id,
       rankTheme: rank.theme,
+      rankLabelTr: rank.labelTr,
+      rankLabelEn: rank.labelEn,
+      rankPerkTr: rank.perkTr,
+      rankPerkEn: rank.perkEn,
       loginStreak: profile.login_streak,
       lastLoginDate: profile.last_login_date,
       equippedSkin: profile.equipped_skin,
@@ -96,11 +131,93 @@ export function getProfileBundle(userId) {
       equippedDeathAnim: profile.equipped_death_anim,
       voiceEffect: profile.voice_effect ?? 'proximity_default',
     },
+    rankProgress: {
+      currentId: progress.current.id,
+      nextId: progress.next?.id ?? null,
+      nextMinXp: progress.next?.minXp ?? null,
+      xpToNext: progress.xpToNext,
+      percent: progress.percent,
+    },
+    stats,
     dailyQuests: questDefs,
     ownedCosmetics: owned,
     catalog: COSMETIC_CATALOG,
     ranks: RANKS,
   };
+}
+
+export function getUserStats(userId) {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT summary_json FROM match_summaries WHERE user_id = ? ORDER BY created_at DESC LIMIT 200`,
+    )
+    .all(userId);
+
+  let wins = 0;
+  let mvpCount = 0;
+  for (const row of rows) {
+    try {
+      const s = JSON.parse(row.summary_json);
+      const my = (s.players ?? []).find((p) => p.userId === userId);
+      const evil = ['vampire', 'silent_killer', 'double_agent'].includes(my?.role);
+      const won =
+        (s.winner === 'villager' && !evil) || (s.winner === 'vampire' && evil);
+      if (won) wins += 1;
+      if (s.mvp?.userId === userId) mvpCount += 1;
+    } catch {
+      /* skip */
+    }
+  }
+
+  const total = rows.length;
+  const tournamentsJoined = db
+    .prepare('SELECT COUNT(*) AS c FROM tournament_entries WHERE user_id = ?')
+    .get(userId).c;
+
+  return {
+    totalMatches: total,
+    wins,
+    losses: Math.max(0, total - wins),
+    winRate: total > 0 ? Math.round((wins / total) * 100) : 0,
+    mvpCount,
+    tournamentsJoined,
+  };
+}
+
+export function getMatchHistory(userId, limit = 40) {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT id, room_code, summary_json, created_at FROM match_summaries
+       WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`,
+    )
+    .all(userId, limit);
+
+  return rows.map((row) => {
+    let summary = {};
+    try {
+      summary = JSON.parse(row.summary_json);
+    } catch {
+      summary = {};
+    }
+    const my = (summary.players ?? []).find((p) => p.userId === userId);
+    const evil = ['vampire', 'silent_killer', 'double_agent'].includes(my?.role);
+    const won =
+      (summary.winner === 'villager' && !evil) ||
+      (summary.winner === 'vampire' && evil);
+
+    return {
+      id: row.id,
+      roomCode: row.room_code,
+      createdAt: row.created_at,
+      winner: summary.winner,
+      won,
+      role: my?.role ?? 'villager',
+      mvp: summary.mvp?.userId === userId,
+      playerCount: summary.players?.length ?? 0,
+    };
+  });
 }
 
 export function claimDailyLogin(userId) {
@@ -124,6 +241,7 @@ export function claimDailyLogin(userId) {
   db.prepare(
     `UPDATE user_profiles SET coins = coins + ?, xp = xp + ?, login_streak = ?, last_login_date = ? WHERE user_id = ?`,
   ).run(bonusCoins, bonusXp, streak, today, userId);
+  syncRankTier(userId);
 
   return {
     alreadyClaimed: false,
@@ -175,6 +293,7 @@ export function claimQuest(userId, questId) {
   db.prepare(
     `UPDATE user_profiles SET coins = coins + ?, xp = xp + ? WHERE user_id = ?`,
   ).run(def.rewardCoins, def.rewardXp, userId);
+  syncRankTier(userId);
 
   return { ok: true, bundle: getProfileBundle(userId) };
 }
@@ -193,6 +312,7 @@ export function applyMatchRewards(userId, summary, playerRole) {
     coins,
     userId,
   );
+  syncRankTier(userId);
 
   const evil = ['vampire', 'silent_killer', 'double_agent'].includes(playerRole);
   const won =

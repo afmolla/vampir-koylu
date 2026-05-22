@@ -123,8 +123,15 @@ GameRoleMeta roleMeta(String? role) =>
     kGameRoles[role] ?? kGameRoles['villager']!;
 
 const kRankThemes = <String, Map<String, dynamic>>{
-  'bronze': {'label': 'Bronze', 'color': 0xFFCD7F32},
-  'silver': {'label': 'Silver', 'color': 0xFFB0BEC5},
-  'gold': {'label': 'Gold', 'color': 0xFFFFD54F},
-  'immortal_vampire': {'label': 'Immortal Vampire', 'color': 0xFFB71C3A},
+  'bronze': {'label': 'Bronz Köylü', 'labelEn': 'Bronze Villager', 'color': 0xFFCD7F32, 'icon': Icons.shield_moon_outlined},
+  'silver': {'label': 'Gümüş Avcı', 'labelEn': 'Silver Hunter', 'color': 0xFF90A4AE, 'icon': Icons.military_tech_outlined},
+  'gold': {'label': 'Altın Stratej', 'labelEn': 'Gold Strategist', 'color': 0xFFFFB300, 'icon': Icons.workspace_premium_outlined},
+  'platinum': {'label': 'Platin Usta', 'labelEn': 'Platinum Master', 'color': 0xFF26C6DA, 'icon': Icons.diamond_outlined},
+  'diamond': {'label': 'Elmas Efsane', 'labelEn': 'Diamond Legend', 'color': 0xFF7E57C2, 'icon': Icons.auto_awesome},
+  'immortal_vampire': {'label': 'Ölümsüz Vampir', 'labelEn': 'Immortal Vampire', 'color': 0xFFB71C3A, 'icon': Icons.bloodtype_rounded},
 };
+
+String rankLabel(String tier, String locale) {
+  final m = kRankThemes[tier] ?? kRankThemes['bronze']!;
+  return locale == 'en' ? (m['labelEn'] as String) : (m['label'] as String);
+}

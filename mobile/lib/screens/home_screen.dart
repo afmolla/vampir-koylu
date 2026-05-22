@@ -7,6 +7,7 @@ import 'online_lobby_screen.dart';
 import 'profile_hub_screen.dart';
 import 'solo_game_screen.dart';
 import 'splash_screen.dart';
+import 'tournaments_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
@@ -98,6 +99,17 @@ class HomeScreen extends StatelessWidget {
               },
             ),
             if (!offlineMode) ...[
+              const SizedBox(height: 16),
+              _MenuButton(
+                icon: Icons.emoji_events_outlined,
+                label: 'Turnuvalar',
+                subtitle: 'Coin veya ücretli katılım · ödül havuzu',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+                  );
+                },
+              ),
               const SizedBox(height: 16),
               _MenuButton(
                 icon: Icons.groups_2_outlined,

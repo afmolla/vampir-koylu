@@ -45,5 +45,25 @@ class ProfileService {
   Future<Map<String, dynamic>> purchaseCosmetic(String cosmeticId) =>
       _post('/api/shop/purchase', {'cosmeticId': cosmeticId});
 
+  Future<Map<String, dynamic>> fetchMatchHistory({int limit = 30}) =>
+      _get('/api/profile/matches?limit=$limit');
+
+  Future<Map<String, dynamic>> fetchTournaments() => _get('/api/tournaments');
+
+  Future<Map<String, dynamic>> fetchTournament(String id) =>
+      _get('/api/tournaments/$id');
+
+  Future<Map<String, dynamic>> registerTournament(
+    String id, {
+    required String method,
+  }) =>
+      _post('/api/tournaments/$id/register', {'method': method});
+
+  Future<Map<String, dynamic>> confirmTournamentPayment(
+    String id,
+    String paymentRef,
+  ) =>
+      _post('/api/tournaments/$id/confirm-payment', {'paymentRef': paymentRef});
+
   void dispose() => _client.close();
 }

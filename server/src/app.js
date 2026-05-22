@@ -7,6 +7,8 @@ import { roomsRouter } from './routes/rooms.js';
 import { chatRouter } from './routes/chat.js';
 import { profileRouter } from './routes/profile.js';
 import { shopRouter } from './routes/shop.js';
+import { tournamentsRouter } from './routes/tournaments.js';
+import { seedTournamentsIfEmpty } from './services/tournaments.js';
 
 export function createApp() {
   const app = express();
@@ -29,6 +31,13 @@ export function createApp() {
   app.use('/api/chat', chatRouter);
   app.use('/api/profile', profileRouter);
   app.use('/api/shop', shopRouter);
+  app.use('/api/tournaments', tournamentsRouter);
+
+  try {
+    seedTournamentsIfEmpty();
+  } catch (e) {
+    console.warn('tournament seed skipped', e?.message);
+  }
 
   app.use((err, _req, res, _next) => {
     console.error(err);

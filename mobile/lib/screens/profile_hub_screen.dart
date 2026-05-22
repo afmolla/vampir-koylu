@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../models/game_roles.dart';
+import '../widgets/rank_progress_card.dart';
 import '../services/profile_service.dart';
 import 'cosmetic_shop_screen.dart';
+import 'match_history_screen.dart';
+import 'tournaments_screen.dart';
 
 class ProfileHubScreen extends StatefulWidget {
   const ProfileHubScreen({super.key});
@@ -63,30 +65,30 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
       setState(() => _bundle = r['bundle'] as Map<String, dynamic>?);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).languageCode;
+
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Profil & Görevler')),
+        appBar: AppBar(title: const Text('Profil')),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     final profile = _bundle?['profile'] as Map<String, dynamic>? ?? {};
+    final stats = _bundle?['stats'] as Map<String, dynamic>? ?? {};
     final quests = _bundle?['dailyQuests'] as List<dynamic>? ?? [];
-    final tier = profile['rankTier'] as String? ?? 'bronze';
-    final rank = kRankThemes[tier] ?? kRankThemes['bronze']!;
+    final rankProgress = _bundle?['rankProgress'] as Map<String, dynamic>?;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil & Görevler'),
+        title: const Text('Profil'),
         actions: [
           IconButton(
             icon: const Icon(Icons.storefront),
@@ -104,26 +106,73 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           children: [
-            Card(
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Color(rank['color'] as int),
-                  child: const Icon(Icons.person, color: Colors.white),
+            RankProgressCard(
+              profile: profile,
+              rankProgress: rankProgress,
+              locale: locale,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatChip(
+                    label: 'Maç',
+                    value: '${stats['totalMatches'] ?? 0}',
+                  ),
                 ),
-                title: Text(rank['label'] as String),
-                subtitle: Text(
-                  'XP ${profile['xp']} · ${profile['coins']} coin',
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _StatChip(
+                    label: 'Galibiyet',
+                    value: '${stats['wins'] ?? 0}',
+                  ),
                 ),
-                trailing: FilledButton(
-                  onPressed: _dailyLogin,
-                  child: const Text('Günlük bonus'),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _StatChip(
+                    label: 'Oran',
+                    value: '%${stats['winRate'] ?? 0}',
+                  ),
                 ),
-              ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonal(
+              onPressed: _dailyLogin,
+              child: const Text('Günlük bonus al'),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const MatchHistoryScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.history),
+                    label: const Text('Maç geçmişi'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const TournamentsScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.emoji_events),
+                    label: const Text('Turnuvalar'),
+                  ),
+                ),
+              ],
             ),
             const Padding(
-              padding: EdgeInsets.only(top: 16, bottom: 8),
+              padding: EdgeInsets.only(top: 20, bottom: 8),
               child: Text(
                 'Günlük görevler',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -149,7 +198,7 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
             }),
             const SizedBox(height: 8),
             const Text(
-              'Mağaza sadece kozmetik — pay-to-win yok.',
+              'Rütbe: Bronz → Gümüş → Altın → Platin → Elmas → Ölümsüz. Kozmetik pay-to-win değil.',
               style: TextStyle(color: Colors.white54, fontSize: 12),
             ),
           ],
@@ -169,5 +218,27 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
       default:
         return id;
     }
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Column(
+          children: [
+            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(label, style: const TextStyle(fontSize: 11, color: Colors.white54)),
+          ],
+        ),
+      ),
+    );
   }
 }

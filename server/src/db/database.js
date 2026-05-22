@@ -82,6 +82,39 @@ function initTables() {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
+
+    CREATE INDEX IF NOT EXISTS idx_match_summaries_user ON match_summaries(user_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS tournaments (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      status TEXT NOT NULL DEFAULT 'registration',
+      entry_fee_coins INTEGER NOT NULL DEFAULT 0,
+      entry_fee_try REAL,
+      prize_pool_coins INTEGER NOT NULL DEFAULT 0,
+      min_players INTEGER NOT NULL DEFAULT 6,
+      max_players INTEGER NOT NULL DEFAULT 32,
+      registration_deadline TEXT,
+      starts_at TEXT,
+      winner_user_id TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (winner_user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS tournament_entries (
+      tournament_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      payment_method TEXT NOT NULL DEFAULT 'coins',
+      payment_status TEXT NOT NULL DEFAULT 'paid',
+      payment_ref TEXT,
+      placement INTEGER,
+      prize_coins INTEGER NOT NULL DEFAULT 0,
+      joined_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (tournament_id, user_id),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
   `);
 }
 
