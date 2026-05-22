@@ -8,9 +8,14 @@ import '../widgets/phase_banner.dart';
 import '../widgets/role_reveal_overlay.dart';
 
 class SoloGameScreen extends StatefulWidget {
-  const SoloGameScreen({super.key, required this.nick});
+  const SoloGameScreen({
+    super.key,
+    required this.nick,
+    this.offlineMode = false,
+  });
 
   final String nick;
+  final bool offlineMode;
 
   @override
   State<SoloGameScreen> createState() => _SoloGameScreenState();
@@ -73,7 +78,17 @@ class _SoloGameScreenState extends State<SoloGameScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(l10n.soloTitle),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.soloTitle),
+            if (widget.offlineMode)
+              Text(
+                l10n.offlineModeBanner,
+                style: const TextStyle(fontSize: 11, color: Colors.amber),
+              ),
+          ],
+        ),
         backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.close),

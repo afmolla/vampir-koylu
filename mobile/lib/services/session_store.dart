@@ -4,6 +4,7 @@ class SessionStore {
   static const _tokenKey = 'auth_token';
   static const _nickKey = 'nick';
   static const _localeKey = 'locale';
+  static const _offlineKey = 'offline_mode';
 
   Future<void> saveSession({
     required String token,
@@ -14,6 +15,24 @@ class SessionStore {
     await prefs.setString(_tokenKey, token);
     await prefs.setString(_nickKey, nick);
     await prefs.setString(_localeKey, locale);
+    await prefs.setBool(_offlineKey, false);
+  }
+
+  /// Sunucu yokken: sadece yerel nick + botlu solo oyun.
+  Future<void> saveOfflineGuest({
+    required String nick,
+    required String locale,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.setString(_nickKey, nick);
+    await prefs.setString(_localeKey, locale);
+    await prefs.setBool(_offlineKey, true);
+  }
+
+  Future<bool> isOfflineMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_offlineKey) ?? false;
   }
 
   Future<String?> getToken() async {
@@ -40,5 +59,6 @@ class SessionStore {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_nickKey);
+    await prefs.remove(_offlineKey);
   }
 }

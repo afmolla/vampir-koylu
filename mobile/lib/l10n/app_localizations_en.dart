@@ -33,6 +33,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashRetry => 'Try again';
 
   @override
+  String get splashServerUnreachable =>
+      'Could not reach the server. Check your internet or try again later.';
+
+  @override
+  String get continueOffline => 'Continue offline';
+
+  @override
+  String get continueOfflineHint =>
+      '6-player room: you + 5 bots. No server required.';
+
+  @override
+  String get offlineModeTitle => 'Offline play';
+
+  @override
+  String get offlineModeBody =>
+      'Play vampire vs villagers with bots without the server. Reconnect from home when you\'re back online.';
+
+  @override
+  String get offlinePlayWithBots => 'Play with bots';
+
+  @override
+  String get offlineBackToSplash => 'Back — retry connection';
+
+  @override
+  String get offlineModeBanner => 'Offline mode — bot matches only';
+
+  @override
+  String get offlineTryOnline => 'Connect to server';
+
+  @override
+  String get offlineSoloDesc => 'You + 5 bots — full game offline';
+
+  @override
+  String get offlineOnlineDisabled =>
+      'Unavailable offline. Connect to the server first.';
+
+  @override
   String get forceUpdateTitle => 'Update required';
 
   @override

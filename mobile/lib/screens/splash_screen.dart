@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
 import 'force_update_screen.dart';
 import 'login_screen.dart';
+import 'offline_entry_screen.dart';
 
 enum _CheckStep { pending, running, ok, failed }
 
@@ -24,6 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
   String? _latestVersion;
   String? _errorMessage;
   bool _retrying = false;
+  bool _serverUnreachable = false;
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
     required _CheckStep version,
     String? latest,
     String? error,
+    bool? serverUnreachable,
   }) {
     if (!mounted) return;
     setState(() {
@@ -43,6 +46,9 @@ class _SplashScreenState extends State<SplashScreen> {
       _versionStep = version;
       _latestVersion = latest;
       _errorMessage = error;
+      if (serverUnreachable != null) {
+        _serverUnreachable = serverUnreachable;
+      }
     });
   }
 
@@ -54,7 +60,10 @@ class _SplashScreenState extends State<SplashScreen> {
       _versionStep = _CheckStep.pending;
       _errorMessage = null;
       _latestVersion = null;
+      _serverUnreachable = false;
     });
+
+    var serverOk = false;
 
     try {
       _clientVersion = await _api.currentVersion();
@@ -62,6 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
       setState(() => _clientVersion = _clientVersion);
 
       await _api.checkServer();
+      serverOk = true;
       if (!mounted) return;
       _setSteps(server: _CheckStep.ok, version: _CheckStep.running);
 
@@ -108,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Sunucu eski ayar ($latest). VPS\'te SUNUCU-GUNCELLEME-ACIL.cmd çalıştır.',
+              'Sunucu eski ayar ($latest). VPS\'te BASLAT-API.cmd çalıştır.',
             ),
             duration: const Duration(seconds: 6),
           ),
@@ -124,11 +134,14 @@ class _SplashScreenState extends State<SplashScreen> {
     } catch (e) {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
-      final failedServer = _serverStep != _CheckStep.ok;
+      final unreachable = !serverOk;
       _setSteps(
-        server: failedServer ? _CheckStep.failed : _CheckStep.ok,
-        version: failedServer ? _CheckStep.pending : _CheckStep.failed,
-        error: '${l10n.errorNetwork}\n$e',
+        server: unreachable ? _CheckStep.failed : _CheckStep.ok,
+        version: unreachable ? _CheckStep.pending : _CheckStep.failed,
+        error: unreachable
+            ? l10n.splashServerUnreachable
+            : '${l10n.errorNetwork}\n$e',
+        serverUnreachable: unreachable,
       );
     }
   }
@@ -138,6 +151,12 @@ class _SplashScreenState extends State<SplashScreen> {
     _bootstrap().whenComplete(() {
       if (mounted) setState(() => _retrying = false);
     });
+  }
+
+  void _onContinueOffline() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const OfflineEntryScreen()),
+    );
   }
 
   @override
@@ -307,6 +326,26 @@ class _SplashScreenState extends State<SplashScreen> {
                         : const Icon(Icons.refresh),
                     label: Text(l10n.splashRetry),
                   ),
+                  if (_serverUnreachable) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _onContinueOffline,
+                      icon: const Icon(Icons.wifi_off_rounded),
+                      label: Text(l10n.continueOffline),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.amber,
+                        side: const BorderSide(color: Colors.amber),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.continueOfflineHint,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white54,
+                          ),
+                    ),
+                  ],
                 ],
               ],
             ),

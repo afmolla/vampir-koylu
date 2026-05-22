@@ -128,6 +128,28 @@ abstract class AppLocalizations {
   /// No description provided for @splashRetry.
   String get splashRetry;
 
+  String get splashServerUnreachable;
+
+  String get continueOffline;
+
+  String get continueOfflineHint;
+
+  String get offlineModeTitle;
+
+  String get offlineModeBody;
+
+  String get offlinePlayWithBots;
+
+  String get offlineBackToSplash;
+
+  String get offlineModeBanner;
+
+  String get offlineTryOnline;
+
+  String get offlineSoloDesc;
+
+  String get offlineOnlineDisabled;
+
   /// No description provided for @forceUpdateTitle.
   ///
   /// In en, this message translates to:

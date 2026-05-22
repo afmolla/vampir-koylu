@@ -33,6 +33,43 @@ class AppLocalizationsTr extends AppLocalizations {
   String get splashRetry => 'Tekrar dene';
 
   @override
+  String get splashServerUnreachable =>
+      'Sunucuya bağlanılamadı. İnternet veya sunucu kapalı olabilir.';
+
+  @override
+  String get continueOffline => 'Internetsiz devam et';
+
+  @override
+  String get continueOfflineHint =>
+      '6 kişilik oda: sen + 5 bot. Sunucu gerekmez.';
+
+  @override
+  String get offlineModeTitle => 'Çevrimdışı oyun';
+
+  @override
+  String get offlineModeBody =>
+      'Sunucu olmadan botlarla vampir–köylü oynayabilirsin. İnternet gelince ana ekrandan tekrar bağlan.';
+
+  @override
+  String get offlinePlayWithBots => 'Botlarla oyna';
+
+  @override
+  String get offlineBackToSplash => 'Geri — tekrar dene';
+
+  @override
+  String get offlineModeBanner => 'Çevrimdışı mod — sadece botlu oyun';
+
+  @override
+  String get offlineTryOnline => 'Sunucuya bağlan';
+
+  @override
+  String get offlineSoloDesc => 'Sen + 5 bot — internetsiz tam oyun';
+
+  @override
+  String get offlineOnlineDisabled =>
+      'Çevrimdışı modda kapalı. Sunucuya bağlanınca açılır.';
+
+  @override
   String get forceUpdateTitle => 'Güncelleme gerekli';
 
   @override

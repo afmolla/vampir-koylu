@@ -6,6 +6,7 @@ import '../widgets/app_version_footer.dart';
 import '../services/api_client.dart';
 import '../services/session_store.dart';
 import 'home_screen.dart';
+import 'offline_entry_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -58,8 +59,19 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (_) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.errorNetwork)),
+        SnackBar(
+          content: Text(l10n.errorNetwork),
+          action: SnackBarAction(
+            label: l10n.continueOffline,
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const OfflineEntryScreen()),
+              );
+            },
+          ),
+        ),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -151,6 +163,18 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => _showSoon('Facebook'),
                         icon: const Icon(Icons.facebook),
                         label: Text(l10n.facebookSignIn),
+                      ),
+                      const SizedBox(height: 24),
+                      TextButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const OfflineEntryScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.wifi_off_rounded, size: 20),
+                        label: Text(l10n.continueOffline),
                       ),
                     ],
                   ),
