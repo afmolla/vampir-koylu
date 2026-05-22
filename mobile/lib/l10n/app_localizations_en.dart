@@ -139,6 +139,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get installedVersion => 'Installed version:';
 
   @override
+  String updateApkTarget(String version) => 'Download version: v$version';
+
+  @override
   String get openInBrowser => 'Open in browser (fallback)';
 
   @override

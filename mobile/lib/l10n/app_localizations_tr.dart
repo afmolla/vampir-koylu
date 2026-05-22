@@ -140,6 +140,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get installedVersion => 'Yüklü sürüm:';
 
   @override
+  String updateApkTarget(String version) => 'İndirilecek sürüm: v$version';
+
+  @override
   String get openInBrowser => 'Tarayıcıda aç (yedek)';
 
   @override

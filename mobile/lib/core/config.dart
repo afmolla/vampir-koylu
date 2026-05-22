@@ -18,12 +18,11 @@ class AppConfig {
     defaultValue: '0.2.8',
   );
 
-  static const String defaultUpdateApkUrl =
-      'https://github.com/afmolla/flutter/releases/download/v0.2.8/app-release.apk';
+  /// Güncelleme APK — her zaman hedef sürüm (v0.2.7 yedek yok).
+  static String apkUrlForVersion(String version) =>
+      'https://github.com/afmolla/flutter/releases/download/v$version/app-release.apk';
 
-  /// v0.2.8 CI henüz yoksa yedek (GitHub'da mevcut).
-  static const String fallbackUpdateApkUrl =
-      'https://github.com/afmolla/flutter/releases/download/v0.2.7/app-release.apk';
+  static String get defaultUpdateApkUrl => apkUrlForVersion(updateTargetVersion);
 
   static const String platform = 'android';
 }

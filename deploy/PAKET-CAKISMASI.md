@@ -16,7 +16,7 @@ Telefonda: **«Paket mevcut bir paketle çakıştığından uygulama yüklenemed
 3. **İndir ve yükle**
 4. Sonraki sürümler (aynı imza) üstüne kurulur
 
-Manuel APK: https://github.com/afmolla/flutter/releases/download/v0.2.7/app-release.apk
+Manuel APK (sadece v0.2.8): https://github.com/afmolla/flutter/releases/download/v0.2.8/app-release.apk
 
 ## Geliştirici
 

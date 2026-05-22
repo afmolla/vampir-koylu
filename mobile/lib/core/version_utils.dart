@@ -40,28 +40,9 @@ bool shouldForceUpdate({
   return isVersionOlder(clientVersion, latest);
 }
 
-/// Sunucudan gelen APK linki boş veya /latest ise doğru release URL kullan.
+/// Güncelleme APK: sunucunun latestVersion'ına göre (asla 0.2.7'ye düşmez).
 String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
-  final raw = (versionResponse['updateUrlAndroid'] as String? ?? '').trim();
-  if (raw.isEmpty) return AppConfig.defaultUpdateApkUrl;
-  if (raw.contains('/releases/latest')) return AppConfig.defaultUpdateApkUrl;
-  if (!raw.endsWith('.apk')) return AppConfig.defaultUpdateApkUrl;
-  return raw;
-}
-
-/// Indirme basarisiz olursa denenecek APK adresleri (yeniden eskiye).
-List<String> apkDownloadCandidates(String primary) {
-  final seen = <String>{};
-  final out = <String>[];
-  for (final u in [
-    primary,
-    AppConfig.defaultUpdateApkUrl,
-    AppConfig.fallbackUpdateApkUrl,
-  ]) {
-    final t = u.trim();
-    if (t.isEmpty || !t.endsWith('.apk') || seen.contains(t)) continue;
-    seen.add(t);
-    out.add(t);
-  }
-  return out;
+  final latest = (versionResponse['latestVersion'] as String? ?? '').trim();
+  final ver = latest.isNotEmpty ? latest : AppConfig.updateTargetVersion;
+  return AppConfig.apkUrlForVersion(ver);
 }

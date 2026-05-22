@@ -52,6 +52,10 @@
   "uninstallSettingsFailed": "Ayarlar açılamadı. Telefonda Ayarlar → Uygulamalar → Vampir Köylü → Kaldır.",
   "forceUpdateSteps": "1) Kaldır  2) İndir ve yükle  3) Sonraki güncellemeler otomatik olur",
   "installedVersion": "Yüklü sürüm:",
+  "updateApkTarget": "İndirilecek sürüm: v{version}",
+  "@updateApkTarget": {
+    "placeholders": { "version": { "type": "String" } }
+  },
   "openInBrowser": "Tarayıcıda aç (yedek)",
   "loginTitle": "Giriş yap",
   "guestNickHint": "Takma ad",

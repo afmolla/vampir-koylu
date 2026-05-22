@@ -156,6 +156,12 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                   '${l10n.installedVersion} $_installedVersion',
                   style: const TextStyle(color: Colors.white54),
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.updateApkTarget(AppConfig.updateTargetVersion),
+                  style: const TextStyle(fontSize: 12, color: Colors.greenAccent),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   widget.message ?? l10n.forceUpdateBody,

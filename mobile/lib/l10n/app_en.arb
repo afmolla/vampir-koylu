@@ -52,6 +52,10 @@
   "uninstallSettingsFailed": "Could not open settings. Go to Settings → Apps → Vampire Village → Uninstall.",
   "forceUpdateSteps": "1) Uninstall  2) Download and install  3) Future updates work in-app",
   "installedVersion": "Installed version:",
+  "updateApkTarget": "Download version: v{version}",
+  "@updateApkTarget": {
+    "placeholders": { "version": { "type": "String" } }
+  },
   "openInBrowser": "Open in browser (fallback)",
   "loginTitle": "Sign in",
   "guestNickHint": "Nickname",

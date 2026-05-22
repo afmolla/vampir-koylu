@@ -226,6 +226,8 @@ abstract class AppLocalizations {
   /// **'Installed version:'**
   String get installedVersion;
 
+  String updateApkTarget(String version);
+
   /// No description provided for @openInBrowser.
   ///
   /// In en, this message translates to:
