@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import semver from 'semver';
 import { config } from '../config.js';
+import { SERVER_BUILD } from './health.js';
 
 export const versionRouter = Router();
 
@@ -23,6 +24,7 @@ versionRouter.get('/', (req, res) => {
     semver.lt(clientVersion, config.latestVersion);
 
   res.json({
+    serverBuild: SERVER_BUILD,
     minRequiredVersion: config.minRequiredVersion,
     latestVersion: config.latestVersion,
     forceUpdate: config.forceUpdate,
