@@ -30,6 +30,12 @@ class ServerConfig {
     await prefs.setString(_prefsKey, _base);
   }
 
+  static Future<void> clearSavedUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefsKey);
+    _base = _normalize(AppConfig.defaultApiBaseUrl);
+  }
+
   static String _normalize(String url) {
     var t = url.trim();
     while (t.endsWith('/')) {

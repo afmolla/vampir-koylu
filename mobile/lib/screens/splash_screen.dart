@@ -171,11 +171,17 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       final unreachable = !serverOk;
+      final tried = ServerConfig.connectionCandidates().join('\n');
       _setSteps(
         server: unreachable ? _CheckStep.failed : _CheckStep.ok,
         version: unreachable ? _CheckStep.pending : _CheckStep.failed,
         error: unreachable
-            ? l10n.splashServerUnreachable
+            ? '${l10n.splashServerUnreachable}\n\n'
+                'Adres: ${ServerConfig.effectiveBaseUrl}\n\n'
+                'Telefonda tarayıcıda dene:\n'
+                '${ServerConfig.effectiveBaseUrl}/health\n\n'
+                'ok:true görmüyorsan VPS\'te port 3002 ve firewall.\n\n'
+                'Denenen:\n$tried'
             : '${l10n.errorNetwork}\n$e',
         serverUnreachable: unreachable,
       );
@@ -193,6 +199,15 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const OfflineEntryScreen()),
     );
+  }
+
+  Future<void> _onResetServer() async {
+    await ServerConfig.clearSavedUrl();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Sunucu adresi sıfırlandı (85.95.251.204:3002)')),
+    );
+    _onRetry();
   }
 
   Future<void> _onChangeServer() async {
@@ -400,6 +415,11 @@ class _SplashScreenState extends State<SplashScreen> {
                       onPressed: _onChangeServer,
                       icon: const Icon(Icons.dns_outlined),
                       label: const Text('Sunucu adresini değiştir'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: _retrying ? null : _onResetServer,
+                      child: const Text('Varsayılan sunucuya dön (3002)'),
                     ),
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
