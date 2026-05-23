@@ -32,9 +32,9 @@ jobs:
               workflow_id: 'android-release.yml',
               ref: 'main',
               inputs: {
-                tag: 'v0.2.15',
+                tag: 'v0.2.16',
                 checkout_ref: 'main',
                 api_base_url: 'http://85.95.251.204:3002',
               },
             });
-            core.info('Triggered android-release for v0.2.15');
+            core.info('Triggered android-release for v0.2.16');

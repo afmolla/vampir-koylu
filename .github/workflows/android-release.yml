@@ -110,4 +110,5 @@ jobs:
           files: mobile/build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
           fail_on_unmatched_files: true
-          make_latest: ${{ steps.ref.outputs.tag == 'v0.2.16' }}
+          overwrite_files: true
+          make_latest: true
