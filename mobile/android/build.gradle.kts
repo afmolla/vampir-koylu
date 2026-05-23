@@ -1,7 +1,28 @@
+import com.android.build.gradle.BaseExtension
+import com.android.build.gradle.LibraryExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+}
+
+// flutter_facebook_auth vb. pluginlerde Java 11 / Kotlin 22 uyumsuzlugunu onler
+subprojects {
+    afterEvaluate {
+        extensions.findByType<LibraryExtension>()?.apply {
+            if ((compileSdk ?: 0) < 34) compileSdk = 34
+        }
+        extensions.findByType<BaseExtension>()?.compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+        tasks.withType<KotlinCompile>().configureEach {
+            compilerOptions.jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
 }
 
