@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/config.dart';
+import '../core/server_config.dart';
 import '../core/version_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
@@ -71,6 +72,11 @@ class _SplashScreenState extends State<SplashScreen> {
       _clientVersion = await _api.currentVersion();
       if (!mounted) return;
       setState(() => _clientVersion = _clientVersion);
+
+      final reachable = await ServerConfig.findReachable();
+      if (reachable != null) {
+        await ServerConfig.setBaseUrl(reachable);
+      }
 
       await _api.checkServer();
       serverOk = true;
@@ -189,6 +195,37 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
+  Future<void> _onChangeServer() async {
+    final controller = TextEditingController(text: ServerConfig.effectiveBaseUrl);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sunucu adresi'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'http://85.95.251.204:3002',
+            labelText: 'API adresi',
+          ),
+          keyboardType: TextInputType.url,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('İptal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Kaydet ve dene'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    await ServerConfig.setBaseUrl(controller.text);
+    _onRetry();
+  }
+
   @override
   void dispose() {
     _api.dispose();
@@ -197,9 +234,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   String _serverHostLabel() {
     try {
-      return Uri.parse(AppConfig.apiBaseUrl).host;
+      final u = Uri.parse(ServerConfig.effectiveBaseUrl);
+      return u.hasPort ? '${u.host}:${u.port}' : u.host;
     } catch (_) {
-      return AppConfig.apiBaseUrl;
+      return ServerConfig.effectiveBaseUrl;
     }
   }
 
@@ -358,6 +396,12 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                   if (_serverUnreachable) ...[
                     const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: _onChangeServer,
+                      icon: const Icon(Icons.dns_outlined),
+                      label: const Text('Sunucu adresini değiştir'),
+                    ),
+                    const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: _onContinueOffline,
                       icon: const Icon(Icons.wifi_off_rounded),

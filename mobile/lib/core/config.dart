@@ -1,20 +1,25 @@
+import 'server_config.dart';
+
 /// API base URL.
 ///
 /// **10.0.2.2** sadece Android **emülatör** içindir — PC tarayıcısında açılmaz.
 /// PC'de test: http://127.0.0.1:3002/health
 ///
-/// Gerçek telefon / VPS: `flutter run --dart-define=API_BASE_URL=http://85.95.251.204:3000`
+/// Gerçek telefon / VPS: `flutter run --dart-define=API_BASE_URL=http://85.95.251.204:3002`
 class AppConfig {
-  static const String apiBaseUrl = String.fromEnvironment(
+  /// APK derlemede gömülür; çalışırken [ServerConfig.effectiveBaseUrl] kullan.
+  static const String defaultApiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://127.0.0.1:3002',
+    defaultValue: 'http://85.95.251.204:3002',
   );
 
-  static const String clientVersion = '0.2.15';
+  static String get apiBaseUrl => ServerConfig.effectiveBaseUrl;
+
+  static const String clientVersion = '0.2.16';
 
   static const String updateTargetVersion = String.fromEnvironment(
     'UPDATE_TARGET_VERSION',
-    defaultValue: '0.2.15',
+    defaultValue: '0.2.16',
   );
 
   /// Yayınlanmış APK'lar şimdilik eski repoda; yeni repoya taşınınca primary yeterli olur.

@@ -9,11 +9,11 @@ on:
       tag:
         description: 'Build edilecek tag (ornek v0.1.9, v0.2.2)'
         required: false
-        default: 'v0.2.15'
+        default: 'v0.2.16'
       api_base_url:
         description: 'API_BASE_URL (sunucu)'
         required: false
-        default: 'http://85.95.251.204:3000'
+        default: 'http://85.95.251.204:3002'
       checkout_ref:
         description: 'Git ref (main veya tag)'
         required: false
@@ -80,7 +80,7 @@ jobs:
       - name: Build APK
         working-directory: mobile
         env:
-          API_BASE_URL: ${{ github.event.inputs.api_base_url || 'http://85.95.251.204:3000' }}
+          API_BASE_URL: ${{ github.event.inputs.api_base_url || 'http://85.95.251.204:3002' }}
           GRADLE_OPTS: -Xmx4g
         run: |
           set -o pipefail
@@ -110,4 +110,4 @@ jobs:
           files: mobile/build/app/outputs/flutter-apk/app-release.apk
           generate_release_notes: true
           fail_on_unmatched_files: true
-          make_latest: ${{ steps.ref.outputs.tag == 'v0.2.15' }}
+          make_latest: ${{ steps.ref.outputs.tag == 'v0.2.16' }}
