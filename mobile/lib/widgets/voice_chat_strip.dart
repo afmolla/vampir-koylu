@@ -191,50 +191,75 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
       );
     }
 
-    return Card(
-      color: Colors.black.withValues(alpha: 0.4),
-      margin: const EdgeInsets.only(bottom: 8),
+    return Material(
+      color: Colors.transparent,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
-            Icon(
-              _joined ? Icons.headset_mic : Icons.hearing_disabled,
-              color: _joined ? Colors.greenAccent : Colors.white54,
-              size: 22,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                _joining
-                    ? 'Ses baglaniyor...'
-                    : _joined
-                        ? (_micMuted
-                            ? 'Sesli sohbet — mikrofon kapali'
-                            : 'Sesli sohbet — mikrofon acik')
-                        : 'Sesli sohbet (odaya konus)',
-                style: const TextStyle(fontSize: 12, color: Colors.white70),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: _joined
+                    ? Colors.green.withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                _joined ? Icons.headset_mic : Icons.mic_none,
+                color: _joined ? Colors.greenAccent : Colors.white70,
+                size: 28,
               ),
             ),
-            IconButton(
-              tooltip: _joined
-                  ? (_micMuted ? 'Mikrofonu ac' : 'Mikrofonu kapat')
-                  : 'Sesli sohbete katil',
-              onPressed: _joining
-                  ? null
-                  : (_joined ? _toggleMicMute : _toggleVoiceChannel),
-              icon: Icon(_micIcon, color: _micColor),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Sesli sohbet',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _joining
+                        ? 'Baglaniyor...'
+                        : _joined
+                            ? (_micMuted
+                                ? 'Mikrofon kapali — acmak icin dokun'
+                                : 'Mikrofon acik — odadakiler duyar')
+                            : 'Katil\'a bas, mikrofon izni ver',
+                    style: const TextStyle(fontSize: 12, color: Colors.white60),
+                  ),
+                ],
+              ),
             ),
-            if (_joined)
+            if (_joined) ...[
+              IconButton.filledTonal(
+                tooltip: _micMuted ? 'Mikrofonu ac' : 'Mikrofonu kapat',
+                onPressed: _joining ? null : _toggleMicMute,
+                icon: Icon(_micIcon, color: _micColor, size: 26),
+              ),
               IconButton(
-                tooltip: 'Kanaldan cik',
+                tooltip: 'Sesi kapat',
                 icon: const Icon(Icons.call_end, color: Colors.redAccent),
                 onPressed: _leaveVoice,
-              )
-            else
-              FilledButton.tonal(
+              ),
+            ] else
+              FilledButton.icon(
                 onPressed: _joining ? null : _joinVoice,
-                child: const Text('Katil'),
+                icon: _joining
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.mic),
+                label: const Text('Katil'),
               ),
           ],
         ),

@@ -24,8 +24,8 @@ export const config = {
   port: Number(process.env.PORT ?? 3002),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
-  latestVersion: process.env.LATEST_VERSION ?? '0.2.22',
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.22',
+  latestVersion: process.env.LATEST_VERSION ?? '0.2.23',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.23',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??

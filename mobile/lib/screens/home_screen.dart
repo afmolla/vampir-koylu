@@ -364,6 +364,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
+              if (!widget.offlineMode) ...[
+                const SizedBox(height: 8),
+                const Card(
+                  color: Color(0xFF1B2838),
+                  child: ListTile(
+                    leading: Icon(Icons.headset_mic, color: Colors.greenAccent),
+                    title: Text(
+                      'Sesli sohbet',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      'Odaya girince altta «Sesli sohbet · Katıl» paneli cikar. '
+                      'Mikrofon izni ver; yesil ikon = acik.',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               Card(
                 child: Padding(

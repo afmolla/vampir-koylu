@@ -259,17 +259,26 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       },
       child: Scaffold(
       extendBodyBehindAppBar: true,
+      bottomNavigationBar: showVoice
+          ? Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF1A1218),
+                border: Border(top: BorderSide(color: Colors.white12)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: VoiceChatStrip(
+                  socket: widget.socketService.socket,
+                  enabled: true,
+                  autoJoin: false,
+                ),
+              ),
+            )
+          : null,
       appBar: AppBar(
         title: Text('${l10n.roomCode} ${_room.code}'),
         backgroundColor: Colors.transparent,
         actions: [
-          if (showVoice)
-            VoiceChatStrip(
-              socket: widget.socketService.socket,
-              enabled: true,
-              compact: true,
-              autoJoin: inGame && game?.winner == null,
-            ),
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
             tooltip: 'Sohbet',
@@ -450,7 +459,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                 MultiChannelChat(
                   socket: widget.socketService.socket,
                   nick: widget.nick,
-                  height: 180,
+                  height: showVoice ? 130 : 180,
                   channels: activeGame?.chatChannels ?? game?.chatChannels ?? [
                     {'id': _roomChannel, 'type': 'room'},
                   ],

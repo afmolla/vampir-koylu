@@ -166,10 +166,15 @@ class VoiceRtcManager {
       }
     };
 
-    pc.onTrack = (event) {
+    pc.onTrack = (event) async {
       if (event.track.kind == 'audio') {
         event.track.enabled = true;
-        unawaited(Helper.setSpeakerphoneOn(true));
+        await Helper.setSpeakerphoneOn(true);
+        if (event.streams.isNotEmpty) {
+          for (final t in event.streams.first.getAudioTracks()) {
+            t.enabled = true;
+          }
+        }
       }
       if (kDebugMode) {
         debugPrint('voice: remote track from $peerId');
