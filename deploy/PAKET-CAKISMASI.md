@@ -1,21 +1,22 @@
 # Paket çakışması (Android)
 
-## Neden olur?
+## Aynı imza — üstüne kurulum
 
-Eski APK'lar **farklı imza** ile kurulmuştu. Android üstüne farklı imzalı güncellemeye izin vermez.
+**v0.2.10, v0.2.11, v0.2.12** (ve sonrası) hep **aynı** `release.keystore` ile imzalanır.
 
-**v0.2.10+** tüm build'ler **aynı** `release.keystore` ile imzalanır (repoda kilitli, CI yeni anahtar üretmez).
+| Kurulu sürüm | Yeni sürüm | Ne yapmalı? |
+|--------------|------------|-------------|
+| **0.2.10** | **0.2.12** | **Kaldırma yok** — «Güncelle (üstüne kur)» veya APK linki |
+| 0.2.8 | 0.2.12 | Bir kez kaldır → 0.2.10+ kur |
+| Eski debug APK | Herhangi | Bir kez kaldır |
 
-## Kullanıcı — bir kez
+## İndirme linkleri
 
-1. **Vampir Köylü → Kaldır**
-2. **v0.2.10** kur: https://github.com/afmolla/flutter/releases/download/v0.2.10/app-release.apk
-3. Sonraki güncellemeler **üstüne** kurulur (çakışma yok)
+- **v0.2.12:** https://github.com/afmolla/flutter/releases/download/v0.2.12/app-release.apk
+- v0.2.11: https://github.com/afmolla/flutter/releases/download/v0.2.11/app-release.apk
+- v0.2.10: https://github.com/afmolla/flutter/releases/download/v0.2.10/app-release.apk
 
-## Geliştirici — imzayı değiştirme
+## Geliştirici
 
-- `mobile/android/signing/release.keystore` — **KİLİTLİ**
-- `SIGNING_FINGERPRINT.txt` — CI doğrular
-- `SIGNING-LOCKED.md` — kurallar
-
-Yeni APK: tag `v0.2.10` → `android-release.yml`
+- `release.keystore` — **değiştirme** (CI parmak izi kontrolü)
+- SHA-256: `SIGNING_FINGERPRINT.txt`

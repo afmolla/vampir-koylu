@@ -5,6 +5,7 @@ import '../services/apk_installer.dart';
 import '../services/app_settings_launcher.dart';
 
 import '../core/config.dart';
+import '../core/version_utils.dart';
 
 final _defaultApkUrl = AppConfig.defaultUpdateApkUrl;
 
@@ -28,6 +29,15 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
   double _progress = 0;
   bool _downloading = false;
   bool _confirmedUninstalled = false;
+
+  /// v0.2.10+ ayni release.keystore — ustune kurulum (kaldirma gerekmez).
+  bool get _sameSigningFamily {
+    if (_installedVersion == '…') return true;
+    return !isVersionOlder(_installedVersion, '0.2.10');
+  }
+
+  bool get _canInstall =>
+      !_downloading && (_sameSigningFamily || _confirmedUninstalled);
 
   @override
   void initState() {
@@ -75,7 +85,7 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
   }
 
   Future<void> _downloadAndInstall() async {
-    if (!_confirmedUninstalled) {
+    if (!_sameSigningFamily && !_confirmedUninstalled) {
       _showError(AppLocalizations.of(context)!.mustConfirmUninstall);
       return;
     }
@@ -167,66 +177,79 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                   widget.message ?? l10n.forceUpdateBody,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.45)),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        l10n.packageConflictTitle,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.redAccent,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.packageConflictBody,
-                        style: const TextStyle(fontSize: 13, height: 1.35),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  l10n.forceUpdateSteps,
-                  style: const TextStyle(fontSize: 12, color: Colors.white54),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: _downloading ? null : _openUninstallDialog,
-                    icon: const Icon(Icons.delete_forever),
-                    label: Text(l10n.uninstallAppButton),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red.shade800,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                if (_sameSigningFamily) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.green.withValues(alpha: 0.4)),
+                    ),
+                    child: const Text(
+                      '0.2.10 ve üzeri aynı imza ile imzalanır. '
+                      'Uygulamayı kaldırmadan doğrudan güncelleyebilirsin.',
+                      style: TextStyle(fontSize: 13, height: 1.35),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                CheckboxListTile(
-                  value: _confirmedUninstalled,
-                  onChanged: _downloading
-                      ? null
-                      : (v) => setState(() => _confirmedUninstalled = v ?? false),
-                  title: Text(
-                    l10n.confirmUninstalled,
-                    style: const TextStyle(fontSize: 14),
+                ] else ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.45)),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          l10n.packageConflictTitle,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.redAccent,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.packageConflictBody,
+                          style: const TextStyle(fontSize: 13, height: 1.35),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: _downloading ? null : _openUninstallDialog,
+                      icon: const Icon(Icons.delete_forever),
+                      label: Text(l10n.uninstallAppButton),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.red.shade800,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CheckboxListTile(
+                    value: _confirmedUninstalled,
+                    onChanged: _downloading
+                        ? null
+                        : (v) => setState(() => _confirmedUninstalled = v ?? false),
+                    title: Text(
+                      l10n.confirmUninstalled,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ],
                 if (_downloading) ...[
                   const SizedBox(height: 12),
                   LinearProgressIndicator(value: _progress > 0 ? _progress : null),
@@ -254,11 +277,13 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: (_confirmedUninstalled && !_downloading)
-                        ? _downloadAndInstall
-                        : null,
+                    onPressed: _canInstall ? _downloadAndInstall : null,
                     icon: const Icon(Icons.download_for_offline),
-                    label: Text(l10n.downloadAndInstall),
+                    label: Text(
+                      _sameSigningFamily
+                          ? 'Güncelle (üstüne kur)'
+                          : l10n.downloadAndInstall,
+                    ),
                   ),
                 ),
               ],

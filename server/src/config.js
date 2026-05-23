@@ -12,7 +12,7 @@ export const config = {
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
-    `https://github.com/afmolla/flutter/releases/download/v${process.env.APK_PUBLISH_VERSION ?? '0.2.8'}/app-release.apk`,
+    `https://github.com/afmolla/flutter/releases/download/v${process.env.APK_PUBLISH_VERSION ?? '0.2.12'}/app-release.apk`,
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-change-in-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
