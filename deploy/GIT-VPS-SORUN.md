@@ -10,14 +10,14 @@
 ## Hızlı çözüm (VPS, Yönetici CMD)
 
 ```cmd
-cd C:\apps\flutter
+cd C:\apps\vampir-koylu
 deploy\VPS-GIT-DUZELT.cmd
 ```
 
 veya elle:
 
 ```cmd
-cd C:\apps\flutter
+cd C:\apps\vampir-koylu
 git fetch origin
 git reset --hard origin/main
 git clean -fd -e server/data -e server/.env
@@ -31,7 +31,7 @@ BASLAT-API.cmd
 ```cmd
 mkdir C:\apps
 cd C:\apps
-git clone https://github.com/afmolla/flutter.git
+git clone https://github.com/afmolla/vampir-koylu.git
 cd flutter
 BASLAT-API.cmd
 ```

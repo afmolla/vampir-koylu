@@ -7,6 +7,7 @@ import {
   claimQuest,
   getMatchHistory,
   getUserStats,
+  getBalanceHistory,
 } from '../services/progression.js';
 
 export const profileRouter = Router();
@@ -54,4 +55,11 @@ profileRouter.get('/stats', (req, res) => {
   const userId = authUserId(req);
   if (!userId) return res.status(401).json({ error: 'unauthorized' });
   res.json(getUserStats(userId));
+});
+
+profileRouter.get('/balance/history', (req, res) => {
+  const userId = authUserId(req);
+  if (!userId) return res.status(401).json({ error: 'unauthorized' });
+  const limit = Math.min(50, Number(req.query.limit) || 20);
+  res.json({ history: getBalanceHistory(userId, limit) });
 });

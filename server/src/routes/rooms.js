@@ -1,8 +1,15 @@
 import { Router } from 'express';
-import { listPublicRooms } from '../rooms/roomStore.js';
+import { listPublicRooms, getLiveSummary } from '../rooms/roomStore.js';
+import { getOnlinePlayerCount } from '../services/liveStats.js';
 
 export const roomsRouter = Router();
 
 roomsRouter.get('/', (_req, res) => {
-  res.json({ rooms: listPublicRooms() });
+  const live = getLiveSummary();
+  res.json({
+    rooms: listPublicRooms(),
+    onlinePlayers: getOnlinePlayerCount(),
+    openRooms: live.openRooms,
+    playersInLobbies: live.playersInLobbies,
+  });
 });

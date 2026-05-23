@@ -1,6 +1,6 @@
 # Windows sunucu kurulumu
 
-**GitHub repo (Vampir Köylü projesi):** https://github.com/afmolla/flutter  
+**GitHub repo (Vampir Köylü projesi):** https://github.com/afmolla/vampir-koylu  
 
 > Bu link Flutter SDK değil — oyun + API kodunun olduğu repodur.  
 > Repoyu bilgisayarda istediğin klasör adına klonlayabilirsin (`vampir-koylu` önerilir).
@@ -31,7 +31,7 @@ https://git-scm.com/download/win → Next → **“Git from the command line and
 
 ### Yol 3 — Git yok, ZIP ile al (geçici)
 
-1. Tarayıcıda aç: https://github.com/afmolla/flutter/archive/refs/heads/main.zip  
+1. Tarayıcıda aç: https://github.com/afmolla/vampir-koylu/archive/refs/heads/main.zip  
 2. ZIP’i `C:\apps\` altına çıkar  
 3. Klasör adı `flutter-main` olur → yeniden adlandır: `vampir-koylu`  
 4. Sonra `cd C:\apps\vampir-koylu` ile devam et (clone adımlarını atla)
@@ -52,7 +52,7 @@ Kurulu olur; CMD sadece PATH’te arar. **Yeni kurulumdan sonra eski pencereyi k
 
 ```powershell
 cd C:\apps
-& "C:\Program Files\Git\cmd\git.exe" clone https://github.com/afmolla/flutter.git vampir-koylu
+& "C:\Program Files\Git\cmd\git.exe" clone https://github.com/afmolla/vampir-koylu.git vampir-koylu
 ```
 
 **3) Kalıcı PATH (bir kez, sonra yeni terminal):**
@@ -102,7 +102,7 @@ Linux VPS yerine **Windows Server** veya **Windows 10/11** (7/24 açık) kullana
 ```powershell
 mkdir C:\apps -ErrorAction SilentlyContinue
 cd C:\apps
-git clone https://github.com/afmolla/flutter.git vampir-koylu
+git clone https://github.com/afmolla/vampir-koylu.git vampir-koylu
 cd vampir-koylu
 copy deploy\env.production.example server\.env
 notepad server\.env
@@ -111,7 +111,7 @@ notepad server\.env
 `server\.env` içinde mutlaka düzenle:
 
 - `JWT_SECRET` → `openssl rand -hex 32` veya uzun rastgele metin  
-- `UPDATE_URL_ANDROID` → `https://github.com/afmolla/flutter/releases/latest`  
+- `UPDATE_URL_ANDROID` → `https://github.com/afmolla/vampir-koylu/releases/latest`  
 - `DATABASE_URL` → Docker’daki postgres şifresi ile aynı
 
 ### 3) Çalıştır
@@ -150,7 +150,7 @@ https://nodejs.org/
 
 ```powershell
 cd C:\apps
-git clone https://github.com/afmolla/flutter.git vampir-koylu
+git clone https://github.com/afmolla/vampir-koylu.git vampir-koylu
 cd vampir-koylu\server
 copy ..\deploy\env.production.example .env
 notepad .env
@@ -223,7 +223,7 @@ Sunucuda çek:
 powershell -ExecutionPolicy Bypass -File C:\apps\vampir-koylu\deploy\scripts\windows-update.ps1
 ```
 
-**Otomatik (push → sunucu):** https://github.com/afmolla/flutter/blob/main/deploy/github-deploy.md  
+**Otomatik (push → sunucu):** https://github.com/afmolla/vampir-koylu/blob/main/deploy/github-deploy.md  
 
 GitHub → repo **Settings → Secrets → Actions** → `SSH_HOST`, `SSH_USER`, `SSH_KEY`, `DEPLOY_PATH`
 
@@ -236,7 +236,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-APK: https://github.com/afmolla/flutter/releases
+APK: https://github.com/afmolla/vampir-koylu/releases
 
 ---
 

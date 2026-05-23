@@ -76,6 +76,25 @@ class MatchSummaryScreen extends StatelessWidget {
                 ],
               ),
             ),
+          Card(
+            color: Colors.amber.withValues(alpha: 0.12),
+            child: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.monetization_on, color: Colors.amber),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Maç ödülü profiline işlendi (+coin / +XP). '
+                      'İlk maç bonusu ve günlük görevleri kontrol et.',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(),

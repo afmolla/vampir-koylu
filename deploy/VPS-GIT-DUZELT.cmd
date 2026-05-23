@@ -14,7 +14,7 @@ echo.
 
 if not exist "%VPS_APP_DIR%\.git" (
   echo HATA: .git yok. Once clone:
-  echo   git clone https://github.com/afmolla/flutter.git %VPS_APP_DIR%
+  echo   git clone https://github.com/afmolla/vampir-koylu.git %VPS_APP_DIR%
   pause
   exit /b 1
 )

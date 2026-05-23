@@ -4,11 +4,11 @@
 
 Tag `v0.2.4` ve `v0.2.5` GitHub’a push edildi — Actions bitince APK hazır olur (~15 dk).
 
-**https://github.com/afmolla/flutter/releases/download/v0.2.4/app-release.apk**
+**https://github.com/afmolla/vampir-koylu/releases/download/v0.2.4/app-release.apk**
 
-Tüm sürümler: **https://github.com/afmolla/flutter/releases**
+Tüm sürümler: **https://github.com/afmolla/vampir-koylu/releases**
 
-Build takip: **https://github.com/afmolla/flutter/actions** (workflow: Android APK Release)
+Build takip: **https://github.com/afmolla/vampir-koylu/actions** (workflow: Android APK Release)
 
 Manuel tetikleme: Actions → Run workflow → tag: `v0.2.4` veya `v0.2.5`
 
@@ -30,7 +30,7 @@ Beklenen: `"allowed": false`, `"latestVersion": "0.2.5"`
 
 ## 0.2.5 APK
 
-**https://github.com/afmolla/flutter/releases/download/v0.2.5/app-release.apk**
+**https://github.com/afmolla/vampir-koylu/releases/download/v0.2.5/app-release.apk**
 
 ## Kontrol listesi
 

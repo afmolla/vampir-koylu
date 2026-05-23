@@ -218,6 +218,39 @@ export async function loginWithFacebook({ accessToken }) {
   return { user };
 }
 
+export function updateAccount(userId, { nick, avatarUrl, password, botDifficulty }) {
+  const db = getDb();
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+  if (!user) return { error: 'not_found' };
+
+  if (nick != null) {
+    const name = String(nick).trim();
+    if (name.length < 2 || name.length > 24) return { error: 'invalid_nick' };
+    updateUser(userId, { nick: name });
+  }
+  if (avatarUrl != null) {
+    updateUser(userId, { avatar_url: String(avatarUrl).slice(0, 500) });
+  }
+  if (password != null) {
+    if (user.is_guest) return { error: 'guest_cannot_set_password' };
+    if (String(password).length < 6) return { error: 'weak_password' };
+    const hash = bcrypt.hashSync(password, 10);
+    updateUser(userId, { password_hash: hash });
+  }
+  if (botDifficulty != null) {
+    const d = ['easy', 'normal', 'hard'].includes(botDifficulty)
+      ? botDifficulty
+      : 'normal';
+    ensureProfile(userId);
+    db.prepare('UPDATE user_profiles SET bot_difficulty = ? WHERE user_id = ?').run(
+      d,
+      userId,
+    );
+  }
+
+  return { user: getUserById(userId) };
+}
+
 export function guestLogin({ nick, locale }) {
   const name = String(nick ?? '').trim();
   if (name.length < 2 || name.length > 24) return { error: 'invalid_nick' };

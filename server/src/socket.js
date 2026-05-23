@@ -11,7 +11,13 @@ import {
   gameAction,
   viewsForRoom,
   getRoomForSocket,
+  quickMatch,
+  getLiveSummary,
+  listPublicRooms,
 } from './rooms/roomStore.js';
+import { trackConnection, trackDisconnect } from './services/liveStats.js';
+import { filterProfanity } from './routes/social.js';
+import { setIo } from './ioInstance.js';
 import {
   canAccessTextChannel,
   canAccessVoiceProximity,
@@ -66,6 +72,8 @@ export function attachSocket(httpServer) {
     pingTimeout: 20000,
   });
 
+  setIo(io);
+
   io.use((socket, next) => {
     const clientVersion = socket.handshake.auth?.clientVersion ?? '0.0.0';
     if (
@@ -87,9 +95,24 @@ export function attachSocket(httpServer) {
     }
   });
 
+  function broadcastLive() {
+    const live = getLiveSummary();
+    const rooms = listPublicRooms();
+    io.emit('live:stats', {
+      onlinePlayers: io.engine?.clientsCount ?? 0,
+      openRooms: live.openRooms,
+      playersInLobbies: live.playersInLobbies,
+      rooms,
+    });
+  }
+
+  setInterval(broadcastLive, 15000);
+
   io.on('connection', (socket) => {
     const userId = socket.data.user.sub;
+    trackConnection(userId);
     socket.emit('connected', { ok: true, userId });
+    broadcastLive();
 
     socket.join('chat:general');
     socket.join(`user:${userId}`);
@@ -139,18 +162,52 @@ export function attachSocket(httpServer) {
 
     socket.on('room:create', (payload, ack) => {
       const maxPlayers = payload?.maxPlayers ?? 6;
+      const minPlayers = payload?.minPlayers ?? maxPlayers;
       const nick = payload?.nick ?? 'Player';
       const view = createRoom({
         hostId: userId,
         hostNick: String(nick).slice(0, 24),
         maxPlayers,
+        minPlayers,
         socketId: socket.id,
         fillWithBots: Boolean(payload?.fillWithBots),
+        botDifficulty: payload?.botDifficulty ?? 'normal',
       });
       const room = getRoomForSocket(socket.id);
       if (room) joinChatChannels(socket, room, userId);
       if (typeof ack === 'function') ack({ ok: true, room: view });
       socket.emit('room:state', view);
+      broadcastLive();
+    });
+
+    socket.on('room:quick-match', (payload, ack) => {
+      const nick = String(payload?.nick ?? 'Player').slice(0, 24);
+      const result = quickMatch({
+        hostId: userId,
+        hostNick: nick,
+        socketId: socket.id,
+      });
+      const room = getRoomForSocket(socket.id);
+      if (room) joinChatChannels(socket, room, userId);
+
+      if (!result.joinedExisting && room) {
+        const start = startGame(socket.id, userId, { fillWithBots: true });
+        if (start.error) {
+          if (typeof ack === 'function') ack({ ok: false, error: start.error });
+          return;
+        }
+        const playing = getRoomForSocket(socket.id);
+        if (playing) emitRoomState(io, playing);
+      }
+
+      if (typeof ack === 'function') {
+        ack({
+          ok: true,
+          room: result.room,
+          joinedExisting: result.joinedExisting,
+        });
+      }
+      broadcastLive();
     });
 
     socket.on('room:join', (payload, ack) => {
@@ -215,11 +272,12 @@ export function attachSocket(httpServer) {
 
     socket.on('chat:send', (payload, ack) => {
       try {
-        const content = String(payload?.content ?? '').trim();
-        if (!content || content.length > 500) {
+        const raw = String(payload?.content ?? '').trim();
+        if (!raw || raw.length > 500) {
           if (typeof ack === 'function') ack({ ok: false, error: 'invalid_message' });
           return;
         }
+        const content = filterProfanity(raw);
 
         const channel = payload?.channel ?? 'general';
         const nick = payload?.nick ?? 'Player';
@@ -271,29 +329,60 @@ export function attachSocket(httpServer) {
         if (typeof ack === 'function') ack({ ok: false, error: access.error });
         return;
       }
-      socket.join(`voice:${access.channel}`);
-      socket.data.voiceChannel = access.channel;
-      if (typeof ack === 'function') ack({ ok: true, channel: access.channel });
+      const channel = access.channel;
+      socket.join(`voice:${channel}`);
+      socket.data.voiceChannel = channel;
+
+      const peers = [];
+      const roomSockets = io.sockets.adapter.rooms.get(`voice:${channel}`);
+      if (roomSockets) {
+        for (const sid of roomSockets) {
+          if (sid === socket.id) continue;
+          const s = io.sockets.sockets.get(sid);
+          if (s?.data?.user?.sub) peers.push(s.data.user.sub);
+        }
+      }
+
+      socket.to(`voice:${channel}`).emit('voice:peer-joined', { userId });
+      if (typeof ack === 'function') {
+        ack({ ok: true, channel, peers });
+      }
     });
 
     socket.on('voice:leave', () => {
-      if (socket.data.voiceChannel) {
-        socket.leave(`voice:${socket.data.voiceChannel}`);
+      const ch = socket.data.voiceChannel;
+      if (ch) {
+        socket.to(`voice:${ch}`).emit('voice:peer-left', { userId });
+        socket.leave(`voice:${ch}`);
         socket.data.voiceChannel = null;
       }
     });
 
     socket.on('voice:signal', (payload) => {
       const room = getRoomForSocket(socket.id);
-      if (!room?.game) return;
-      const channel = socket.data.voiceChannel ?? `proximity:${room.code}`;
-      socket.to(`voice:${channel}`).emit('voice:signal', {
+      const channel = socket.data.voiceChannel;
+      if (!channel) return;
+
+      const target = payload?.to;
+      const msg = {
         from: userId,
-        ...payload,
-      });
+        type: payload?.type,
+        sdp: payload?.sdp,
+        candidate: payload?.candidate,
+      };
+
+      if (target) {
+        io.to(`user:${target}`).emit('voice:signal', msg);
+        return;
+      }
+
+      if (room?.game) {
+        socket.to(`voice:${channel}`).emit('voice:signal', msg);
+      }
     });
 
     socket.on('disconnect', () => {
+      trackDisconnect(userId);
       if (socket.data.voiceChannel) {
         socket.leave(`voice:${socket.data.voiceChannel}`);
       }
@@ -305,6 +394,7 @@ export function attachSocket(httpServer) {
       if (result?.room && !result.deleted) {
         emitRoomState(io, result.room);
       }
+      broadcastLive();
     });
   });
 

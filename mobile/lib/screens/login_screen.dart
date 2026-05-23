@@ -264,13 +264,39 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text('Hesap oluştur'),
                             ),
                             TextButton(
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Şifremi unuttum — yakında'),
-                                  ),
-                                );
-                              },
+                              onPressed: _loading
+                                  ? null
+                                  : () async {
+                                      final mail = _emailController.text.trim();
+                                      if (!mail.contains('@')) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text('E-posta girin'),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      try {
+                                        await _api.forgotPassword(email: mail);
+                                        if (!context.mounted) return;
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Sıfırlama bağlantısı gönderildi (e-posta / sunucu log)',
+                                            ),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(content: Text('$e')),
+                                          );
+                                        }
+                                      }
+                                    },
                               child: const Text('Şifremi unuttum'),
                             ),
                           ],

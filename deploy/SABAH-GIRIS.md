@@ -18,8 +18,8 @@ Kontrol: http://85.95.251.204:3000/health → `{"ok":true,...}`
 
 **Sürüm 0.2.3** yüklü olmalı.
 
-İndir: https://github.com/afmolla/flutter/releases/tag/v0.2.3  
-Direkt: https://github.com/afmolla/flutter/releases/download/v0.2.3/app-release.apk
+İndir: https://github.com/afmolla/vampir-koylu/releases/tag/v0.2.3  
+Direkt: https://github.com/afmolla/vampir-koylu/releases/download/v0.2.3/app-release.apk
 
 Eski sürüm (0.2.2 ve altı) varsa önce kaldır → paket çakışması olmasın.
 

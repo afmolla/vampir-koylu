@@ -7,6 +7,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../core/config.dart';
 import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
+import '../services/social_service.dart';
 
 class ChatMessage {
   final int id;
@@ -62,7 +63,9 @@ class ChatPanel extends StatefulWidget {
 class _ChatPanelState extends State<ChatPanel> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  final _social = SocialService();
   final List<ChatMessage> _messages = [];
+  final Set<String> _mutedUsers = {};
 
   @override
   void initState() {
@@ -87,9 +90,53 @@ class _ChatPanelState extends State<ChatPanel> {
   @override
   void dispose() {
     widget.socket?.off('chat:message', _onMessage);
+    _social.dispose();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _showMessageActions(ChatMessage msg) {
+    if (msg.userId.isEmpty || msg.userId.startsWith('bot:')) return;
+    if (widget.currentUserId != null && msg.userId == widget.currentUserId) return;
+
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.flag_outlined),
+              title: const Text('Rapor et'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                await _social.report(
+                  targetId: msg.userId,
+                  targetNick: msg.nick,
+                  channel: widget.channel,
+                  reason: 'chat',
+                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Rapor gönderildi')),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.volume_off),
+              title: const Text('Sustur'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                await _social.muteUser(msg.userId);
+                setState(() => _mutedUsers.add(msg.userId));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _onMessage(dynamic data) {
@@ -172,6 +219,9 @@ class _ChatPanelState extends State<ChatPanel> {
                   itemCount: _messages.length,
                   itemBuilder: (context, index) {
                     final msg = _messages[index];
+                    if (_mutedUsers.contains(msg.userId)) {
+                      return const SizedBox.shrink();
+                    }
                     final isMe = widget.currentUserId != null &&
                         msg.userId == widget.currentUserId;
                     final canTapPeer = !widget.isPrivate &&
@@ -180,7 +230,9 @@ class _ChatPanelState extends State<ChatPanel> {
                         msg.userId.isNotEmpty &&
                         !msg.userId.startsWith('bot:');
 
-                    return Padding(
+                    return GestureDetector(
+                      onLongPress: () => _showMessageActions(msg),
+                      child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: RichText(
                         text: TextSpan(
@@ -220,6 +272,7 @@ class _ChatPanelState extends State<ChatPanel> {
                           ],
                         ),
                       ),
+                    ),
                     );
                   },
                 ),

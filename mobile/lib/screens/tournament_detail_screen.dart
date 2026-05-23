@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../services/billing_service.dart';
 import '../services/profile_service.dart';
 import '../services/session_store.dart';
 import 'tournament_lobby_screen.dart';
@@ -20,8 +21,10 @@ class TournamentDetailScreen extends StatefulWidget {
 
 class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   final _api = ProfileService();
+  final _billing = BillingService();
   Map<String, dynamic>? _t;
   bool _loading = true;
+  bool _paying = false;
 
   @override
   void initState() {
@@ -31,6 +34,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
 
   @override
   void dispose() {
+    _billing.dispose();
     _api.dispose();
     super.dispose();
   }
@@ -58,31 +62,93 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     }
   }
 
-  Future<void> _registerIap() async {
+  Future<void> _registerBalance() async {
     try {
-      final r = await _api.registerTournament(widget.tournamentId, method: 'iap');
+      final r = await _api.registerTournament(
+        widget.tournamentId,
+        method: 'balance',
+      );
       if (!mounted) return;
-      final ref = r['paymentRef'] as String?;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Ödeme bekliyor (${r['amountTry']} ₺). Play Billing yakında. Test için onayla.',
-          ),
-          action: ref != null
-              ? SnackBarAction(
+          content: Text('Bakiye ile kayıt! ${r['paidBalance']} ₺ kesildi.'),
+        ),
+      );
+      setState(() => _t = r['tournament'] as Map<String, dynamic>?);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    }
+  }
+
+  Future<void> _registerIap() async {
+    if (_paying) return;
+    setState(() => _paying = true);
+    try {
+      final pending = await _api.registerTournament(
+        widget.tournamentId,
+        method: 'iap',
+      );
+      if (!mounted) return;
+      final ref = pending['paymentRef'] as String?;
+      final productId = pending['productId'] as String?;
+      if (ref == null || productId == null) {
+        throw Exception('IAP bilgisi alınamadı');
+      }
+
+      if (await _billing.init()) {
+        try {
+          final purchase = await _billing.buyConsumable(productId);
+          final verify = await _api.verifyPlayPurchase(
+            tournamentId: widget.tournamentId,
+            paymentRef: ref,
+            purchaseToken: purchase.verificationData.serverVerificationData,
+            productId: productId,
+          );
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Play ödemesi onaylandı!')),
+          );
+          setState(() => _t = verify['tournament'] as Map<String, dynamic>?);
+          return;
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Play: $e — test onayı kullanılabilir'),
+                action: SnackBarAction(
                   label: 'Test onay',
                   onPressed: () async {
                     await _api.confirmTournamentPayment(widget.tournamentId, ref);
                     _load();
                   },
-                )
-              : null,
-          duration: const Duration(seconds: 8),
-        ),
-      );
+                ),
+              ),
+            );
+          }
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Play Store yok (${pending['amountTry']} ₺)'),
+            action: SnackBarAction(
+              label: 'Test onay',
+              onPressed: () async {
+                await _api.confirmTournamentPayment(widget.tournamentId, ref);
+                _load();
+              },
+            ),
+          ),
+        );
+      }
       _load();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      }
+    } finally {
+      if (mounted) setState(() => _paying = false);
     }
   }
 
@@ -133,9 +199,18 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
+                  onPressed: _registerBalance,
+                  icon: const Icon(Icons.account_balance_wallet),
+                  label: Text('Bakiye ile katıl (${t['entryFeeTry']} ₺)'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
                   onPressed: _registerIap,
                   icon: const Icon(Icons.payment),
-                  label: Text('Ücretli katıl (${t['entryFeeTry']} ₺)'),
+                  label: Text('Play ile katıl (${t['entryFeeTry']} ₺)'),
                 ),
               ),
             ],

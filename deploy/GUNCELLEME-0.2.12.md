@@ -12,7 +12,7 @@ Aynı `release.keystore` — **paket çakışması olmamalı**.
 
 ## Yöntem 2 — Manuel APK
 
-https://github.com/afmolla/flutter/releases/download/v0.2.12/app-release.apk
+https://github.com/afmolla/vampir-koylu/releases/download/v0.2.12/app-release.apk
 
 Dosyaya dokun → Kur → Mevcut uygulamanın **üzerine** yazar.
 

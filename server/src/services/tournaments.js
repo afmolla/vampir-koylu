@@ -208,6 +208,33 @@ export function registerForTournament(userId, tournamentId, method = 'coins') {
 
   const profile = ensureProfile(userId);
 
+  if (method === 'balance') {
+    const fee = t.entry_fee_try
+      ? Math.trunc(Number(t.entry_fee_try))
+      : t.entry_fee_coins;
+    if ((profile.balance ?? 0) < fee) {
+      return { error: 'insufficient_balance', requiredBalance: fee };
+    }
+    db.prepare('UPDATE user_profiles SET balance = balance - ? WHERE user_id = ?').run(
+      fee,
+      userId,
+    );
+    db.prepare(
+      `UPDATE tournaments SET prize_pool_coins = prize_pool_coins + ? WHERE id = ?`,
+    ).run(Math.floor(fee * 0.8), tournamentId);
+    db.prepare(
+      `INSERT INTO tournament_entries (tournament_id, user_id, payment_method, payment_status)
+       VALUES (?, ?, 'balance', 'paid')`,
+    ).run(tournamentId, userId);
+    syncRankTier(userId);
+    tryAutoOpenLobby(tournamentId);
+    return {
+      ok: true,
+      paidBalance: fee,
+      tournament: getTournament(tournamentId, userId),
+    };
+  }
+
   if (method === 'iap') {
     if (!t.entry_fee_try) return { error: 'iap_not_available' };
     const ref = randomUUID();
@@ -316,6 +343,20 @@ export function openTournamentLobby(tournamentId, userId) {
   db.prepare(
     `UPDATE tournaments SET status = 'lobby', lobby_room_code = ?, host_user_id = ? WHERE id = ?`,
   ).run(code, userId, tournamentId);
+
+  const entrantIds = db
+    .prepare(
+      `SELECT user_id FROM tournament_entries
+       WHERE tournament_id = ? AND payment_status = 'paid'`,
+    )
+    .all(tournamentId)
+    .map((r) => r.user_id);
+
+  import('./pushNotifications.js')
+    .then(({ notifyTournamentLobbyOpen }) =>
+      notifyTournamentLobbyOpen(tournamentId, t.title, entrantIds),
+    )
+    .catch(() => {});
 
   return { ok: true, roomCode: code };
 }

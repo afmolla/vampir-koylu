@@ -40,4 +40,4 @@ Skin, kan efekti, mezarlık teması, çerçeve, ölüm animasyonu
 - IAP entegrasyonu (Google Play)
 
 ## APK
-https://github.com/afmolla/flutter/releases/download/v0.2.6/app-release.apk
+https://github.com/afmolla/vampir-koylu/releases/download/v0.2.6/app-release.apk

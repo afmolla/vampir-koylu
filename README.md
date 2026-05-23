@@ -2,8 +2,9 @@
 
 Online vampir–köylü sosyal çıkarım oyunu (6–8 oyuncu). Flutter mobil + Node.js sunucu.
 
-**Sürüm:** `0.2.7` — GitHub repo: [afmolla/flutter](https://github.com/afmolla/flutter) (klasör adı `flutter`, oyun: Vampir Köylü)
+**Sürüm:** `0.2.7` — GitHub repo: [afmolla/vampir-koylu](https://github.com/afmolla/vampir-koylu) (klasör adı `flutter`, oyun: Vampir Köylü)
 
+**Klasör:** `C:\inetpub\wwwroot\oyun1`  
 **VPS tek başlatma:** `BASLAT-API.cmd` veya `server\start-api.cmd` — [deploy/REPO-VE-YOLLAR.md](deploy/REPO-VE-YOLLAR.md)
 
 ## Proje yapısı
@@ -49,7 +50,7 @@ flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000
 git tag v0.2.3 && git push origin v0.2.3
 ```
 
-Releases: https://github.com/afmolla/flutter/releases
+Releases: https://github.com/afmolla/vampir-koylu/releases
 
 ## Durum
 
@@ -78,4 +79,4 @@ Releases: https://github.com/afmolla/flutter/releases
 | Linux VPS | [deploy/vps-setup.md](deploy/vps-setup.md) |
 | **Windows** | [deploy/windows-setup.md](deploy/windows-setup.md) |
 
-Repo: https://github.com/afmolla/flutter
+Repo: https://github.com/afmolla/vampir-koylu

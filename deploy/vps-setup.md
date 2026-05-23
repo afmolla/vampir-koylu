@@ -1,6 +1,6 @@
 # VPS kurulum rehberi (Ubuntu)
 
-Proje: **https://github.com/afmolla/flutter**
+Proje: **https://github.com/afmolla/vampir-koylu**
 
 Mobil uygulama bu sunucuya `https://api.SENIN-DOMAIN.com` ile bağlanır.
 
@@ -46,7 +46,7 @@ ufw enable
 
 ```bash
 cd /opt
-git clone https://github.com/afmolla/flutter.git vampir-koylu
+git clone https://github.com/afmolla/vampir-koylu.git vampir-koylu
 cd vampir-koylu
 ```
 

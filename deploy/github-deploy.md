@@ -1,11 +1,11 @@
 # GitHub → Sunucuya çekme
 
-Repo (GitHub’daki isim): **https://github.com/afmolla/flutter**  
-**VPS önerilen yol:** `C:\apps\flutter` (GitHub repoyla aynı isim)
+Repo (GitHub’daki isim): **https://github.com/afmolla/vampir-koylu**  
+**VPS önerilen yol:** `C:\apps\vampir-koylu` (GitHub repoyla aynı isim)
 
 ```powershell
-git clone https://github.com/afmolla/flutter.git C:\apps\flutter
-cd C:\apps\flutter
+git clone https://github.com/afmolla/vampir-koylu.git C:\apps\vampir-koylu
+cd C:\apps\vampir-koylu
 .\BASLAT-API.cmd
 ```
 
@@ -34,7 +34,7 @@ Sunucuda **bir kez** klonla:
 ```bash
 # Linux
 cd /opt
-git clone https://github.com/afmolla/flutter.git vampir-koylu
+git clone https://github.com/afmolla/vampir-koylu.git vampir-koylu
 cd vampir-koylu
 # .env ayarla, docker up (vps-setup.md)
 ```
@@ -66,7 +66,7 @@ Private repo olsa bile sunucuda token kullanılır (token’ı GitHub’a commit
 
 ```bash
 cd /opt/vampir-koylu
-git pull https://TOKEN@github.com/afmolla/flutter.git main
+git pull https://TOKEN@github.com/afmolla/vampir-koylu.git main
 ```
 
 Daha iyisi: `git remote set-url origin` ile credential helper.
@@ -103,7 +103,7 @@ cat /home/deploy/.ssh/github_actions
 İlk klon (deploy kullanıcısı ile):
 
 ```bash
-sudo -u deploy git clone https://github.com/afmolla/flutter.git /opt/vampir-koylu
+sudo -u deploy git clone https://github.com/afmolla/vampir-koylu.git /opt/vampir-koylu
 ```
 
 ### GitHub repo → Settings → Secrets → Actions

@@ -12,9 +12,16 @@ import '../widgets/chat_popup_launcher.dart';
 import 'online_room_screen.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
-  const OnlineLobbyScreen({super.key, required this.nick});
+  const OnlineLobbyScreen({
+    super.key,
+    required this.nick,
+    this.socketService,
+    this.joinCode,
+  });
 
   final String nick;
+  final SocketService? socketService;
+  final String? joinCode;
 
   @override
   State<OnlineLobbyScreen> createState() => _OnlineLobbyScreenState();
@@ -22,12 +29,16 @@ class OnlineLobbyScreen extends StatefulWidget {
 
 class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
   final _joinController = TextEditingController();
-  final _socketService = SocketService();
+  late final SocketService _socketService =
+      widget.socketService ?? SocketService();
+  bool get _ownsSocket => widget.socketService == null;
   List<Map<String, dynamic>> _rooms = [];
   bool _loading = true;
   bool _socketReady = false;
   String? _error;
+  int _minPlayers = 4;
   int _maxPlayers = 6;
+  String _botDifficulty = 'normal';
   bool _fillWithBots = true;
   Timer? _roomRefreshTimer;
 
@@ -40,12 +51,19 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       const Duration(seconds: 4),
       (_) => _loadRooms(silent: true),
     );
+    if (widget.joinCode != null) {
+      _joinController.text = widget.joinCode!;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _joinRoom(widget.joinCode);
+      });
+    }
   }
 
   @override
   void dispose() {
     _roomRefreshTimer?.cancel();
     _joinController.dispose();
+    if (_ownsSocket) _socketService.disconnect();
     super.dispose();
   }
 
@@ -108,8 +126,10 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           'room:create',
           {
             'nick': widget.nick,
+            'minPlayers': _minPlayers,
             'maxPlayers': _maxPlayers,
             'fillWithBots': _fillWithBots,
+            'botDifficulty': _botDifficulty,
           },
           ack: (data) {
             if (data is Map && data['ok'] == true) {
@@ -236,47 +256,60 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
+                    const Text('Min'),
+                    const SizedBox(width: 8),
+                    DropdownButton<int>(
+                      value: _minPlayers,
+                      items: [4, 5, 6, 7, 8]
+                          .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
+                          .toList(),
+                      onChanged: (v) => setState(() {
+                        _minPlayers = v ?? 4;
+                        if (_maxPlayers < _minPlayers) _maxPlayers = _minPlayers;
+                      }),
+                    ),
+                    const SizedBox(width: 16),
                     Text(l10n.maxPlayers),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     DropdownButton<int>(
                       value: _maxPlayers,
-                      items: [6, 7, 8]
-                          .map(
-                            (n) => DropdownMenuItem(
-                              value: n,
-                              child: Text('$n'),
-                            ),
-                          )
+                      items: [4, 5, 6, 7, 8]
+                          .where((n) => n >= _minPlayers)
+                          .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
                           .toList(),
                       onChanged: (v) => setState(() => _maxPlayers = v ?? 6),
-                    ),
-                    const Spacer(),
-                    FilledButton.icon(
-                      onPressed: _createRoom,
-                      icon: const Icon(Icons.add),
-                      label: Text(l10n.createRoom),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: _botDifficulty,
+                  decoration: const InputDecoration(labelText: 'Bot zorluğu'),
+                  items: const [
+                    DropdownMenuItem(value: 'easy', child: Text('Kolay')),
+                    DropdownMenuItem(value: 'normal', child: Text('Normal')),
+                    DropdownMenuItem(value: 'hard', child: Text('Zor')),
+                  ],
+                  onChanged: (v) => setState(() => _botDifficulty = v ?? 'normal'),
+                ),
+                const SizedBox(height: 8),
+                FilledButton.icon(
+                  onPressed: _createRoom,
+                  icon: const Icon(Icons.add),
+                  label: Text(l10n.createRoom),
+                ),
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text(
-                    'Eksik oyuncuları bot ile doldur (en az 6 kişi)',
+                    'Eksik oyuncuları bot ile doldur',
                     style: TextStyle(fontSize: 14),
                   ),
-                  subtitle: const Text(
-                    '2 gerçek oyuncu + botlar ile başlayabilirsin.',
-                    style: TextStyle(fontSize: 12, color: Colors.white54),
+                  subtitle: Text(
+                    'En az $_minPlayers oyuncu · tek başına başlayabilirsin.',
+                    style: const TextStyle(fontSize: 12, color: Colors.white54),
                   ),
                   value: _fillWithBots,
                   onChanged: (v) => setState(() => _fillWithBots = v ?? true),
-                ),
-                Text(
-                  'En az 6 oyuncu gerekir. Tek başına oda açıp bekleyebilirsin.',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white54,
-                      ),
                 ),
                 const SizedBox(height: 24),
                 Row(

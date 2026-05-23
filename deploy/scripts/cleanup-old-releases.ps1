@@ -8,7 +8,7 @@
 # Veya: GitHub → Actions → "Cleanup Old Releases" → Run workflow
 
 param(
-  [string]$Repo = "afmolla/flutter",
+  [string]$Repo = "afmolla/vampir-koylu",
   [string]$Token = $env:GH_TOKEN
 )
 

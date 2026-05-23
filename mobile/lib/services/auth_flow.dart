@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/home_screen.dart';
+import 'local_notifications_service.dart';
 import 'session_store.dart';
 
 class AuthFlow {
@@ -20,6 +21,7 @@ class AuthFlow {
       locale: locale,
       avatarUrl: user['avatarUrl'] as String?,
     );
+    await LocalNotificationsService.instance.init();
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(

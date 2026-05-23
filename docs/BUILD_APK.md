@@ -18,7 +18,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-1–2 dk sonra: https://github.com/afmolla/flutter/releases → **app-release.apk** indir.
+1–2 dk sonra: https://github.com/afmolla/vampir-koylu/releases → **app-release.apk** indir.
 
 **Yayındaki sürümler:** `v0.1.8`, `v0.1.9`, `v0.2.2`, **`v0.2.3`** (güncel — sohbet + SQLite).
 

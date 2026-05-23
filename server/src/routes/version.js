@@ -26,7 +26,7 @@ versionRouter.get('/', (req, res) => {
   const apkVer = config.apkPublishVersion ?? config.latestVersion;
   const updateUrlAndroid =
     config.updateUrlAndroid ??
-    `https://github.com/afmolla/flutter/releases/download/v${apkVer}/app-release.apk`;
+    `https://github.com/afmolla/vampir-koylu/releases/download/v${apkVer}/app-release.apk`;
 
   res.json({
     serverBuild: SERVER_BUILD,

@@ -1,51 +1,42 @@
-# GitHub `flutter` ≠ uygulama adı Vampir Köylü
+# GitHub: afmolla/vampir-koylu
 
 | | Değer |
 |---|--------|
-| **GitHub repo** | [afmolla/flutter](https://github.com/afmolla/flutter) |
-| **Oyun / proje** | Vampir Köylü (`vampir-koylu` klasörü içinde) |
-| **VPS önerilen yol** | `C:\apps\flutter` |
-
-Repo adı tarihsel (`flutter`); içerik vampir-koylu. **Klasör adını repoyla aynı tutmak en kolayı.**
+| **GitHub repo** | [afmolla/vampir-koylu](https://github.com/afmolla/vampir-koylu) |
+| **Oyun** | Vampir Köylü |
+| **Bu makine (IIS)** | `C:\inetpub\wwwroot\oyun1` |
+| **VPS önerilen** | `C:\apps\vampir-koylu` |
 
 ## VPS ilk kurulum
 
 ```powershell
 mkdir C:\apps -ErrorAction SilentlyContinue
 cd C:\apps
-git clone https://github.com/afmolla/flutter.git
-cd flutter
-git pull
-```
-
-## Her güncellemede (tek komut — git pull dahil)
-
-```powershell
-C:\apps\flutter\BASLAT-API.cmd
-```
-
-veya:
-
-```powershell
-C:\apps\flutter\server\start-api.cmd
-```
-
-`start-api.cmd` sırayla: **git pull** → port temizle → npm → Node başlat.
-
-## Repo adını değiştirmek istersen (ileride)
-
-GitHub → Settings → Repository name → örn. `vampir-koylu`  
-Sonra VPS:
-
-```powershell
-cd C:\apps
 git clone https://github.com/afmolla/vampir-koylu.git
+cd vampir-koylu
 ```
 
-`deploy\repo-paths.cmd` içinde `VPS_APP_DIR` ve URL’leri güncelle.
+## Her gün API başlat
 
-## Tarayıcıdan test
+```powershell
+C:\apps\vampir-koylu\BASLAT-API.cmd
+```
 
-- http://85.95.251.204:3000/health  
-- Açılmıyorsa: **Yönetici** → `deploy\FIREWALL-PORT-3000.cmd`  
-- API penceresi (`start-api.cmd`) açık olmalı
+**Bu wwwroot makinesi:**
+
+```powershell
+C:\inetpub\wwwroot\oyun1\BASLAT-API.cmd
+```
+
+`start-api.cmd`: git pull → port temizle → npm → Node.
+
+## APK / Release
+
+https://github.com/afmolla/vampir-koylu/releases
+
+Örnek: `https://github.com/afmolla/vampir-koylu/releases/download/v0.2.15/app-release.apk`
+
+## Test
+
+- Yerel: http://127.0.0.1:3000/health
+- Dış: http://85.95.251.204:3000/health

@@ -11,16 +11,16 @@ class AppConfig {
     defaultValue: 'http://85.95.251.204:3000',
   );
 
-  static const String clientVersion = '0.2.13';
+  static const String clientVersion = '0.2.15';
 
   static const String updateTargetVersion = String.fromEnvironment(
     'UPDATE_TARGET_VERSION',
-    defaultValue: '0.2.13',
+    defaultValue: '0.2.15',
   );
 
   /// Güncelleme APK — her zaman hedef sürüm (v0.2.7 yedek yok).
   static String apkUrlForVersion(String version) =>
-      'https://github.com/afmolla/flutter/releases/download/v$version/app-release.apk';
+      'https://github.com/afmolla/vampir-koylu/releases/download/v$version/app-release.apk';
 
   static String get defaultUpdateApkUrl => apkUrlForVersion(updateTargetVersion);
 

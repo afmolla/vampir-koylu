@@ -1,6 +1,6 @@
-# GitHub — afmolla/flutter
+# GitHub — afmolla/vampir-koylu
 
-Repo: https://github.com/afmolla/flutter
+Repo: https://github.com/afmolla/vampir-koylu
 
 ## 1. GitHub CLI giriş (bir kez)
 
@@ -16,7 +16,7 @@ git branch -M main
 git push -u origin main
 ```
 
-Remote zaten ayarlı: `origin` → `https://github.com/afmolla/flutter.git`
+Remote zaten ayarlı: `origin` → `https://github.com/afmolla/vampir-koylu.git`
 
 ## 3. İlk APK (GitHub Releases)
 
@@ -32,5 +32,5 @@ Actions sekmesinden build’i izle; APK **Releases** altında görünür.
 `server/.env`:
 
 ```
-UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/latest
+UPDATE_URL_ANDROID=https://github.com/afmolla/vampir-koylu/releases/latest
 ```

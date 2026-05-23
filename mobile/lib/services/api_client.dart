@@ -109,6 +109,17 @@ class ApiClient {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
+  Future<void> forgotPassword({required String email}) async {
+    final res = await _client.post(
+      _uri('/api/auth/forgot-password'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email}),
+    );
+    if (res.statusCode != 200) {
+      throw ApiException(res.statusCode, res.body);
+    }
+  }
+
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,

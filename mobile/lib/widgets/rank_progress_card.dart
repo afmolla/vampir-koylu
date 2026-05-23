@@ -76,6 +76,35 @@ class RankProgressCard extends StatelessWidget {
               style: const TextStyle(fontSize: 12, color: Colors.white54),
             ),
             const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.35)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.account_balance_wallet, color: Colors.amber, size: 22),
+                  const SizedBox(width: 10),
+                  Text(
+                    locale == 'en' ? 'Balance' : 'Bakiye',
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${profile['balance'] ?? 0} ₺',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
             Text(
               '${profile['xp']} XP · ${profile['coins']} coin',
               style: const TextStyle(fontWeight: FontWeight.w600),

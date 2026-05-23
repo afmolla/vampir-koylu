@@ -1,18 +1,22 @@
 # Sunucuyu başlat (tek dosya)
 
-GitHub repo: **afmolla/flutter**  
-VPS klasörü: **C:\apps\flutter** (önerilen)
+GitHub repo: **afmolla/vampir-koylu**  
+VPS klasörü: **C:\apps\vampir-koylu** (önerilen)
 
 ## Tek adım
 
 ```
-C:\apps\flutter\BASLAT-API.cmd
+C:\apps\vampir-koylu\BASLAT-API.cmd
+
+**Bu IIS makinesi (wwwroot):** `C:\inetpub\wwwroot\oyun1\BASLAT-API.cmd`
+
+**Dosya silindiyse / yoksa:** repodan `BASLAT-API.cmd` kopyala (proje kokune) veya asagidaki alternatifleri kullan.
 ```
 
 veya
 
 ```
-C:\apps\flutter\server\start-api.cmd
+C:\apps\vampir-koylu\server\start-api.cmd
 ```
 
 Script otomatik yapar:

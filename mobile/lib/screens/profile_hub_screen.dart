@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/rank_progress_card.dart';
+import '../services/engagement_service.dart';
 import '../services/profile_service.dart';
 import 'cosmetic_shop_screen.dart';
 import 'match_history_screen.dart';
@@ -15,7 +16,11 @@ class ProfileHubScreen extends StatefulWidget {
 
 class _ProfileHubScreenState extends State<ProfileHubScreen> {
   final _api = ProfileService();
+  final _engagement = EngagementService();
   Map<String, dynamic>? _bundle;
+  List<dynamic> _balanceHistory = [];
+  String? _referralCode;
+  final _referralInput = TextEditingController();
   bool _loading = true;
 
   @override
@@ -33,8 +38,30 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final b = await _api.fetchProfile();
-      if (mounted) setState(() => _bundle = b);
+      final results = await Future.wait([
+        _api.fetchProfile(),
+        _api.fetchBalanceHistory(),
+        _engagement.fetchHome(),
+      ]);
+      if (mounted) {
+        final home = results[2] as Map<String, dynamic>;
+        setState(() {
+          _bundle = results[0] as Map<String, dynamic>;
+          _balanceHistory =
+              (results[1] as Map<String, dynamic>)['history'] as List<dynamic>? ??
+                  [];
+          _referralCode =
+              (home['engagement'] as Map<String, dynamic>?)?['referralCode']
+                  as String?;
+        });
+      }
+    } catch (_) {
+      try {
+        final b = await _api.fetchProfile();
+        if (mounted) setState(() => _bundle = b);
+      } catch (_) {
+        /* profil de yuklenemedi */
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -113,7 +140,101 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
               rankProgress: rankProgress,
               locale: locale,
             ),
-            const SizedBox(height: 12),
+            if (_referralCode != null) ...[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Davet kodun',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 6),
+                      SelectableText(
+                        _referralCode!,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          letterSpacing: 2,
+                          color: Colors.amber,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _referralInput,
+                              decoration: const InputDecoration(
+                                labelText: 'Arkadaşının kodu',
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: () async {
+                              try {
+                                await _engagement.applyReferral(
+                                  _referralInput.text.trim(),
+                                );
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('+30 coin (davet bonusu)'),
+                                    ),
+                                  );
+                                  _load();
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('$e')),
+                                  );
+                                }
+                              }
+                            },
+                            child: const Text('Uygula'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+            if (_balanceHistory.isNotEmpty) ...[
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Bakiye hareketleri',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ..._balanceHistory.take(10).map((row) {
+                final m = row as Map<String, dynamic>;
+                final amount = m['amount'] as int? ?? 0;
+                final after = m['balance_after'] as int? ?? 0;
+                final note = m['note'] as String? ?? '';
+                final sign = amount >= 0 ? '+' : '';
+                return Card(
+                  child: ListTile(
+                    dense: true,
+                    leading: Icon(
+                      amount >= 0 ? Icons.add_circle_outline : Icons.remove_circle_outline,
+                      color: amount >= 0 ? Colors.greenAccent : Colors.redAccent,
+                    ),
+                    title: Text('$sign$amount ₺ · bakiye: $after ₺'),
+                    subtitle: note.isNotEmpty
+                        ? Text(note, maxLines: 1, overflow: TextOverflow.ellipsis)
+                        : null,
+                  ),
+                );
+              }),
+              const SizedBox(height: 12),
+            ],
             Row(
               children: [
                 Expanded(

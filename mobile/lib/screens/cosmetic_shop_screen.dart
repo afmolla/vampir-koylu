@@ -30,14 +30,30 @@ class _CosmeticShopScreenState extends State<CosmeticShopScreen> {
     return id;
   }
 
+  String? _slotFor(String id) {
+    if (id.contains('skin')) return 'skin';
+    if (id.contains('frame')) return 'frame';
+    if (id.contains('graveyard') || id.contains('theme')) return 'theme';
+    if (id.contains('blood') || id.contains('fx')) return 'effect';
+    if (id.contains('death')) return 'death_anim';
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final catalog = _bundle?['catalog'] as List<dynamic>? ?? [];
     final owned = (_bundle?['ownedCosmetics'] as List<dynamic>? ?? [])
         .cast<String>()
         .toSet();
-    final coins =
-        (_bundle?['profile'] as Map<String, dynamic>?)?['coins'] as int? ?? 0;
+    final profile = _bundle?['profile'] as Map<String, dynamic>? ?? {};
+    final coins = profile['coins'] as int? ?? 0;
+    final equipped = {
+      'skin': profile['equippedSkin'],
+      'frame': profile['equippedFrame'],
+      'theme': profile['equippedTheme'],
+      'effect': profile['equippedEffect'],
+      'death_anim': profile['equippedDeathAnim'],
+    };
 
     return Scaffold(
       appBar: AppBar(title: const Text('Kozmetik Mağaza')),
@@ -49,12 +65,38 @@ class _CosmeticShopScreenState extends State<CosmeticShopScreen> {
           final id = item['id'] as String? ?? '';
           final price = item['price'] as int? ?? 0;
           final has = owned.contains(id);
+          final slot = _slotFor(id);
+          final isEquipped = slot != null && equipped[slot] == id;
+
           return Card(
             child: ListTile(
               title: Text(_label(id)),
-              subtitle: const Text('Sadece görünüm — güç bonusu yok'),
+              subtitle: Text(
+                isEquipped
+                    ? 'Kuşanıldı'
+                    : 'Sadece görünüm — güç bonusu yok',
+              ),
               trailing: has
-                  ? const Text('Sahip', style: TextStyle(color: Colors.greenAccent))
+                  ? (slot != null
+                      ? FilledButton.tonal(
+                          onPressed: isEquipped
+                              ? null
+                              : () async {
+                                  try {
+                                    final r = await _api.equipCosmetic(slot, id);
+                                    setState(() => _bundle =
+                                        r['bundle'] as Map<String, dynamic>?);
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('$e')),
+                                      );
+                                    }
+                                  }
+                                },
+                          child: Text(isEquipped ? 'Aktif' : 'Kuşan'),
+                        )
+                      : const Text('Sahip'))
                   : FilledButton(
                       onPressed: coins >= price
                           ? () async {

@@ -21,8 +21,9 @@ import {
   isBotUserId,
 } from '../services/progression.js';
 
-const MIN_PLAYERS = 6;
-const MIN_HUMANS_TO_START = 2;
+const DEFAULT_MIN_PLAYERS = 6;
+const ABSOLUTE_MIN_PLAYERS = 4;
+const MIN_HUMANS_TO_START = 1;
 
 const rooms = new Map();
 const socketToRoom = new Map();
@@ -38,6 +39,18 @@ function randomCode() {
   return code;
 }
 
+export function getLiveSummary() {
+  let playersInLobbies = 0;
+  let openRooms = 0;
+  for (const r of rooms.values()) {
+    if (r.status === 'lobby' && !r.isTournament) {
+      openRooms += 1;
+      playersInLobbies += r.players.length;
+    }
+  }
+  return { openRooms, playersInLobbies };
+}
+
 export function listPublicRooms() {
   return [...rooms.values()]
     .filter((r) => r.status === 'lobby' && !r.isTournament)
@@ -45,6 +58,8 @@ export function listPublicRooms() {
       code: r.code,
       playerCount: r.players.length,
       maxPlayers: r.maxPlayers,
+      minPlayers: r.minPlayers ?? DEFAULT_MIN_PLAYERS,
+      fillWithBots: Boolean(r.fillWithBots),
       hostNick: r.players.find((p) => p.userId === r.hostId)?.nick ?? '?',
     }));
 }
@@ -112,6 +127,8 @@ function sanitizeRoom(room) {
     maxPlayers: room.maxPlayers,
     hostId: room.hostId,
     fillWithBots: Boolean(room.fillWithBots),
+    minPlayers: room.minPlayers ?? DEFAULT_MIN_PLAYERS,
+    botDifficulty: room.botDifficulty ?? 'normal',
     isTournament: Boolean(room.isTournament),
     tournamentId: room.tournamentId ?? null,
     players: room.players.map((p) => ({
@@ -205,13 +222,25 @@ function addBotPlayers(room, targetCount) {
 }
 
 function pickRandom(arr) {
+  if (!arr.length) return undefined;
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function pickBotTarget(targets, botRole, difficulty) {
+  if (!targets.length) return undefined;
+  let pool = targets;
+  if (difficulty === 'hard' && isEvilTeam(botRole)) {
+    const good = targets.filter((t) => !isEvilTeam(t.role));
+    if (good.length) pool = good;
+  }
+  return pickRandom(pool);
 }
 
 function tickBotActions(room) {
   const g = room.game;
   if (!g || g.winner) return;
 
+  const difficulty = room.botDifficulty ?? 'normal';
   const alive = g.players.filter((p) => p.alive);
   const bots = alive.filter((p) => isBotUserId(p.userId));
 
@@ -221,11 +250,17 @@ function tickBotActions(room) {
         const targets = alive.filter(
           (p) => p.userId !== bot.userId && !isEvilTeam(p.role),
         );
-        if (targets.length) g.nightChoices.set(bot.userId, pickRandom(targets).id);
+        if (targets.length) {
+          const t = pickBotTarget(targets, bot.role, difficulty);
+          if (t) g.nightChoices.set(bot.userId, t.id);
+        }
       }
       if (bot.role === 'doctor' && !g.nightProtects.has(bot.userId)) {
         const others = alive.filter((p) => p.userId !== bot.userId);
-        if (others.length) g.nightProtects.set(pickRandom(others).userId, bot.userId);
+        if (others.length) {
+          const t = pickRandom(others);
+          if (t) g.nightProtects.set(t.userId, bot.userId);
+        }
       }
     }
     const killers = g.players.filter(
@@ -239,9 +274,11 @@ function tickBotActions(room) {
       if (!g.dayVotes.has(bot.userId)) {
         const targets = alive.filter((p) => p.userId !== bot.userId);
         if (targets.length) {
-          const t = pickRandom(targets);
-          g.dayVotes.set(bot.userId, t.id);
-          recordAccusation(g.matchLog, t.userId);
+          const t = pickBotTarget(targets, bot.role, difficulty);
+          if (t) {
+            g.dayVotes.set(bot.userId, t.id);
+            recordAccusation(g.matchLog, t.userId);
+          }
         }
       }
     }
@@ -249,21 +286,38 @@ function tickBotActions(room) {
   }
 }
 
+function normalizePlayerCounts(maxPlayers, minPlayers) {
+  const max = Math.min(8, Math.max(ABSOLUTE_MIN_PLAYERS, Number(maxPlayers) || DEFAULT_MIN_PLAYERS));
+  const min = Math.min(
+    max,
+    Math.max(ABSOLUTE_MIN_PLAYERS, Number(minPlayers) || DEFAULT_MIN_PLAYERS),
+  );
+  return { max, min };
+}
+
 export function createRoom({
   hostId,
   hostNick,
-  maxPlayers = MIN_PLAYERS,
+  maxPlayers = DEFAULT_MIN_PLAYERS,
+  minPlayers = DEFAULT_MIN_PLAYERS,
   socketId,
   fillWithBots = false,
+  botDifficulty = 'normal',
+  quickMatch = false,
 }) {
-  const max = Math.min(8, Math.max(MIN_PLAYERS, Number(maxPlayers) || MIN_PLAYERS));
+  const { max, min } = normalizePlayerCounts(maxPlayers, minPlayers);
   const code = randomCode();
   const room = {
     code,
     status: 'lobby',
     maxPlayers: max,
+    minPlayers: min,
     hostId,
     fillWithBots: Boolean(fillWithBots),
+    botDifficulty: ['easy', 'normal', 'hard'].includes(botDifficulty)
+      ? botDifficulty
+      : 'normal',
+    quickMatch: Boolean(quickMatch),
     players: [{ userId: hostId, nick: hostNick, socketId }],
     game: null,
   };
@@ -311,6 +365,7 @@ export function leaveRoom(socketId) {
 
   if (wasHostInGame) {
     applyHostLeavePenalty(leaving.userId);
+    refundPlayersAfterHostLeave(room, leaving.userId);
     cancelGameForHostLeave(room);
     const humans = room.players.filter((p) => !isBotUserId(p.userId));
     if (humans.length === 0) {
@@ -345,9 +400,10 @@ export function startGame(socketId, userId, { fillWithBots } = {}) {
   if (humans.length < MIN_HUMANS_TO_START) return { error: 'need_two_humans' };
 
   const useBots = fillWithBots ?? room.fillWithBots;
-  if (room.players.length < MIN_PLAYERS) {
-    if (!useBots) return { error: 'need_six_players' };
-    addBotPlayers(room, MIN_PLAYERS);
+  const needed = room.minPlayers ?? DEFAULT_MIN_PLAYERS;
+  if (room.players.length < needed) {
+    if (!useBots) return { error: 'need_more_players', required: needed };
+    addBotPlayers(room, needed);
   }
 
   const roles = assignRoles(room.players.length);
@@ -400,9 +456,61 @@ function finalizeMatch(room) {
   summary.roomCode = room.code;
   if (!summary) return;
   for (const p of room.game.players) {
-    applyMatchRewards(p.userId, summary, p.role);
+    if (!isBotUserId(p.userId)) {
+      applyMatchRewards(p.userId, summary, p.role);
+    }
   }
   room.game.matchSummary = summary;
+
+  import('../services/engagement.js')
+    .then(({ onMatchEnd }) => {
+      for (const p of room.game.players) {
+        if (!isBotUserId(p.userId)) onMatchEnd(p.userId, summary, p.role);
+      }
+    })
+    .catch(() => {});
+}
+
+function refundPlayersAfterHostLeave(room, hostUserId) {
+  const refund = 15;
+  for (const p of room.players) {
+    if (p.userId === hostUserId || isBotUserId(p.userId)) continue;
+    import('../services/progression.js')
+      .then(({ refundHostLeaveCoins }) => refundHostLeaveCoins(p.userId, refund))
+      .catch(() => {});
+  }
+}
+
+/** Hızlı maç: dolu odaya katıl veya botlu oda aç */
+export function quickMatch({ hostId, hostNick, socketId }) {
+  for (const room of rooms.values()) {
+    if (
+      room.status === 'lobby' &&
+      !room.isTournament &&
+      room.fillWithBots &&
+      room.players.length < room.maxPlayers
+    ) {
+      const joined = joinRoom({
+        code: room.code,
+        userId: hostId,
+        nick: hostNick,
+        socketId,
+      });
+      if (!joined.error) return { room: joined.room, joinedExisting: true };
+    }
+  }
+
+  const view = createRoom({
+    hostId,
+    hostNick,
+    maxPlayers: 6,
+    minPlayers: 4,
+    socketId,
+    fillWithBots: true,
+    quickMatch: true,
+    botDifficulty: 'normal',
+  });
+  return { room: view, joinedExisting: false, code: getRoomForSocket(socketId)?.code };
 }
 
 function resolveNight(room) {

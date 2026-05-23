@@ -12,9 +12,9 @@
 
 ## İndirme linkleri
 
-- **v0.2.12:** https://github.com/afmolla/flutter/releases/download/v0.2.12/app-release.apk
-- v0.2.11: https://github.com/afmolla/flutter/releases/download/v0.2.11/app-release.apk
-- v0.2.10: https://github.com/afmolla/flutter/releases/download/v0.2.10/app-release.apk
+- **v0.2.12:** https://github.com/afmolla/vampir-koylu/releases/download/v0.2.12/app-release.apk
+- v0.2.11: https://github.com/afmolla/vampir-koylu/releases/download/v0.2.11/app-release.apk
+- v0.2.10: https://github.com/afmolla/vampir-koylu/releases/download/v0.2.10/app-release.apk
 
 ## Geliştirici
 

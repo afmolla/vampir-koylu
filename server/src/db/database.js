@@ -43,6 +43,7 @@ function initTables() {
       user_id TEXT PRIMARY KEY,
       xp INTEGER NOT NULL DEFAULT 0,
       coins INTEGER NOT NULL DEFAULT 100,
+      balance INTEGER NOT NULL DEFAULT 0,
       rank_tier TEXT NOT NULL DEFAULT 'bronze',
       login_streak INTEGER NOT NULL DEFAULT 0,
       last_login_date TEXT,
@@ -165,6 +166,106 @@ function initTables() {
   }
   try {
     db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_facebook ON users(facebook_id) WHERE facebook_id IS NOT NULL`);
+  } catch {
+    /* exists */
+  }
+  try {
+    db.exec(`ALTER TABLE user_profiles ADD COLUMN balance INTEGER NOT NULL DEFAULT 0`);
+  } catch {
+    /* exists */
+  }
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS balance_ledger (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      balance_after INTEGER NOT NULL,
+      note TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_balance_ledger_user ON balance_ledger(user_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS friends (
+      user_id TEXT NOT NULL,
+      friend_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (user_id, friend_id),
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (friend_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS weekly_quest_progress (
+      user_id TEXT NOT NULL,
+      quest_id TEXT NOT NULL,
+      progress INTEGER NOT NULL DEFAULT 0,
+      goal INTEGER NOT NULL,
+      week_key TEXT NOT NULL,
+      claimed INTEGER NOT NULL DEFAULT 0,
+      PRIMARY KEY (user_id, quest_id, week_key),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS push_tokens (
+      user_id TEXT NOT NULL,
+      token TEXT NOT NULL,
+      platform TEXT NOT NULL DEFAULT 'android',
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (user_id, token),
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      token TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      used INTEGER NOT NULL DEFAULT 0,
+      FOREIGN KEY (user_id) REFERENCES users(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS user_reports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      reporter_id TEXT NOT NULL,
+      target_id TEXT,
+      target_nick TEXT,
+      channel TEXT,
+      reason TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS chat_mutes (
+      user_id TEXT NOT NULL,
+      muted_user_id TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (user_id, muted_user_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS season_pass_claims (
+      user_id TEXT NOT NULL,
+      tier INTEGER NOT NULL,
+      track TEXT NOT NULL DEFAULT 'free',
+      season_key TEXT NOT NULL,
+      claimed_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (user_id, tier, track, season_key)
+    );
+  `);
+
+  for (const sql of [
+    `ALTER TABLE user_profiles ADD COLUMN first_match_bonus_claimed INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE user_profiles ADD COLUMN login_count INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE user_profiles ADD COLUMN referral_code TEXT`,
+    `ALTER TABLE user_profiles ADD COLUMN referred_by_user_id TEXT`,
+    `ALTER TABLE user_profiles ADD COLUMN season_xp INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE user_profiles ADD COLUMN bot_difficulty TEXT DEFAULT 'normal'`,
+  ]) {
+    try {
+      db.exec(sql);
+    } catch {
+      /* exists */
+    }
+  }
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_profiles_referral ON user_profiles(referral_code) WHERE referral_code IS NOT NULL`);
   } catch {
     /* exists */
   }

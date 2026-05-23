@@ -2,15 +2,15 @@
 setlocal EnableExtensions
 title Vampir Koylu API
 
-REM --- Ortak yollar (GitHub: afmolla/flutter, VPS: C:\apps\flutter) ---
+REM --- Ortak yollar (GitHub: afmolla/vampir-koylu, VPS: C:\apps\vampir-koylu) ---
 if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 
 if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
-if not defined API_PORT set API_PORT=3000
-if not defined LATEST_VERSION set LATEST_VERSION=0.2.13
+if not defined API_PORT set API_PORT=3100
+if not defined LATEST_VERSION set LATEST_VERSION=0.2.15
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
-if not defined GITHUB_REPO set GITHUB_REPO=afmolla/flutter
+if not defined GITHUB_REPO set GITHUB_REPO=afmolla/vampir-koylu
 
 REM VPS klasoru varsa oraya gec (tek cmd: cd + git pull + API)
 if exist "%VPS_APP_DIR%\.git" (
@@ -107,10 +107,11 @@ set NODE_ENV=production
 set MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
 set LATEST_VERSION=%LATEST_VERSION%
 set FORCE_UPDATE=true
-set APK_PUBLISH_VERSION=0.2.13
-set UPDATE_URL_ANDROID=https://github.com/afmolla/flutter/releases/download/v%APK_PUBLISH_VERSION%/app-release.apk
+set APK_PUBLISH_VERSION=0.2.15
+set UPDATE_URL_ANDROID=https://github.com/afmolla/vampir-koylu/releases/download/v%APK_PUBLISH_VERSION%/app-release.apk
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
+set ADMIN_API_KEY=vampir-admin-change-me
 
 (
   echo PORT=%API_PORT%
@@ -122,6 +123,7 @@ set JWT_EXPIRES_IN=7d
   echo UPDATE_URL_ANDROID=%UPDATE_URL_ANDROID%
   echo JWT_SECRET=%JWT_SECRET%
   echo JWT_EXPIRES_IN=7d
+  echo ADMIN_API_KEY=%ADMIN_API_KEY%
 ) > .env
 
 REM --- 4) Node baslat ---

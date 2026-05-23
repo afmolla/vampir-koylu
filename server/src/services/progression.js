@@ -21,7 +21,7 @@ export const COSMETIC_CATALOG = [
   { id: 'death_skull_burst', type: 'death_anim', price: 90, cosmeticOnly: true },
 ];
 
-const DAILY_QUESTS = [
+export const DAILY_QUESTS = [
   { id: 'win_3', metric: 'wins', goal: 3, rewardCoins: 50, rewardXp: 30 },
   { id: 'trick_2', metric: 'deceptions', goal: 2, rewardCoins: 40, rewardXp: 25 },
   { id: 'doctor_save', metric: 'saves', goal: 1, rewardCoins: 35, rewardXp: 20 },
@@ -68,8 +68,8 @@ export function ensureProfile(userId) {
   if (row) return row;
 
   db.prepare(
-    `INSERT INTO user_profiles (user_id, xp, coins, rank_tier, login_streak, last_login_date)
-     VALUES (?, 0, 100, 'bronze', 0, NULL)`,
+    `INSERT INTO user_profiles (user_id, xp, coins, balance, rank_tier, login_streak, last_login_date)
+     VALUES (?, 0, 100, 0, 'bronze', 0, NULL)`,
   ).run(userId);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -116,6 +116,7 @@ export function getProfileBundle(userId) {
       userId,
       xp: profile.xp,
       coins: profile.coins,
+      balance: profile.balance ?? 0,
       rankTier: rank.id,
       rankTheme: rank.theme,
       rankLabelTr: rank.labelTr,
@@ -298,6 +299,64 @@ export function claimQuest(userId, questId) {
   return { ok: true, bundle: getProfileBundle(userId) };
 }
 
+export function resolveUserId({ userId, nick, email }) {
+  const db = getDb();
+  if (userId) {
+    const row = db.prepare('SELECT id FROM users WHERE id = ?').get(userId);
+    return row?.id ?? null;
+  }
+  if (email) {
+    const mail = String(email).trim().toLowerCase();
+    const row = db.prepare('SELECT id FROM users WHERE email = ?').get(mail);
+    return row?.id ?? null;
+  }
+  if (nick) {
+    const row = db.prepare('SELECT id FROM users WHERE nick = ? COLLATE NOCASE').get(
+      String(nick).trim(),
+    );
+    return row?.id ?? null;
+  }
+  return null;
+}
+
+/** Admin / sistem: bakiye yukleme (TL birimi, tam sayi). */
+export function addUserBalance(targetUserId, amount, note = '') {
+  const db = getDb();
+  const delta = Math.trunc(Number(amount));
+  if (!targetUserId || !Number.isFinite(delta) || delta === 0) {
+    return { error: 'invalid_amount' };
+  }
+
+  const profile = ensureProfile(targetUserId);
+  const next = Math.max(0, (profile.balance ?? 0) + delta);
+  db.prepare('UPDATE user_profiles SET balance = ? WHERE user_id = ?').run(
+    next,
+    targetUserId,
+  );
+  db.prepare(
+    `INSERT INTO balance_ledger (user_id, amount, balance_after, note)
+     VALUES (?, ?, ?, ?)`,
+  ).run(targetUserId, delta, next, String(note ?? '').slice(0, 200));
+
+  return {
+    ok: true,
+    userId: targetUserId,
+    added: delta,
+    balance: next,
+    bundle: getProfileBundle(targetUserId),
+  };
+}
+
+export function getBalanceHistory(userId, limit = 20) {
+  const db = getDb();
+  return db
+    .prepare(
+      `SELECT id, amount, balance_after, note, created_at
+       FROM balance_ledger WHERE user_id = ? ORDER BY id DESC LIMIT ?`,
+    )
+    .all(userId, Math.min(50, limit));
+}
+
 export function isBotUserId(userId) {
   return String(userId).startsWith('bot:');
 }
@@ -314,6 +373,15 @@ export function grantMatchEntry(userId) {
 }
 
 /** Kurucu oyundan kaçınca ceza. */
+export function refundHostLeaveCoins(userId, amount = 15) {
+  if (isBotUserId(userId)) return;
+  const db = getDb();
+  ensureProfile(userId);
+  db.prepare(
+    `UPDATE user_profiles SET coins = coins + ? WHERE user_id = ?`,
+  ).run(amount, userId);
+}
+
 export function applyHostLeavePenalty(userId) {
   if (isBotUserId(userId)) return { penalty: 0 };
   const db = getDb();

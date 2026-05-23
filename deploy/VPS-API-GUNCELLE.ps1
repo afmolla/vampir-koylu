@@ -1,10 +1,10 @@
-# VPS: C:\apps\flutter  (git clone afmolla/flutter)
-# Yonetici: powershell -ExecutionPolicy Bypass -File C:\apps\flutter\deploy\VPS-API-GUNCELLE.ps1
+# VPS: C:\apps\vampir-koylu  (git clone afmolla/vampir-koylu)
+# Yonetici: powershell -ExecutionPolicy Bypass -File C:\apps\vampir-koylu\deploy\VPS-API-GUNCELLE.ps1
 
 $ErrorActionPreference = "Stop"
 
 $Candidates = @(
-    "C:\apps\flutter",
+    "C:\apps\vampir-koylu",
     (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent)
 )
 if ($env:VPS_APP_DIR) { $Candidates = @($env:VPS_APP_DIR) + $Candidates }
@@ -17,7 +17,7 @@ foreach ($c in $Candidates) {
     }
 }
 if (-not $Root) {
-    Write-Host "HATA: Proje bulunamadi. Once: git clone https://github.com/afmolla/flutter.git C:\apps\flutter" -ForegroundColor Red
+    Write-Host "HATA: Proje bulunamadi. Once: git clone https://github.com/afmolla/vampir-koylu.git C:\apps\vampir-koylu" -ForegroundColor Red
     exit 1
 }
 
