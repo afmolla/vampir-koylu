@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import '../l10n/app_localizations.dart';
 import 'chat_bottom_sheet.dart';
 
 /// Alttan acilan sohbet — klavye ile state kaybolmaz.
@@ -27,7 +28,7 @@ class ChatFab extends StatelessWidget {
     return FloatingActionButton.extended(
       onPressed: () => showChatPopup(context: context, socket: socket, nick: nick),
       icon: const Icon(Icons.chat_bubble_outline),
-      label: const Text('Sohbet'),
+      label: Text(AppLocalizations.of(context)!.chat),
     );
   }
 }

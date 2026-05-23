@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import '../l10n/app_localizations.dart';
 import '../screens/private_chat_screen.dart';
 import '../services/dm_chat_service.dart';
 import '../services/session_store.dart';
@@ -61,10 +62,26 @@ class _GeneralChatHubState extends State<GeneralChatHub> {
     if (socket == null) return;
     try {
       final list = await _dm.listViaSocket(socket);
-      if (mounted) setState(() => _dms = list);
+      if (mounted) {
+        setState(() {
+          _dms = list
+              .where((d) =>
+                  d.peerUserId.isNotEmpty &&
+                  (_myUserId == null || d.peerUserId != _myUserId))
+              .toList();
+        });
+      }
     } catch (_) {
       final list = await _dm.listViaHttp();
-      if (mounted) setState(() => _dms = list);
+      if (mounted) {
+        setState(() {
+          _dms = list
+              .where((d) =>
+                  d.peerUserId.isNotEmpty &&
+                  (_myUserId == null || d.peerUserId != _myUserId))
+              .toList();
+        });
+      }
     }
   }
 
@@ -87,19 +104,35 @@ class _GeneralChatHubState extends State<GeneralChatHub> {
   Future<void> _openPrivateFromGeneral(String peerUserId, String peerNick) async {
     final socket = widget.socket;
     if (socket == null || _myUserId == null) return;
+    if (peerUserId == _myUserId) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorCannotDmSelf),
+        ),
+      );
+      return;
+    }
     try {
       final conv = await _dm.openDm(
         socket: socket,
         myNick: widget.nick,
+        myUserId: _myUserId,
         targetUserId: peerUserId,
         targetNick: peerNick,
       );
       if (!mounted || conv == null) return;
       _openPrivate(conv.peerUserId, conv.peerNick, channel: conv.channel);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        final self = e.toString().contains('cannot_dm_self');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Özel oda açılamadı')),
+          SnackBar(
+            content: Text(
+              self ? l10n.errorCannotDmSelf : l10n.errorDmOpenFailed,
+            ),
+          ),
         );
       }
     }

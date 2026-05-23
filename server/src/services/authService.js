@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { config } from '../config.js';
 import { getDb } from '../db/database.js';
 import { ensureProfile } from './progression.js';
+import { isNickOnline } from './liveStats.js';
+import { isNickActiveInRooms } from '../rooms/roomStore.js';
 
 export const DEFAULT_AVATAR_URL =
   'https://api.dicebear.com/7.x/avataaars/png?seed=guest';
@@ -30,6 +32,28 @@ export function getUserByEmail(email) {
   const db = getDb();
   const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
   return rowToUser(row);
+}
+
+export function getUserByNick(nick) {
+  const name = String(nick ?? '').trim();
+  if (name.length < 2) return null;
+  const db = getDb();
+  const row = db
+    .prepare('SELECT * FROM users WHERE nick = ? COLLATE NOCASE')
+    .get(name);
+  return rowToUser(row);
+}
+
+function isNickTaken(nick, excludeUserId = null) {
+  const name = String(nick ?? '').trim();
+  if (name.length < 2) return false;
+  const db = getDb();
+  const row = db
+    .prepare('SELECT id FROM users WHERE nick = ? COLLATE NOCASE')
+    .get(name);
+  if (!row) return false;
+  if (excludeUserId && row.id === excludeUserId) return false;
+  return true;
 }
 
 function insertUser({
@@ -86,6 +110,7 @@ export function registerAccount({ email, password, nick, locale }) {
   if (name.length < 2 || name.length > 24) return { error: 'invalid_nick' };
 
   if (getUserByEmail(mail)) return { error: 'email_taken' };
+  if (isNickTaken(name)) return { error: 'nick_taken' };
 
   const hash = bcrypt.hashSync(password, 10);
   const avatarUrl = `${DEFAULT_AVATAR_URL}&seed=${encodeURIComponent(mail)}`;
@@ -101,10 +126,25 @@ export function registerAccount({ email, password, nick, locale }) {
   return { user };
 }
 
-export function loginWithEmail({ email, password }) {
-  const mail = String(email ?? '').trim().toLowerCase();
+export function loginWithEmail({ email, login, password }) {
+  return loginWithCredentials({ login: login ?? email, password });
+}
+
+/** E-posta veya kullanıcı adı ile giriş */
+export function loginWithCredentials({ login, password }) {
+  const raw = String(login ?? '').trim();
+  if (raw.length < 2) return { error: 'invalid_credentials' };
+
   const db = getDb();
-  const row = db.prepare('SELECT * FROM users WHERE email = ?').get(mail);
+  let row;
+  if (raw.includes('@')) {
+    row = db.prepare('SELECT * FROM users WHERE email = ?').get(raw.toLowerCase());
+  } else {
+    row = db
+      .prepare('SELECT * FROM users WHERE nick = ? COLLATE NOCASE')
+      .get(raw);
+  }
+
   if (!row?.password_hash) return { error: 'invalid_credentials' };
   if (!bcrypt.compareSync(String(password ?? ''), row.password_hash)) {
     return { error: 'invalid_credentials' };
@@ -226,6 +266,7 @@ export function updateAccount(userId, { nick, avatarUrl, password, botDifficulty
   if (nick != null) {
     const name = String(nick).trim();
     if (name.length < 2 || name.length > 24) return { error: 'invalid_nick' };
+    if (isNickTaken(name, userId)) return { error: 'nick_taken' };
     updateUser(userId, { nick: name });
   }
   if (avatarUrl != null) {
@@ -254,13 +295,44 @@ export function updateAccount(userId, { nick, avatarUrl, password, botDifficulty
 export function guestLogin({ nick, locale }) {
   const name = String(nick ?? '').trim();
   if (name.length < 2 || name.length > 24) return { error: 'invalid_nick' };
+
+  const existing = getUserByNick(name);
+
+  // Kayıtlı üyenin takma adı misafire kapalı
+  if (existing && !existing.isGuest) {
+    return { error: 'nick_taken' };
+  }
+
+  // Çevrimiçi veya lobide bağlı (açık) oyuncu bu adı kullanıyorsa
+  const excludeId = existing?.id ?? null;
+  if (isNickOnline(name, excludeId) || isNickActiveInRooms(name, excludeId)) {
+    return { error: 'nick_in_use' };
+  }
+
+  const loc = locale ?? 'tr';
+
+  // Aynı misafir hesabını yeniden kullan (yeni satır oluşturma)
+  if (existing?.isGuest) {
+    if (loc !== existing.locale) {
+      updateUser(existing.id, { locale: loc });
+    }
+    return { user: getUserById(existing.id) };
+  }
+
   const avatarUrl = `${DEFAULT_AVATAR_URL}&seed=${encodeURIComponent(name)}`;
-  const user = insertUser({
-    id: uuidv4(),
-    nick: name,
-    isGuest: true,
-    locale: locale ?? 'tr',
-    avatarUrl,
-  });
-  return { user };
+  try {
+    const user = insertUser({
+      id: uuidv4(),
+      nick: name,
+      isGuest: true,
+      locale: loc,
+      avatarUrl,
+    });
+    return { user };
+  } catch (err) {
+    if (err?.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return { error: 'nick_taken' };
+    }
+    throw err;
+  }
 }

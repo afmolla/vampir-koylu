@@ -65,11 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final code = data['roomCode'] as String?;
     final nick = data['fromNick'] as String? ?? '?';
     if (code == null) return;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$nick seni $code odasına davet ediyor'),
+        content: Text(l10n.inviteToRoom(nick, code)),
         action: SnackBarAction(
-          label: 'Katıl',
+          label: l10n.joinRoom,
           onPressed: () {
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -249,7 +250,10 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(l10n.appTitle),
         actions: [
           if (!widget.offlineMode)
-            CoinsBalanceChip(coins: profile['coins'] as int? ?? 0),
+            CoinsBalanceChip(
+              coins: profile['coins'] as int? ?? 0,
+              balanceTry: profile['balance'] as int? ?? 0,
+            ),
           if (!widget.offlineMode) ...[
             IconButton(
               icon: const Icon(Icons.leaderboard_outlined),
@@ -294,11 +298,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     context: context,
                     socket: _socketService.socket,
                     nick: widget.nick,
-                    title: 'Genel sohbet & ses',
+                    title: AppLocalizations.of(context)!.generalChatTitle,
                     generalVoice: true,
                   ),
                   icon: const Icon(Icons.headset_mic),
-                  label: const Text('Ses & sohbet'),
+                  label: Text(AppLocalizations.of(context)!.chatAndVoice),
                 ),
                 const SizedBox(height: 10),
                 ChatFab(socket: _socketService.socket, nick: widget.nick),

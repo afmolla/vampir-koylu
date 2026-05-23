@@ -121,6 +121,20 @@ export function getRoomForSocket(socketId) {
   return rooms.get(code) ?? null;
 }
 
+/** Lobide bağlı (açık) oyuncu bu takma adı kullanıyor mu? */
+export function isNickActiveInRooms(nick, excludeUserId = null) {
+  const key = String(nick ?? '').trim().toLowerCase();
+  if (!key) return false;
+  for (const room of rooms.values()) {
+    for (const p of room.players) {
+      if (!p.socketId) continue;
+      if (excludeUserId && p.userId === excludeUserId) continue;
+      if (String(p.nick ?? '').trim().toLowerCase() === key) return true;
+    }
+  }
+  return false;
+}
+
 function sanitizeRoom(room) {
   return {
     code: room.code,

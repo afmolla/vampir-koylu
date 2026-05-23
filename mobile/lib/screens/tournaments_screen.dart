@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/profile_service.dart';
+import '../widgets/wallet_app_bar_actions.dart';
 import 'tournament_detail_screen.dart';
 
 class TournamentsScreen extends StatefulWidget {
@@ -46,7 +47,10 @@ class _TournamentsScreenState extends State<TournamentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Turnuvalar')),
+      appBar: AppBar(
+        title: const Text('Turnuvalar'),
+        actions: const [WalletAppBarActions()],
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(

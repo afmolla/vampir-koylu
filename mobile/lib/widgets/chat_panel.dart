@@ -227,8 +227,10 @@ class _ChatPanelState extends State<ChatPanel> {
                     if (_mutedUsers.contains(msg.userId)) {
                       return const SizedBox.shrink();
                     }
-                    final isMe = widget.currentUserId != null &&
-                        msg.userId == widget.currentUserId;
+                    final isMe = (widget.currentUserId != null &&
+                            msg.userId == widget.currentUserId) ||
+                        msg.nick.toLowerCase() ==
+                            widget.nick.toLowerCase();
                     final canTapPeer = !widget.isPrivate &&
                         !isMe &&
                         widget.onPeerTap != null &&

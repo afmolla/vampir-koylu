@@ -25,6 +25,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   final _billing = BillingService();
   Map<String, dynamic>? _t;
   int _myCoins = 0;
+  int _myBalance = 0;
   String _selectedRole = 'random';
   bool _loading = true;
   bool _paying = false;
@@ -69,6 +70,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         setState(() {
           _t = t;
           _myCoins = profile?['coins'] as int? ?? 0;
+          _myBalance = profile?['balance'] as int? ?? 0;
         });
       }
     } finally {
@@ -221,7 +223,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(t['title'] as String? ?? 'Turnuva'),
-        actions: [CoinsBalanceChip(coins: _myCoins)],
+        actions: [
+          CoinsBalanceChip(coins: _myCoins, balanceTry: _myBalance),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),

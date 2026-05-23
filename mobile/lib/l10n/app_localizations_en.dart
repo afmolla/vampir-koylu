@@ -356,4 +356,233 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get summaryNone => 'No records';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get loginIdentifier => 'Email or username';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get rememberMe => 'Remember me';
+
+  @override
+  String get signIn => 'Sign in';
+
+  @override
+  String get createAccount => 'Create account';
+
+  @override
+  String get forgotPassword => 'Forgot password?';
+
+  @override
+  String get enterEmailForReset => 'Enter your email address';
+
+  @override
+  String get resetLinkSent =>
+      'Reset link sent (check email / server log)';
+
+  @override
+  String get accountTab => 'Account';
+
+  @override
+  String get guestTab => 'Guest';
+
+  @override
+  String get registerTitle => 'Create account';
+
+  @override
+  String get usernameLabel => 'Username';
+
+  @override
+  String get passwordMinHint => 'Password (min 6)';
+
+  @override
+  String get registerButton => 'Register';
+
+  @override
+  String get alreadyHaveAccount => 'I already have an account';
+
+  @override
+  String get registerFailed =>
+      'Registration failed. Check your connection.';
+
+  @override
+  String get loginFailed => 'Sign in failed';
+
+  @override
+  String get googleLoginFailed => 'Google sign-in failed';
+
+  @override
+  String get errorNickTaken => 'This username is already taken.';
+
+  @override
+  String get errorNickInUse =>
+      'This nickname is used by an online player. Try another.';
+
+  @override
+  String get errorInvalidNick => 'Nickname must be 2–24 characters.';
+
+  @override
+  String get errorCannotDmSelf =>
+      'You cannot open a private chat with yourself.';
+
+  @override
+  String get errorDmOpenFailed => 'Could not open private chat.';
+
+  @override
+  String get errorInvalidCredentials =>
+      'Email, username or password is incorrect.';
+
+  @override
+  String get errorEmailTaken => 'This email is already registered.';
+
+  @override
+  String get errorWeakPassword => 'Password must be at least 6 characters.';
+
+  @override
+  String get errorGoogleNotConfigured =>
+      'Google sign-in is not configured on the server.';
+
+  @override
+  String get errorFacebookNotConfigured =>
+      'Facebook sign-in is not configured on the server.';
+
+  @override
+  String get errorSocialToken => 'Social sign-in could not be verified.';
+
+  @override
+  String get errorLoginFailed => 'Sign in failed.';
+
+  @override
+  String get chatAndVoice => 'Chat & voice';
+
+  @override
+  String get voiceChat => 'Voice chat';
+
+  @override
+  String get joinVoice => 'Join voice';
+
+  @override
+  String get leaveVoice => 'Leave voice';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get openChat => 'Open chat';
+
+  @override
+  String get closeChat => 'Close chat';
+
+  @override
+  String get ready => 'Ready';
+
+  @override
+  String get notReady => 'Not ready';
+
+  @override
+  String get minimizeRoom => 'Minimize room';
+
+  @override
+  String get leaveRoom => 'Leave room';
+
+  @override
+  String get transferHost => 'Transfer host';
+
+  @override
+  String get closeRoom => 'Close room';
+
+  @override
+  String get copyCode => 'Copy code';
+
+  @override
+  String get codeCopied => 'Code copied';
+
+  @override
+  String get youAreHost => 'You are the host';
+
+  @override
+  String get generalVoice => 'General voice';
+
+  @override
+  String get generalVoiceHint => 'Talk with everyone in the lobby';
+
+  @override
+  String get coins => 'Coins';
+
+  @override
+  String get dailyReward => 'Daily reward';
+
+  @override
+  String get tournamentRolePick => 'Preferred role';
+
+  @override
+  String get roleFee => 'Role fee';
+
+  @override
+  String get joinTournament => 'Join tournament';
+
+  @override
+  String get splashConnecting => 'Connecting to server…';
+
+  @override
+  String get splashOffline =>
+      'Server unreachable — offline mode available';
+
+  @override
+  String get googleLoginCancelled => 'Google sign-in cancelled or failed';
+
+  @override
+  String get facebookLoginCancelled =>
+      'Facebook sign-in cancelled or failed';
+
+  @override
+  String get googleConfiguring => 'Google (configuring…)';
+
+  @override
+  String get leaveRoomConfirm => 'Leave room?';
+
+  @override
+  String get leaveRoomHint =>
+      'Minimize: room stays open, return to main menu.\n'
+      'Leave: you exit the room completely.';
+
+  @override
+  String get hostLeaveWarning =>
+      'As host, leaving cancels the game and costs 25 coins.';
+
+  @override
+  String get readyCheck => 'Ready ✓';
+
+  @override
+  String get generalChatTitle => 'General chat & voice';
+
+  @override
+  String roomChatTitle(String code) => 'Room: $code';
+
+  @override
+  String get minimize => 'Minimize';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get exit => 'Leave';
+
+  @override
+  String get stay => 'Stay';
+
+  @override
+  String get quitGameConfirm => 'Leave game?';
+
+  @override
+  String get quitGamePenalty => 'Leave (-25 coins)';
+
+  @override
+  String inviteToRoom(String nick, String code) =>
+      '$nick invites you to room $code';
 }

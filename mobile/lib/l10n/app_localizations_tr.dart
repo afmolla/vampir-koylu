@@ -357,4 +357,230 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get summaryNone => 'Kayıt yok';
+
+  @override
+  String get emailLabel => 'E-posta';
+
+  @override
+  String get loginIdentifier => 'E-posta veya kullanıcı adı';
+
+  @override
+  String get passwordLabel => 'Şifre';
+
+  @override
+  String get rememberMe => 'Beni hatırla';
+
+  @override
+  String get signIn => 'Giriş yap';
+
+  @override
+  String get createAccount => 'Hesap oluştur';
+
+  @override
+  String get forgotPassword => 'Şifremi unuttum';
+
+  @override
+  String get enterEmailForReset => 'E-posta adresinizi girin';
+
+  @override
+  String get resetLinkSent =>
+      'Sıfırlama bağlantısı gönderildi (e-posta / sunucu log)';
+
+  @override
+  String get accountTab => 'Hesap';
+
+  @override
+  String get guestTab => 'Misafir';
+
+  @override
+  String get registerTitle => 'Hesap oluştur';
+
+  @override
+  String get usernameLabel => 'Kullanıcı adı';
+
+  @override
+  String get passwordMinHint => 'Şifre (min 6)';
+
+  @override
+  String get registerButton => 'Kayıt ol';
+
+  @override
+  String get alreadyHaveAccount => 'Zaten hesabım var';
+
+  @override
+  String get registerFailed => 'Kayıt başarısız. Ağı kontrol et.';
+
+  @override
+  String get loginFailed => 'Giriş başarısız';
+
+  @override
+  String get googleLoginFailed => 'Google ile giriş başarısız';
+
+  @override
+  String get errorNickTaken => 'Bu kullanıcı adı zaten alınmış.';
+
+  @override
+  String get errorNickInUse =>
+      'Bu takma ad şu anda çevrimiçi bir oyuncu tarafından kullanılıyor.';
+
+  @override
+  String get errorInvalidNick => 'Takma ad 2–24 karakter olmalı.';
+
+  @override
+  String get errorCannotDmSelf => 'Kendinle özel oda açamazsın.';
+
+  @override
+  String get errorDmOpenFailed => 'Özel oda açılamadı.';
+
+  @override
+  String get errorInvalidCredentials =>
+      'E-posta, kullanıcı adı veya şifre hatalı.';
+
+  @override
+  String get errorEmailTaken => 'Bu e-posta zaten kayıtlı.';
+
+  @override
+  String get errorWeakPassword => 'Şifre en az 6 karakter olmalı.';
+
+  @override
+  String get errorGoogleNotConfigured =>
+      'Google giriş sunucuda yapılandırılmamış.';
+
+  @override
+  String get errorFacebookNotConfigured =>
+      'Facebook giriş sunucuda yapılandırılmamış.';
+
+  @override
+  String get errorSocialToken => 'Sosyal giriş doğrulanamadı.';
+
+  @override
+  String get errorLoginFailed => 'Giriş başarısız.';
+
+  @override
+  String get chatAndVoice => 'Sohbet ve ses';
+
+  @override
+  String get voiceChat => 'Sesli sohbet';
+
+  @override
+  String get joinVoice => 'Sese katıl';
+
+  @override
+  String get leaveVoice => 'Sesten ayrıl';
+
+  @override
+  String get chat => 'Sohbet';
+
+  @override
+  String get openChat => 'Sohbeti aç';
+
+  @override
+  String get closeChat => 'Sohbeti kapat';
+
+  @override
+  String get ready => 'Hazır';
+
+  @override
+  String get notReady => 'Hazır değil';
+
+  @override
+  String get minimizeRoom => 'Odayı küçült';
+
+  @override
+  String get leaveRoom => 'Odadan ayrıl';
+
+  @override
+  String get transferHost => 'Host devret';
+
+  @override
+  String get closeRoom => 'Odayı kapat';
+
+  @override
+  String get copyCode => 'Kodu kopyala';
+
+  @override
+  String get codeCopied => 'Kod kopyalandı';
+
+  @override
+  String get youAreHost => 'Sen hostsun';
+
+  @override
+  String get generalVoice => 'Genel ses';
+
+  @override
+  String get generalVoiceHint => 'Lobide herkesle konuş';
+
+  @override
+  String get coins => 'Coin';
+
+  @override
+  String get dailyReward => 'Günlük ödül';
+
+  @override
+  String get tournamentRolePick => 'Tercih edilen rol';
+
+  @override
+  String get roleFee => 'Rol ücreti';
+
+  @override
+  String get joinTournament => 'Turnuvaya katıl';
+
+  @override
+  String get splashConnecting => 'Sunucuya bağlanılıyor…';
+
+  @override
+  String get splashOffline =>
+      'Sunucuya ulaşılamıyor — çevrimdışı mod kullanılabilir';
+
+  @override
+  String get googleLoginCancelled => 'Google giriş iptal veya hata';
+
+  @override
+  String get facebookLoginCancelled => 'Facebook giriş iptal veya hata';
+
+  @override
+  String get googleConfiguring => 'Google (yapılandırılıyor…)';
+
+  @override
+  String get leaveRoomConfirm => 'Odadan çık?';
+
+  @override
+  String get leaveRoomHint =>
+      'Küçült: oda açık kalır, ana menüye dönersin.\n'
+      'Çık: odadan tamamen ayrılırsın.';
+
+  @override
+  String get hostLeaveWarning =>
+      'Kurucu olarak çıkarsan oyun iptal olur ve 25 coin cezası uygulanır.';
+
+  @override
+  String get readyCheck => 'Hazır ✓';
+
+  @override
+  String get generalChatTitle => 'Genel sohbet & ses';
+
+  @override
+  String roomChatTitle(String code) => 'Oda: $code';
+
+  @override
+  String get minimize => 'Küçült';
+
+  @override
+  String get cancel => 'İptal';
+
+  @override
+  String get exit => 'Çık';
+
+  @override
+  String get stay => 'Kal';
+
+  @override
+  String get quitGameConfirm => 'Oyundan çık?';
+
+  @override
+  String get quitGamePenalty => 'Çık (-25 coin)';
+
+  @override
+  String inviteToRoom(String nick, String code) =>
+      '$nick seni $code odasına davet ediyor';
 }

@@ -175,6 +175,13 @@ function initTables() {
     /* exists */
   }
   try {
+    db.exec(
+      `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_nick ON users(nick COLLATE NOCASE)`,
+    );
+  } catch {
+    /* duplicate nicks may exist; app still checks on register */
+  }
+  try {
     db.exec(`ALTER TABLE user_profiles ADD COLUMN balance INTEGER NOT NULL DEFAULT 0`);
   } catch {
     /* exists */

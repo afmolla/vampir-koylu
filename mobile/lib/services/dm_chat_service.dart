@@ -39,7 +39,11 @@ class DmChatService {
     required String myNick,
     required String targetUserId,
     String? targetNick,
+    String? myUserId,
   }) async {
+    if (myUserId != null && myUserId == targetUserId) {
+      throw Exception('cannot_dm_self');
+    }
     final completer = Completer<Map<String, dynamic>?>();
     socket.emitWithAck(
       'chat:dm:open',
@@ -51,6 +55,10 @@ class DmChatService {
       ack: (data) {
         if (data is Map && data['ok'] == true) {
           completer.complete(Map<String, dynamic>.from(data));
+        } else if (data is Map &&
+            (data['error'] == 'cannot_dm_self' ||
+                data['error'] == 'invalid_target')) {
+          completer.completeError(Exception('cannot_dm_self'));
         } else {
           completer.completeError(Exception('dm_open_failed'));
         }

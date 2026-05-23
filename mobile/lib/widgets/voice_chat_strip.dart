@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import '../services/voice_rtc_manager.dart';
 
@@ -319,7 +320,7 @@ class _VoiceChatStripState extends State<VoiceChatStrip>
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.mic),
-                label: const Text('Katil'),
+                label: Text(AppLocalizations.of(context)!.joinVoice),
               ),
           ],
         ),

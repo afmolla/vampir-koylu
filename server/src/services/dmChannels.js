@@ -2,8 +2,16 @@ import { getDb } from '../db/database.js';
 
 /** Iki kullanici icin sabit ozel oda kanali (oyundan bagimsiz). */
 export function buildDmChannelId(userIdA, userIdB) {
-  const [a, b] = [String(userIdA), String(userIdB)].sort();
-  return `dm:${a}:${b}`;
+  const a = String(userIdA ?? '').trim();
+  const b = String(userIdB ?? '').trim();
+  if (!a || !b || a === b) return null;
+  const [x, y] = [a, b].sort();
+  return `dm:${x}:${y}`;
+}
+
+export function isSelfDmChannel(channel) {
+  const dm = parseDmChannel(channel);
+  return Boolean(dm && dm.peerA === dm.peerB);
 }
 
 export function isDmChannel(channel) {
@@ -33,6 +41,7 @@ export function canAccessDmChannel(channel, userId) {
 }
 
 export function upsertDmSession(channel, userA, userB) {
+  if (String(userA) === String(userB)) return;
   const db = getDb();
   const [a, b] = [userA, userB].sort();
   db.prepare(
@@ -62,14 +71,19 @@ export function listDmChannelsForUser(userId) {
       return dm && (dm.peerA === userId || dm.peerB === userId);
     });
 
-  return [...new Set([...fromSessions, ...fromMessages])];
+  return [...new Set([...fromSessions, ...fromMessages])].filter(
+    (ch) => !isSelfDmChannel(ch),
+  );
 }
 
 export function listDmConversations(userId) {
   const db = getDb();
   const channels = listDmChannelsForUser(userId);
-  return channels.map((channel) => {
+  return channels
+    .filter((channel) => !isSelfDmChannel(channel))
+    .map((channel) => {
     const otherId = peerUserId(channel, userId);
+    if (!otherId || otherId === userId) return null;
     const userRow = otherId
       ? db.prepare('SELECT nick FROM users WHERE id = ?').get(otherId)
       : null;
@@ -86,7 +100,8 @@ export function listDmConversations(userId) {
       lastMessage: last?.content ?? '',
       updatedAt: last?.created_at ?? null,
     };
-  });
+  })
+    .filter(Boolean);
 }
 
 export function joinUserToAllDmSockets(socket, userId) {

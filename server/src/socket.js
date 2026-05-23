@@ -126,7 +126,9 @@ export function attachSocket(httpServer) {
 
   io.on('connection', (socket) => {
     const userId = socket.data.user.sub;
-    trackConnection(userId);
+    const db = getDb();
+    const userRow = db.prepare('SELECT nick FROM users WHERE id = ?').get(userId);
+    trackConnection(userId, userRow?.nick);
     socket.emit('connected', { ok: true, userId });
     broadcastLive();
 
@@ -138,10 +140,18 @@ export function attachSocket(httpServer) {
       try {
         const targetUserId = String(payload?.targetUserId ?? '').trim();
         if (!targetUserId || targetUserId === userId) {
-          if (typeof ack === 'function') ack({ ok: false, error: 'invalid_target' });
+          if (typeof ack === 'function') {
+            ack({ ok: false, error: 'cannot_dm_self' });
+          }
           return;
         }
         const channel = buildDmChannelId(userId, targetUserId);
+        if (!channel) {
+          if (typeof ack === 'function') {
+            ack({ ok: false, error: 'cannot_dm_self' });
+          }
+          return;
+        }
         upsertDmSession(channel, userId, targetUserId);
         socket.join(`chat:${channel}`);
         joinSocketsToDmChannel(io, channel, userId, targetUserId);
@@ -332,7 +342,13 @@ export function attachSocket(httpServer) {
           }
           if (channel.startsWith('dm:')) {
             const other = peerUserId(channel, userId);
-            if (other) upsertDmSession(channel, userId, other);
+            if (!other || other === userId) {
+              if (typeof ack === 'function') {
+                ack({ ok: false, error: 'cannot_dm_self' });
+              }
+              return;
+            }
+            upsertDmSession(channel, userId, other);
           }
         }
 
@@ -355,6 +371,10 @@ export function attachSocket(httpServer) {
       const channel = payload?.channel;
       if (!channel || typeof channel !== 'string') return;
       const room = getRoomForSocket(socket.id);
+      if (channel.startsWith('dm:')) {
+        const other = peerUserId(channel, userId);
+        if (!other || other === userId) return;
+      }
       if (channel !== 'general') {
         const access = canAccessTextChannel({ channel, userId, room });
         if (!access.ok) return;

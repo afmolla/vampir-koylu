@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../screens/home_screen.dart';
 import 'local_notifications_service.dart';
 import 'session_store.dart';
@@ -33,23 +34,31 @@ class AuthFlow {
     );
   }
 
-  static String errorMessage(String? code) {
+  static String errorMessage(AppLocalizations l10n, String? code) {
     switch (code) {
       case 'email_taken':
-        return 'Bu e-posta zaten kayıtlı.';
+        return l10n.errorEmailTaken;
+      case 'nick_taken':
+        return l10n.errorNickTaken;
+      case 'nick_in_use':
+        return l10n.errorNickInUse;
+      case 'invalid_nick':
+        return l10n.errorInvalidNick;
+      case 'cannot_dm_self':
+        return l10n.errorCannotDmSelf;
       case 'invalid_credentials':
-        return 'E-posta veya şifre hatalı.';
+        return l10n.errorInvalidCredentials;
       case 'weak_password':
-        return 'Şifre en az 6 karakter olmalı.';
+        return l10n.errorWeakPassword;
       case 'google_not_configured':
-        return 'Google giriş sunucuda yapılandırılmamış (GOOGLE_CLIENT_ID).';
+        return l10n.errorGoogleNotConfigured;
       case 'facebook_not_configured':
-        return 'Facebook giriş sunucuda yapılandırılmamış.';
+        return l10n.errorFacebookNotConfigured;
       case 'invalid_google_token':
       case 'invalid_facebook_token':
-        return 'Sosyal giriş doğrulanamadı.';
+        return l10n.errorSocialToken;
       default:
-        return 'Giriş başarısız.';
+        return l10n.errorLoginFailed;
     }
   }
 

@@ -69,13 +69,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showApiError(ApiException e) {
+    final l10n = AppLocalizations.of(context)!;
     dynamic body;
     try {
       body = jsonDecode(e.body);
     } catch (_) {}
     final code = AuthFlow.parseError(body);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AuthFlow.errorMessage(code))),
+      SnackBar(content: Text(AuthFlow.errorMessage(l10n, code))),
     );
   }
 
@@ -103,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       final data = await _api.login(
-        email: _emailController.text.trim(),
+        login: _emailController.text.trim(),
         password: _passwordController.text,
       );
       if (!mounted) return;
@@ -113,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Giriş başarısız')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.loginFailed)),
         );
       }
     } finally {
@@ -127,12 +128,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (clientId.isEmpty) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Google giris yapilandirilmamis.\n'
-            'VPS: server\\auth-secrets.env dosyasina GOOGLE_CLIENT_ID ekleyip API\'yi yeniden baslat.',
-          ),
-          duration: Duration(seconds: 6),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.errorGoogleNotConfigured),
+          duration: const Duration(seconds: 6),
         ),
       );
       return;
@@ -155,7 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Google giriş iptal veya hata')),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.googleLoginCancelled),
+          ),
         );
       }
     } finally {
@@ -178,7 +178,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Facebook giriş iptal veya hata')),
+          SnackBar(
+            content:
+                Text(AppLocalizations.of(context)!.facebookLoginCancelled),
+          ),
         );
       }
     } finally {
@@ -237,9 +240,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       _LanguageRow(locale: _locale),
                       const SizedBox(height: 20),
                       SegmentedButton<int>(
-                        segments: const [
-                          ButtonSegment(value: 0, label: Text('Hesap')),
-                          ButtonSegment(value: 1, label: Text('Misafir')),
+                        segments: [
+                          ButtonSegment(value: 0, label: Text(l10n.accountTab)),
+                          ButtonSegment(value: 1, label: Text(l10n.guestTab)),
                         ],
                         selected: {_tab},
                         onSelectionChanged: (s) =>
@@ -249,19 +252,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       if (_tab == 0) ...[
                         TextField(
                           controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'E-posta',
-                            prefixIcon: Icon(Icons.email_outlined),
+                          textInputAction: TextInputAction.next,
+                          decoration: InputDecoration(
+                            labelText: l10n.loginIdentifier,
+                            prefixIcon: const Icon(Icons.person_outline),
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextField(
                           controller: _passwordController,
                           obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'Şifre',
-                            prefixIcon: Icon(Icons.lock_outline),
+                          decoration: InputDecoration(
+                            labelText: l10n.passwordLabel,
+                            prefixIcon: const Icon(Icons.lock_outline),
                           ),
                         ),
                         Row(
@@ -275,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 );
                               },
-                              child: const Text('Hesap oluştur'),
+                              child: Text(l10n.createAccount),
                             ),
                             TextButton(
                               onPressed: _loading
@@ -285,8 +288,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                       if (!mail.contains('@')) {
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
-                                          const SnackBar(
-                                            content: Text('E-posta girin'),
+                                          SnackBar(
+                                            content: Text(
+                                              l10n.enterEmailForReset,
+                                            ),
                                           ),
                                         );
                                         return;
@@ -296,10 +301,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                         if (!context.mounted) return;
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Sıfırlama bağlantısı gönderildi (e-posta / sunucu log)',
-                                            ),
+                                          SnackBar(
+                                            content: Text(l10n.resetLinkSent),
                                           ),
                                         );
                                       } catch (e) {
@@ -311,7 +314,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         }
                                       }
                                     },
-                              child: const Text('Şifremi unuttum'),
+                              child: Text(l10n.forgotPassword),
                             ),
                           ],
                         ),
@@ -324,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   child:
                                       CircularProgressIndicator(strokeWidth: 2),
                                 )
-                              : const Text('Giriş yap'),
+                              : Text(l10n.signIn),
                         ),
                       ] else ...[
                         TextField(
@@ -342,7 +345,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                       CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Beni hatırla'),
+                        title: Text(l10n.rememberMe),
                         value: _rememberMe,
                         onChanged: (v) =>
                             setState(() => _rememberMe = v ?? true),
@@ -361,12 +364,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
-                                        const SnackBar(
+                                        SnackBar(
                                           content: Text(
-                                            'Google giris henuz ayarlanmadi.\n'
-                                            'Sunucuda auth-secrets.env → GOOGLE_CLIENT_ID',
+                                            l10n.errorGoogleNotConfigured,
                                           ),
-                                          duration: Duration(seconds: 5),
+                                          duration: const Duration(seconds: 5),
                                         ),
                                       );
                                     }
@@ -375,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         label: Text(
                           AuthConfig.hasGoogleClientId
                               ? l10n.googleSignIn
-                              : 'Google (yapilandiriliyor…)',
+                              : l10n.googleConfiguring,
                         ),
                       ),
                       const SizedBox(height: 12),

@@ -8,6 +8,9 @@ import '../services/socket_service.dart';
 import '../widgets/animated_game_background.dart';
 import '../models/game_roles.dart';
 import '../services/room_session.dart';
+import '../services/session_store.dart';
+import '../widgets/in_game_chat_preview.dart';
+import '../widgets/wallet_app_bar_actions.dart';
 import '../widgets/room_communication_sheet.dart';
 import 'match_summary_screen.dart';
 import '../widgets/game_phase_ui.dart';
@@ -35,8 +38,19 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
   bool _showRoleReveal = false;
   String? _bannerPhaseOverride;
   late bool _fillWithBots;
+  String? _myUserId;
 
   String get _roomChannel => 'room:${_room.code}';
+
+  Set<String> get _activeChatChannels {
+    final channels = <String>{_roomChannel};
+    final gameCh = _room.game?.chatChannels ?? [];
+    for (final ch in gameCh) {
+      final id = ch['id'] as String?;
+      if (id != null && id.isNotEmpty) channels.add(id);
+    }
+    return channels;
+  }
 
   bool get _isHost => _room.players.any(
         (p) => p.isHost && p.nick == widget.nick,
@@ -73,9 +87,28 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       state: widget.initialRoom,
     );
     widget.socketService.onRoomState(_onRoomState);
-    widget.socketService.socket?.emit('chat:join', {'channel': _roomChannel});
-    widget.socketService.socket?.emit('chat:join', {'channel': 'general'});
+    _joinChatChannels(_room);
+    _loadMyUserId();
     _checkRoleReveal(_room);
+  }
+
+  Future<void> _loadMyUserId() async {
+    final id = await SessionStore().getUserId();
+    if (mounted) setState(() => _myUserId = id);
+  }
+
+  void _joinChatChannels(OnlineRoomState room) {
+    final socket = widget.socketService.socket;
+    if (socket == null) return;
+    final channels = <String>{_roomChannel, 'general'};
+    final gameCh = room.game?.chatChannels ?? [];
+    for (final ch in gameCh) {
+      final id = ch['id'] as String?;
+      if (id != null && id.isNotEmpty) channels.add(id);
+    }
+    for (final c in channels) {
+      socket.emit('chat:join', {'channel': c});
+    }
   }
 
   Future<void> _minimizeRoom() async {
@@ -86,27 +119,27 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
   Future<void> _confirmPop() async {
     final action = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Odadan çık?'),
-        content: const Text(
-          'Küçült: oda açık kalır, ana menüye dönersin.\n'
-          'Çık: odadan tamamen ayrılırsın.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'cancel'),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, 'minimize'),
-            child: const Text('Küçült'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, 'leave'),
-            child: const Text('Çık'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final dlg = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(dlg.leaveRoomConfirm),
+          content: Text(dlg.leaveRoomHint),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'cancel'),
+              child: Text(dlg.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, 'minimize'),
+              child: Text(dlg.minimize),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, 'leave'),
+              child: Text(dlg.exit),
+            ),
+          ],
+        );
+      },
     );
     if (action == 'minimize') {
       await _minimizeRoom();
@@ -124,7 +157,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       context: context,
       socket: widget.socketService.socket,
       nick: widget.nick,
-      title: 'Oda: ${_room.code}',
+      title: AppLocalizations.of(context)!.roomChatTitle(_room.code),
       roomChannel: _roomChannel,
       gameChannels: game?.chatChannels,
     );
@@ -141,22 +174,23 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     if (_room.status != 'playing' || !_isHost) return true;
     final ok = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Oyundan çık?'),
-        content: const Text(
-          'Kurucu olarak çıkarsan oyun iptal olur ve 25 coin cezası uygulanır.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Kal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Çık (-25 coin)'),
-          ),
-        ],
-      ),
+      builder: (ctx) {
+        final dlg = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title: Text(dlg.quitGameConfirm),
+          content: Text(dlg.hostLeaveWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(dlg.stay),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(dlg.quitGamePenalty),
+            ),
+          ],
+        );
+      },
     );
     return ok == true;
   }
@@ -216,6 +250,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
         _fillWithBots = next.fillWithBots || _fillWithBots;
       });
       RoomSession.updateState(next.toJson());
+      _joinChatChannels(next);
       _checkRoleReveal(next);
       if (next.game?.winner != null) _maybeOpenSummary(next);
     }
@@ -335,7 +370,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
             heroTag: 'room_chat',
             onPressed: _openCommunication,
             icon: const Icon(Icons.forum_outlined),
-            label: const Text('Sohbet & ses'),
+            label: Text(l10n.chatAndVoice),
           ),
           const SizedBox(height: 10),
           FloatingActionButton(
@@ -346,13 +381,14 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
         ],
       ),
       appBar: AppBar(
-        title: Text('${l10n.roomCode} ${_room.code}'),
+        title: Text('${l10n.roomCode}: ${_room.code}'),
         backgroundColor: Colors.transparent,
         actions: [
+          const WalletAppBarActions(),
           if (inLobby)
             TextButton(
               onPressed: _toggleReady,
-              child: Text(_myReady ? 'Hazır ✓' : 'Hazır değil'),
+              child: Text(_myReady ? l10n.readyCheck : l10n.notReady),
             ),
         ],
       ),
@@ -527,6 +563,18 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
             RoleRevealOverlay(
               roleId: game!.yourRole,
               onFinished: () => setState(() => _showRoleReveal = false),
+            ),
+          if (inGame && game?.winner == null)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 100,
+              child: InGameChatPreview(
+                socket: widget.socketService.socket,
+                channels: _activeChatChannels,
+                myUserId: _myUserId,
+                onOpenChat: _openCommunication,
+              ),
             ),
         ],
       ),

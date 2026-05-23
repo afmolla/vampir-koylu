@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
 import '../services/auth_flow.dart';
 
@@ -41,16 +42,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
     } on ApiException catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       final err = AuthFlow.parseError(
         e.body.isNotEmpty ? jsonDecode(e.body) : null,
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AuthFlow.errorMessage(err))),
+        SnackBar(content: Text(AuthFlow.errorMessage(l10n, err))),
       );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kayıt başarısız. Ağı kontrol et.')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.registerFailed),
+        ),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -68,39 +72,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Hesap oluştur')),
+      appBar: AppBar(title: Text(l10n.registerTitle)),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
           TextField(
             controller: _nickController,
-            decoration: const InputDecoration(
-              labelText: 'Kullanıcı adı',
-              prefixIcon: Icon(Icons.person_outline),
+            decoration: InputDecoration(
+              labelText: l10n.usernameLabel,
+              prefixIcon: const Icon(Icons.person_outline),
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'E-posta',
-              prefixIcon: Icon(Icons.email_outlined),
+            decoration: InputDecoration(
+              labelText: l10n.emailLabel,
+              prefixIcon: const Icon(Icons.email_outlined),
             ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _passwordController,
             obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Şifre (min 6)',
-              prefixIcon: Icon(Icons.lock_outline),
+            decoration: InputDecoration(
+              labelText: l10n.passwordMinHint,
+              prefixIcon: const Icon(Icons.lock_outline),
             ),
           ),
           CheckboxListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Beni hatırla'),
+            title: Text(l10n.rememberMe),
             value: _rememberMe,
             onChanged: (v) => setState(() => _rememberMe = v ?? true),
           ),
@@ -113,11 +118,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: 22,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Kayıt ol'),
+                : Text(l10n.registerButton),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Zaten hesabım var'),
+            child: Text(l10n.alreadyHaveAccount),
           ),
         ],
       ),

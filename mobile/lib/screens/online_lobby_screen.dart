@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import '../services/socket_service.dart';
 import '../widgets/chat_popup_launcher.dart';
+import '../widgets/wallet_app_bar_actions.dart';
 import 'online_room_screen.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
@@ -215,6 +216,7 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
       appBar: AppBar(
         title: Text(l10n.onlinePlay),
         actions: [
+          const WalletAppBarActions(),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadRooms),
         ],
       ),

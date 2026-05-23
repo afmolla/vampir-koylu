@@ -131,13 +131,13 @@ class ApiClient {
   }
 
   Future<Map<String, dynamic>> login({
-    required String email,
+    required String login,
     required String password,
   }) async {
     final res = await _client.post(
       _uri('/api/auth/login'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
+      body: jsonEncode({'login': login, 'password': password}),
     );
     if (res.statusCode != 200) {
       throw ApiException(res.statusCode, res.body);

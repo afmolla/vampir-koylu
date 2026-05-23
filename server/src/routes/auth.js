@@ -46,7 +46,10 @@ authRouter.post('/register', (req, res) => {
     locale: req.body?.locale,
   });
   if (result.error) {
-    const status = result.error === 'email_taken' ? 409 : 400;
+    const status =
+      result.error === 'email_taken' || result.error === 'nick_taken'
+        ? 409
+        : 400;
     return res.status(status).json({ error: result.error });
   }
   if (result.user && req.body?.referralCode) {
@@ -57,7 +60,7 @@ authRouter.post('/register', (req, res) => {
 
 authRouter.post('/login', (req, res) => {
   const result = loginWithEmail({
-    email: req.body?.email,
+    login: req.body?.login ?? req.body?.email ?? req.body?.nick,
     password: req.body?.password,
   });
   if (result.error) return res.status(401).json({ error: result.error });
@@ -103,7 +106,13 @@ authRouter.post('/guest', (req, res) => {
     nick: req.body?.nick,
     locale: req.body?.locale,
   });
-  if (result.error) return res.status(400).json({ error: result.error });
+  if (result.error) {
+    const status =
+      result.error === 'nick_taken' || result.error === 'nick_in_use'
+        ? 409
+        : 400;
+    return res.status(status).json({ error: result.error });
+  }
   recordLogin(result.user.id);
   authResponse(result.user, res);
 });

@@ -39,6 +39,13 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
   }
 
   Future<void> _initChannel() async {
+    if (widget.peerUserId == widget.myUserId) {
+      if (mounted) {
+        setState(() => _loading = false);
+        Navigator.of(context).pop();
+      }
+      return;
+    }
     if (widget.channel != null && widget.channel!.isNotEmpty) {
       widget.socket?.emit('chat:join', {'channel': widget.channel});
       if (mounted) {
@@ -58,6 +65,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
       final conv = await _dm.openDm(
         socket: socket,
         myNick: widget.myNick,
+        myUserId: widget.myUserId,
         targetUserId: widget.peerUserId,
         targetNick: widget.peerNick,
       );
