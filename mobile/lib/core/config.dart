@@ -11,11 +11,11 @@ class AppConfig {
     defaultValue: 'http://85.95.251.204:3000',
   );
 
-  static const String clientVersion = '0.2.12';
+  static const String clientVersion = '0.2.13';
 
   static const String updateTargetVersion = String.fromEnvironment(
     'UPDATE_TARGET_VERSION',
-    defaultValue: '0.2.12',
+    defaultValue: '0.2.13',
   );
 
   /// Güncelleme APK — her zaman hedef sürüm (v0.2.7 yedek yok).
@@ -25,4 +25,10 @@ class AppConfig {
   static String get defaultUpdateApkUrl => apkUrlForVersion(updateTargetVersion);
 
   static const String platform = 'android';
+
+  /// Google Cloud OAuth Web client ID (sunucu dogrulama + mobil).
+  static const String googleServerClientId = String.fromEnvironment(
+    'GOOGLE_SERVER_CLIENT_ID',
+    defaultValue: '',
+  );
 }

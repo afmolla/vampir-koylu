@@ -1,8 +1,14 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 import { config } from '../config.js';
-import { getDb } from '../db/database.js';
+import {
+  getUserById,
+  guestLogin,
+  loginWithEmail,
+  loginWithFacebook,
+  loginWithGoogle,
+  registerAccount,
+} from '../services/authService.js';
 
 export const authRouter = Router();
 
@@ -14,57 +20,80 @@ function signToken(user) {
   );
 }
 
-function upsertUser(payload) {
-  const db = getDb();
-  const existing = db.prepare('SELECT * FROM users WHERE id = ?').get(payload.id);
-  if (existing) return { ...existing, isGuest: existing.is_guest === 1 };
-
-  db.prepare(
-    'INSERT INTO users (id, nick, is_guest, locale, created_at) VALUES (?, ?, ?, ?, ?)',
-  ).run(payload.id, payload.nick, payload.isGuest ? 1 : 0, payload.locale, payload.createdAt);
-
-  return payload;
-}
-
-function getUserById(id) {
-  const db = getDb();
-  const row = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
-  if (!row) return null;
-  return { id: row.id, nick: row.nick, isGuest: row.is_guest === 1, locale: row.locale };
-}
-
-authRouter.post('/guest', (req, res) => {
-  const nick = String(req.body?.nick ?? '').trim();
-  if (nick.length < 2 || nick.length > 24) {
-    return res.status(400).json({ error: 'invalid_nick' });
-  }
-
-  const user = upsertUser({
-    id: uuidv4(),
-    nick,
-    isGuest: true,
-    locale: req.body?.locale ?? 'tr',
-    createdAt: new Date().toISOString(),
-  });
-
+function authResponse(user, res) {
   res.json({
     token: signToken(user),
-    user: { id: user.id, nick: user.nick, isGuest: true, locale: user.locale },
+    user: {
+      id: user.id,
+      nick: user.nick,
+      isGuest: user.isGuest,
+      locale: user.locale,
+      email: user.email,
+      avatarUrl: user.avatarUrl,
+    },
   });
+}
+
+authRouter.post('/register', (req, res) => {
+  const result = registerAccount({
+    email: req.body?.email,
+    password: req.body?.password,
+    nick: req.body?.nick,
+    locale: req.body?.locale,
+  });
+  if (result.error) {
+    const status = result.error === 'email_taken' ? 409 : 400;
+    return res.status(status).json({ error: result.error });
+  }
+  authResponse(result.user, res);
 });
 
-authRouter.post('/google', (_req, res) => {
-  res.status(501).json({
-    error: 'not_implemented',
-    message: 'Google Sign-In — configure GOOGLE_CLIENT_ID on server',
+authRouter.post('/login', (req, res) => {
+  const result = loginWithEmail({
+    email: req.body?.email,
+    password: req.body?.password,
   });
+  if (result.error) return res.status(401).json({ error: result.error });
+  authResponse(result.user, res);
 });
 
-authRouter.post('/facebook', (_req, res) => {
-  res.status(501).json({
-    error: 'not_implemented',
-    message: 'Facebook Login — configure FACEBOOK_APP_ID on server',
+authRouter.post('/guest', (req, res) => {
+  const result = guestLogin({
+    nick: req.body?.nick,
+    locale: req.body?.locale,
   });
+  if (result.error) return res.status(400).json({ error: result.error });
+  authResponse(result.user, res);
+});
+
+authRouter.post('/google', async (req, res) => {
+  try {
+    const result = await loginWithGoogle({ idToken: req.body?.idToken });
+    if (result.error) {
+      const status = result.error === 'google_not_configured' ? 501 : 401;
+      return res.status(status).json({ error: result.error });
+    }
+    authResponse(result.user, res);
+  } catch (err) {
+    console.error('google auth:', err);
+    res.status(500).json({ error: 'server_error' });
+  }
+});
+
+authRouter.post('/facebook', async (req, res) => {
+  try {
+    const result = await loginWithFacebook({
+      accessToken: req.body?.accessToken,
+    });
+    if (result.error) {
+      const status = result.error === 'facebook_not_configured' ? 501 : 401;
+      return res.status(status).json({ error: result.error });
+    }
+    authResponse(result.user, res);
+  } catch (err) {
+    console.error('facebook auth:', err);
+    res.status(500).json({ error: 'server_error' });
+  }
 });
 
 authRouter.get('/me', (req, res) => {
@@ -82,6 +111,8 @@ authRouter.get('/me', (req, res) => {
         nick: user.nick,
         isGuest: user.isGuest,
         locale: user.locale,
+        email: user.email,
+        avatarUrl: user.avatarUrl,
       },
     });
   } catch {

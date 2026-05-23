@@ -140,6 +140,34 @@ function initTables() {
   } catch {
     /* exists */
   }
+  for (const sql of [
+    `ALTER TABLE users ADD COLUMN email TEXT`,
+    `ALTER TABLE users ADD COLUMN password_hash TEXT`,
+    `ALTER TABLE users ADD COLUMN google_id TEXT`,
+    `ALTER TABLE users ADD COLUMN facebook_id TEXT`,
+    `ALTER TABLE users ADD COLUMN avatar_url TEXT`,
+  ]) {
+    try {
+      db.exec(sql);
+    } catch {
+      /* exists */
+    }
+  }
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email) WHERE email IS NOT NULL`);
+  } catch {
+    /* exists */
+  }
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google ON users(google_id) WHERE google_id IS NOT NULL`);
+  } catch {
+    /* exists */
+  }
+  try {
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_facebook ON users(facebook_id) WHERE facebook_id IS NOT NULL`);
+  } catch {
+    /* exists */
+  }
 }
 
 export function closeDb() {

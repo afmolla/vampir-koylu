@@ -59,6 +59,7 @@ List<String> apkDownloadCandidates(String primary) {
   final out = <String>[];
   for (final u in [
     primary,
+    AppConfig.apkUrlForVersion('0.2.13'),
     AppConfig.apkUrlForVersion('0.2.12'),
     AppConfig.apkUrlForVersion('0.2.11'),
     AppConfig.apkUrlForVersion('0.2.10'),

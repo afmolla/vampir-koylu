@@ -8,7 +8,7 @@ import '../core/config.dart';
 import '../l10n/app_localizations.dart';
 import '../services/session_store.dart';
 import '../services/socket_service.dart';
-import '../widgets/general_chat_hub.dart';
+import '../widgets/chat_popup_launcher.dart';
 import 'online_room_screen.dart';
 
 class OnlineLobbyScreen extends StatefulWidget {
@@ -198,12 +198,12 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadRooms),
         ],
       ),
-      body: Column(
+      floatingActionButton: _socketReady
+          ? ChatFab(socket: _socketService.socket, nick: widget.nick)
+          : null,
+      body: ListView(
+        padding: const EdgeInsets.all(20),
         children: [
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
                 Text(
                   l10n.onlineLobbyTitle,
                   style: Theme.of(context).textTheme.titleLarge,
@@ -325,24 +325,6 @@ class _OnlineLobbyScreenState extends State<OnlineLobbyScreen> {
                 }),
               ],
             ),
-          ),
-          if (_socketReady) ...[
-            Divider(height: 1, color: Colors.white.withValues(alpha: 0.12)),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: Text(
-                l10n.chatGeneral,
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
-            ),
-            GeneralChatHub(
-              socket: _socketService.socket,
-              nick: widget.nick,
-              height: 220,
-            ),
-          ],
-        ],
-      ),
     );
   }
 }

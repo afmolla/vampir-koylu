@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../app.dart';
+import '../core/config.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/app_version_footer.dart';
 import '../services/api_client.dart';
+import '../services/auth_flow.dart';
 import '../services/session_store.dart';
-import 'home_screen.dart';
 import 'offline_entry_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,10 +23,13 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _nickController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _api = ApiClient();
   final _session = SessionStore();
   bool _loading = false;
   bool _rememberMe = true;
+  int _tab = 0;
 
   @override
   void initState() {
@@ -41,58 +50,133 @@ class _LoginScreenState extends State<LoginScreen> {
   String get _locale =>
       Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'tr';
 
+  Future<void> _finishLogin(Map<String, dynamic> data) async {
+    await AuthFlow.completeLogin(
+      context,
+      data: data,
+      locale: _locale,
+      rememberMe: _rememberMe,
+    );
+  }
+
+  void _showApiError(ApiException e) {
+    dynamic body;
+    try {
+      body = jsonDecode(e.body);
+    } catch (_) {}
+    final code = AuthFlow.parseError(body);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AuthFlow.errorMessage(code))),
+    );
+  }
+
   Future<void> _guestLogin() async {
     final nick = _nickController.text.trim();
     if (nick.length < 2) return;
-
     setState(() => _loading = true);
     try {
       final data = await _api.guestLogin(nick: nick, locale: _locale);
-      final token = data['token'] as String;
-      final user = data['user'] as Map<String, dynamic>;
-      await _session.setRememberMe(_rememberMe);
-      await _session.saveSession(
-        token: token,
-        userId: user['id'] as String,
-        nick: user['nick'] as String,
-        locale: _locale,
-      );
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => HomeScreen(nick: user['nick'] as String),
-        ),
-      );
+      await _finishLogin(data);
+    } on ApiException catch (e) {
+      if (mounted) _showApiError(e);
     } catch (_) {
       if (!mounted) return;
-      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.errorNetwork),
-          action: SnackBarAction(
-            label: l10n.continueOffline,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const OfflineEntryScreen()),
-              );
-            },
-          ),
-        ),
+        SnackBar(content: Text(AppLocalizations.of(context)!.errorNetwork)),
       );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
-  void _showSoon(String provider) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$provider — yakında / coming soon')),
-    );
+  Future<void> _emailLogin() async {
+    setState(() => _loading = true);
+    try {
+      final data = await _api.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      if (!mounted) return;
+      await _finishLogin(data);
+    } on ApiException catch (e) {
+      if (mounted) _showApiError(e);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Giriş başarısız')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _googleLogin() async {
+    if (AppConfig.googleServerClientId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Google: APK build\'de GOOGLE_SERVER_CLIENT_ID gerekli.',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() => _loading = true);
+    try {
+      final google = GoogleSignIn(
+        serverClientId: AppConfig.googleServerClientId,
+      );
+      final account = await google.signIn();
+      if (account == null) return;
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) throw Exception('no_id_token');
+      final data = await _api.googleLogin(idToken: idToken);
+      if (!mounted) return;
+      await _finishLogin(data);
+    } on ApiException catch (e) {
+      if (mounted) _showApiError(e);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google giriş iptal veya hata')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  Future<void> _facebookLogin() async {
+    setState(() => _loading = true);
+    try {
+      final result = await FacebookAuth.instance.login();
+      if (result.status != LoginStatus.success) return;
+      final token = result.accessToken?.tokenString;
+      if (token == null) return;
+      final data = await _api.facebookLogin(accessToken: token);
+      if (!mounted) return;
+      await _finishLogin(data);
+    } on ApiException catch (e) {
+      if (mounted) _showApiError(e);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Facebook giriş iptal veya hata')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   @override
   void dispose() {
     _nickController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     _api.dispose();
     super.dispose();
   }
@@ -118,13 +202,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 24),
                       Text(
                         l10n.appTitle,
-                        style:
-                            Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
@@ -135,18 +219,87 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.white70,
                             ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       _LanguageRow(locale: _locale),
-                      const SizedBox(height: 32),
-                      TextField(
-                        controller: _nickController,
-                        decoration: InputDecoration(
-                          hintText: l10n.guestNickHint,
-                          prefixIcon: const Icon(Icons.person_outline),
-                        ),
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _guestLogin(),
+                      const SizedBox(height: 20),
+                      SegmentedButton<int>(
+                        segments: const [
+                          ButtonSegment(value: 0, label: Text('Hesap')),
+                          ButtonSegment(value: 1, label: Text('Misafir')),
+                        ],
+                        selected: {_tab},
+                        onSelectionChanged: (s) =>
+                            setState(() => _tab = s.first),
                       ),
+                      const SizedBox(height: 20),
+                      if (_tab == 0) ...[
+                        TextField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: const InputDecoration(
+                            labelText: 'E-posta',
+                            prefixIcon: Icon(Icons.email_outlined),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _passwordController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Şifre',
+                            prefixIcon: Icon(Icons.lock_outline),
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const RegisterScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text('Hesap oluştur'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Şifremi unuttum — yakında'),
+                                  ),
+                                );
+                              },
+                              child: const Text('Şifremi unuttum'),
+                            ),
+                          ],
+                        ),
+                        FilledButton(
+                          onPressed: _loading ? null : _emailLogin,
+                          child: _loading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child:
+                                      CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Text('Giriş yap'),
+                        ),
+                      ] else ...[
+                        TextField(
+                          controller: _nickController,
+                          decoration: InputDecoration(
+                            hintText: l10n.guestNickHint,
+                            prefixIcon: const Icon(Icons.person_outline),
+                          ),
+                          onSubmitted: (_) => _guestLogin(),
+                        ),
+                        FilledButton(
+                          onPressed: _loading ? null : _guestLogin,
+                          child: Text(l10n.guestPlay),
+                        ),
+                      ],
                       CheckboxListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('Beni hatırla'),
@@ -154,43 +307,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         onChanged: (v) =>
                             setState(() => _rememberMe = v ?? true),
                       ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: _loading ? null : _guestLogin,
-                        child: _loading
-                            ? const SizedBox(
-                                height: 22,
-                                width: 22,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              )
-                            : Text(l10n.guestPlay),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextButton(
-                            onPressed: () => _showSoon('Hesap oluştur'),
-                            child: const Text('Hesap oluştur'),
-                          ),
-                          TextButton(
-                            onPressed: () => _showSoon('Şifremi unuttum'),
-                            child: const Text('Şifremi unuttum'),
-                          ),
-                        ],
-                      ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
-                        onPressed: () => _showSoon('Google'),
+                        onPressed: _loading ? null : _googleLogin,
                         icon: const Icon(Icons.g_mobiledata, size: 28),
                         label: Text(l10n.googleSignIn),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
-                        onPressed: () => _showSoon('Facebook'),
+                        onPressed: _loading ? null : _facebookLogin,
                         icon: const Icon(Icons.facebook),
                         label: Text(l10n.facebookSignIn),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       TextButton.icon(
                         onPressed: () {
                           Navigator.of(context).push(

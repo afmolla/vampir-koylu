@@ -142,9 +142,13 @@ class _SplashScreenState extends State<SplashScreen> {
             if (user?['id'] != null) {
               await session.saveUserId(user!['id'] as String);
             }
+            final avatar = user?['avatarUrl'] as String?;
+            if (avatar != null) await session.setAvatarUrl(avatar);
             if (!mounted) return;
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => HomeScreen(nick: nick)),
+              MaterialPageRoute(
+                builder: (_) => HomeScreen(nick: nick, avatarUrl: avatar),
+              ),
             );
             return;
           } catch (_) {
