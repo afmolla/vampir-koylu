@@ -1,5 +1,9 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const releasesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../releases');
 import { versionRouter } from './routes/version.js';
 import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
@@ -28,6 +32,17 @@ export function createApp() {
       hint: 'Use /health or /api/version from the mobile app',
     });
   });
+
+  app.use(
+    '/releases',
+    express.static(releasesDir, {
+      setHeaders(res, filePath) {
+        if (filePath.endsWith('.apk')) {
+          res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+        }
+      },
+    }),
+  );
 
   app.use('/health', healthRouter);
   app.use('/api/version', versionRouter);
