@@ -26,7 +26,6 @@ import {
   peerUserId,
   upsertDmSession,
 } from './services/dmChannels.js';
-import { getDb } from './db/database.js';
 
 function emitRoomState(io, room) {
   for (const { userId, view } of viewsForRoom(room)) {
