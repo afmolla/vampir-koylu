@@ -14,10 +14,12 @@ class ForceUpdateScreen extends StatefulWidget {
     super.key,
     this.message,
     required this.updateUrl,
+    this.versionResponse,
   });
 
   final String? message;
   final String updateUrl;
+  final Map<String, dynamic>? versionResponse;
 
   @override
   State<ForceUpdateScreen> createState() => _ForceUpdateScreenState();
@@ -52,9 +54,19 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
     } catch (_) {}
   }
 
+  String get _targetVersion {
+    if (widget.versionResponse != null) {
+      return resolveTargetVersion(widget.versionResponse!);
+    }
+    return AppConfig.updateTargetVersion;
+  }
+
   String get _apkUrl {
+    if (widget.versionResponse != null) {
+      return resolveUpdateApkUrl(widget.versionResponse!);
+    }
     final u = widget.updateUrl.trim();
-    if (u.isEmpty || u.contains('/releases/latest') || !u.endsWith('.apk')) {
+    if (u.isEmpty || !u.endsWith('.apk')) {
       return _defaultApkUrl;
     }
     return u;
@@ -98,6 +110,7 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
     try {
       await _installer.downloadAndInstall(
         url: _apkUrl,
+        versionResponse: widget.versionResponse,
         onProgress: (p) {
           if (mounted) setState(() => _progress = p);
         },
@@ -168,7 +181,7 @@ class _ForceUpdateScreenState extends State<ForceUpdateScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  l10n.updateApkTarget(AppConfig.updateTargetVersion),
+                  l10n.updateApkTarget(_targetVersion),
                   style: const TextStyle(fontSize: 12, color: Colors.greenAccent),
                   textAlign: TextAlign.center,
                 ),

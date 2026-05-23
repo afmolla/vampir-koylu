@@ -116,11 +116,15 @@ class ApkInstaller {
 
   Future<void> downloadAndInstall({
     required String url,
+    Map<String, dynamic>? versionResponse,
     void Function(double progress)? onProgress,
   }) async {
     await _ensureInstallPermission();
     ApkInstallException? last;
-    for (final u in apkDownloadCandidates(url)) {
+    for (final u in apkDownloadCandidates(
+      url,
+      versionResponse: versionResponse,
+    )) {
       try {
         final path = await downloadApk(url: u, onProgress: onProgress);
         await openInstaller(path);

@@ -8,8 +8,12 @@ const serverRoot = path.join(__dirname, '..');
 dotenv.config({ path: path.join(serverRoot, '.env') });
 dotenv.config({ path: path.join(serverRoot, 'auth-secrets.env') });
 
-/** Gercek APK dosyalari (v0.2.12'ye kadar) afmolla/flutter release'lerinde. */
-const apkReleaseRepo = process.env.APK_RELEASE_REPO ?? 'afmolla/flutter';
+/** GitHub Releases: afmolla/vampir-koylu (guncel APK'lar). */
+const apkReleaseRepo = process.env.APK_RELEASE_REPO ?? 'afmolla/vampir-koylu';
+
+export function apkLatestDownloadUrl() {
+  return `https://github.com/${apkReleaseRepo}/releases/latest/download/app-release.apk`;
+}
 
 export function apkDownloadUrl(version) {
   const v = String(version).replace(/^v/i, '');
@@ -20,12 +24,13 @@ export const config = {
   port: Number(process.env.PORT ?? 3002),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
-  latestVersion: process.env.LATEST_VERSION ?? '0.2.21',
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.21',
+  latestVersion: process.env.LATEST_VERSION ?? '0.2.22',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.22',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
-    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.12'),
+    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.22'),
+  updateUrlLatest: apkLatestDownloadUrl(),
   apkReleaseRepo,
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-change-in-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',

@@ -15,11 +15,11 @@ class AppConfig {
 
   static String get apiBaseUrl => ServerConfig.effectiveBaseUrl;
 
-  static const String clientVersion = '0.2.21';
+  static const String clientVersion = '0.2.22';
 
   static const String updateTargetVersion = String.fromEnvironment(
     'UPDATE_TARGET_VERSION',
-    defaultValue: '0.2.21',
+    defaultValue: '0.2.22',
   );
 
   /// Yayınlanmış APK'lar şimdilik eski repoda; yeni repoya taşınınca primary yeterli olur.
@@ -38,6 +38,10 @@ class AppConfig {
       ];
 
   static String get defaultUpdateApkUrl => apkUrlForVersion(updateTargetVersion);
+
+  /// GitHub Releases "latest" — tag degisse bile en son APK.
+  static String get apkLatestDownloadUrl =>
+      'https://github.com/$apkReleaseRepoPrimary/releases/latest/download/app-release.apk';
 
   static const String platform = 'android';
 

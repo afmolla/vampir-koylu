@@ -19,6 +19,16 @@ bool isVersionOlder(String client, String latest) {
   return false;
 }
 
+/// Sunucunun bildirdigi hedef surum (APK yayin).
+String resolveTargetVersion(Map<String, dynamic> versionResponse) {
+  final publish =
+      (versionResponse['apkPublishVersion'] as String? ?? '').trim();
+  if (publish.isNotEmpty) return publish;
+  final latest = (versionResponse['latestVersion'] as String? ?? '').trim();
+  if (latest.isNotEmpty) return latest;
+  return AppConfig.updateTargetVersion;
+}
+
 bool shouldForceUpdate({
   required String clientVersion,
   required Map<String, dynamic> versionResponse,
@@ -26,8 +36,8 @@ bool shouldForceUpdate({
   if (versionResponse['needsUpdate'] == true) return true;
   if (versionResponse['allowed'] != true) return true;
 
-  // Sunucu yanlış "0.2.0" dönse bile hedef sürüme göre zorla (0.2.4 → 0.2.5 testi).
-  if (isVersionOlder(clientVersion, AppConfig.updateTargetVersion)) {
+  final target = resolveTargetVersion(versionResponse);
+  if (target.isNotEmpty && isVersionOlder(clientVersion, target)) {
     return true;
   }
 
@@ -40,26 +50,40 @@ bool shouldForceUpdate({
   return isVersionOlder(clientVersion, latest);
 }
 
-/// Güncelleme APK: sunucunun updateUrlAndroid (yayinli surum) oncelikli.
-String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
-  final raw = (versionResponse['updateUrlAndroid'] as String? ?? '').trim();
-  if (raw.isNotEmpty && raw.endsWith('.apk') && !raw.contains('/releases/latest')) {
-    return raw;
-  }
-  final apkVer = (versionResponse['apkPublishVersion'] as String? ?? '').trim();
-  if (apkVer.isNotEmpty) return AppConfig.apkUrlForVersion(apkVer);
-  final latest = (versionResponse['latestVersion'] as String? ?? '').trim();
-  final ver = latest.isNotEmpty ? latest : AppConfig.updateTargetVersion;
-  return AppConfig.apkUrlForVersion(ver);
-}
-
-String? _versionFromApkUrl(String url) {
-  final m = RegExp(r'/releases/download/v([^/]+)/app-release\.apk').firstMatch(url);
+String? versionFromApkUrl(String url) {
+  final m = RegExp(
+    r'/releases/download/v([^/]+)/app-release\.apk',
+  ).firstMatch(url);
   return m?.group(1);
 }
 
-/// Indirme basarisizsa denenecek URL'ler (yeni + eski repo, dusuk surumler).
-List<String> apkDownloadCandidates(String primary) {
+/// Guncelleme APK — her zaman en guncel yayin surumune gider (eski 0.2.16 degil).
+String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
+  final targetVer = resolveTargetVersion(versionResponse);
+  final canonical = AppConfig.apkUrlForVersion(targetVer);
+
+  final latestUrl =
+      (versionResponse['updateUrlLatest'] as String? ?? '').trim();
+  if (latestUrl.isNotEmpty && latestUrl.endsWith('.apk')) {
+    return latestUrl;
+  }
+
+  final raw = (versionResponse['updateUrlAndroid'] as String? ?? '').trim();
+  if (raw.isNotEmpty && raw.endsWith('.apk')) {
+    final urlVer = versionFromApkUrl(raw);
+    if (urlVer == null || !isVersionOlder(urlVer, targetVer)) {
+      return raw;
+    }
+  }
+
+  return canonical;
+}
+
+/// Indirme denemeleri: sadece hedef surum ve ustu (eski surumlere dusme yok).
+List<String> apkDownloadCandidates(
+  String primary, {
+  Map<String, dynamic>? versionResponse,
+}) {
   final seen = <String>{};
   final out = <String>[];
 
@@ -70,27 +94,30 @@ List<String> apkDownloadCandidates(String primary) {
     out.add(t);
   }
 
-  void addVersion(String ver) {
+  final versions = <String>[];
+  void addVer(String? v) {
+    final t = v?.trim() ?? '';
+    if (t.isEmpty || versions.contains(t)) return;
+    versions.add(t);
+  }
+
+  if (versionResponse != null) {
+    addVer(versionResponse['apkPublishVersion'] as String?);
+    addVer(versionResponse['latestVersion'] as String?);
+  }
+  addVer(versionFromApkUrl(primary));
+  addVer(AppConfig.updateTargetVersion);
+
+  versions.sort((a, b) => isVersionOlder(a, b) ? 1 : -1);
+
+  for (final ver in versions) {
     for (final u in AppConfig.apkUrlsForVersion(ver)) {
       addUrl(u);
     }
   }
 
+  addUrl(AppConfig.apkLatestDownloadUrl);
   addUrl(primary);
-  final fromPrimary = _versionFromApkUrl(primary);
-  if (fromPrimary != null && fromPrimary.isNotEmpty) {
-    addVersion(fromPrimary);
-  }
-  for (final ver in [
-    AppConfig.updateTargetVersion,
-    '0.2.15',
-    '0.2.13',
-    '0.2.12',
-    '0.2.11',
-    '0.2.10',
-    '0.2.8',
-  ]) {
-    addVersion(ver);
-  }
+
   return out;
 }

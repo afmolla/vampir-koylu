@@ -114,6 +114,7 @@ class _SplashScreenState extends State<SplashScreen> {
             builder: (_) => ForceUpdateScreen(
               message: version['message'] as String?,
               updateUrl: url,
+              versionResponse: version,
             ),
           ),
         );
