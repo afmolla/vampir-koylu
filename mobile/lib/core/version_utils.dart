@@ -53,22 +53,44 @@ String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
   return AppConfig.apkUrlForVersion(ver);
 }
 
-/// Indirme basarisizsa denenecek URL'ler (or. v0.2.9 henuz yok -> 0.2.8).
+String? _versionFromApkUrl(String url) {
+  final m = RegExp(r'/releases/download/v([^/]+)/app-release\.apk').firstMatch(url);
+  return m?.group(1);
+}
+
+/// Indirme basarisizsa denenecek URL'ler (yeni + eski repo, dusuk surumler).
 List<String> apkDownloadCandidates(String primary) {
   final seen = <String>{};
   final out = <String>[];
-  for (final u in [
-    primary,
-    AppConfig.apkUrlForVersion('0.2.13'),
-    AppConfig.apkUrlForVersion('0.2.12'),
-    AppConfig.apkUrlForVersion('0.2.11'),
-    AppConfig.apkUrlForVersion('0.2.10'),
-    AppConfig.apkUrlForVersion('0.2.8'),
-  ]) {
+
+  void addUrl(String u) {
     final t = u.trim();
-    if (t.isEmpty || !t.endsWith('.apk') || seen.contains(t)) continue;
+    if (t.isEmpty || !t.endsWith('.apk') || seen.contains(t)) return;
     seen.add(t);
     out.add(t);
+  }
+
+  void addVersion(String ver) {
+    for (final u in AppConfig.apkUrlsForVersion(ver)) {
+      addUrl(u);
+    }
+  }
+
+  addUrl(primary);
+  final fromPrimary = _versionFromApkUrl(primary);
+  if (fromPrimary != null && fromPrimary.isNotEmpty) {
+    addVersion(fromPrimary);
+  }
+  for (final ver in [
+    AppConfig.updateTargetVersion,
+    '0.2.15',
+    '0.2.13',
+    '0.2.12',
+    '0.2.11',
+    '0.2.10',
+    '0.2.8',
+  ]) {
+    addVersion(ver);
   }
   return out;
 }

@@ -1,14 +1,13 @@
 /// API base URL.
 ///
 /// **10.0.2.2** sadece Android **emülatör** içindir — PC tarayıcısında açılmaz.
-/// PC'de test: http://127.0.0.1:3000/health
+/// PC'de test: http://127.0.0.1:3002/health
 ///
-/// Gerçek telefon: aynı Wi‑Fi + bilgisayar IP:
-/// `flutter run --dart-define=API_BASE_URL=http://192.168.x.x:3000`
+/// Gerçek telefon / VPS: `flutter run --dart-define=API_BASE_URL=http://85.95.251.204:3000`
 class AppConfig {
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://85.95.251.204:3000',
+    defaultValue: 'http://127.0.0.1:3002',
   );
 
   static const String clientVersion = '0.2.15';
@@ -18,9 +17,20 @@ class AppConfig {
     defaultValue: '0.2.15',
   );
 
-  /// Güncelleme APK — her zaman hedef sürüm (v0.2.7 yedek yok).
-  static String apkUrlForVersion(String version) =>
-      'https://github.com/afmolla/vampir-koylu/releases/download/v$version/app-release.apk';
+  /// Yayınlanmış APK'lar şimdilik eski repoda; yeni repoya taşınınca primary yeterli olur.
+  static const String apkReleaseRepoPrimary = 'afmolla/vampir-koylu';
+  static const String apkReleaseRepoLegacy = 'afmolla/flutter';
+
+  static String apkUrlForVersion(String version, {bool legacy = false}) {
+    final repo = legacy ? apkReleaseRepoLegacy : apkReleaseRepoPrimary;
+    return 'https://github.com/$repo/releases/download/v$version/app-release.apk';
+  }
+
+  /// Önce yeni repo, sonra eski (404 önleme).
+  static List<String> apkUrlsForVersion(String version) => [
+        apkUrlForVersion(version),
+        apkUrlForVersion(version, legacy: true),
+      ];
 
   static String get defaultUpdateApkUrl => apkUrlForVersion(updateTargetVersion);
 

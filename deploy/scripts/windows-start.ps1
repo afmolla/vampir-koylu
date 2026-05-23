@@ -14,5 +14,5 @@ if (-not (Test-Path "node_modules")) {
     npm install
 }
 
-Write-Host "API: http://127.0.0.1:3000/health" -ForegroundColor Green
+Write-Host "API: http://127.0.0.1:3002/health" -ForegroundColor Green
 npm run dev

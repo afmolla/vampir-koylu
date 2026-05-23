@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import semver from 'semver';
-import { config } from '../config.js';
+import { apkDownloadUrl, config } from '../config.js';
 import { SERVER_BUILD } from './health.js';
 
 export const versionRouter = Router();
@@ -24,9 +24,7 @@ versionRouter.get('/', (req, res) => {
     semver.lt(clientVersion, config.latestVersion);
 
   const apkVer = config.apkPublishVersion ?? config.latestVersion;
-  const updateUrlAndroid =
-    config.updateUrlAndroid ??
-    `https://github.com/afmolla/vampir-koylu/releases/download/v${apkVer}/app-release.apk`;
+  const updateUrlAndroid = config.updateUrlAndroid ?? apkDownloadUrl(apkVer);
 
   res.json({
     serverBuild: SERVER_BUILD,

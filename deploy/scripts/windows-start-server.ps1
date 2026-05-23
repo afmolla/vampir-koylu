@@ -12,8 +12,14 @@ if (-not (Test-Path (Join-Path $Server "package.json"))) {
     exit 1
 }
 
-Write-Host ">> Port 3000 temizleniyor..." -ForegroundColor Cyan
-Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue |
+$ApiPort = 3002
+if (Test-Path (Join-Path $Server ".env")) {
+    Get-Content (Join-Path $Server ".env") | ForEach-Object {
+        if ($_ -match '^\s*PORT\s*=\s*(\d+)') { $ApiPort = [int]$Matches[1] }
+    }
+}
+Write-Host ">> Port $ApiPort temizleniyor..." -ForegroundColor Cyan
+Get-NetTCPConnection -LocalPort $ApiPort -ErrorAction SilentlyContinue |
     ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }
 
 Set-Location $Server

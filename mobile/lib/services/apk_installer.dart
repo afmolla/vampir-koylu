@@ -127,6 +127,15 @@ class ApkInstaller {
         return;
       } on ApkInstallException catch (e) {
         last = e;
+      } on DioException catch (e) {
+        final code = e.response?.statusCode;
+        last = ApkInstallException(
+          code == 404
+              ? 'APK bulunamadi (404): $u'
+              : 'Indirme hatasi ($code): $u',
+        );
+      } catch (e) {
+        last = ApkInstallException('Indirme hatasi: $e');
       }
     }
     throw last ??

@@ -34,6 +34,7 @@ VPS clone: `git clone https://github.com/afmolla/vampir-koylu.git C:\apps\vampir
 ## Sağlık kontrolü
 
 ```
-http://127.0.0.1:3000/health
+http://127.0.0.1:3002/health
+http://localhost:3002/health
 http://85.95.251.204:3000/health
 ```

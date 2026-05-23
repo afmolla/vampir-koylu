@@ -7,7 +7,7 @@ if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 
 if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
-if not defined API_PORT set API_PORT=3100
+if not defined API_PORT set API_PORT=3002
 if not defined LATEST_VERSION set LATEST_VERSION=0.2.15
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
 if not defined GITHUB_REPO set GITHUB_REPO=afmolla/vampir-koylu
@@ -108,7 +108,8 @@ set MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
 set LATEST_VERSION=%LATEST_VERSION%
 set FORCE_UPDATE=true
 set APK_PUBLISH_VERSION=0.2.15
-set UPDATE_URL_ANDROID=https://github.com/afmolla/vampir-koylu/releases/download/v%APK_PUBLISH_VERSION%/app-release.apk
+set APK_RELEASE_REPO=afmolla/vampir-koylu
+set UPDATE_URL_ANDROID=https://github.com/%APK_RELEASE_REPO%/releases/download/v%APK_PUBLISH_VERSION%/app-release.apk
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 set ADMIN_API_KEY=vampir-admin-change-me
@@ -119,6 +120,7 @@ set ADMIN_API_KEY=vampir-admin-change-me
   echo MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
   echo LATEST_VERSION=%LATEST_VERSION%
   echo APK_PUBLISH_VERSION=%APK_PUBLISH_VERSION%
+  echo APK_RELEASE_REPO=%APK_RELEASE_REPO%
   echo FORCE_UPDATE=true
   echo UPDATE_URL_ANDROID=%UPDATE_URL_ANDROID%
   echo JWT_SECRET=%JWT_SECRET%
@@ -136,7 +138,7 @@ echo.
 echo   Beklenen health: serverBuild "%LATEST_VERSION%", latestVersion "%LATEST_VERSION%"
 echo.
 echo   ONEMLI: Bu pencereyi KAPATMA - API durur.
-echo   Tarayici acilmiyorsa: deploy\FIREWALL-PORT-3000.cmd (Yonetici)
+echo   Tarayici acilmiyorsa: deploy\FIREWALL-PORT-3000.cmd (port %API_PORT%, Yonetici)
 echo ============================================================
 echo.
 

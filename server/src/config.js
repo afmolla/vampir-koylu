@@ -2,8 +2,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+/** Gercek APK dosyalari (v0.2.12'ye kadar) afmolla/flutter release'lerinde. */
+const apkReleaseRepo = process.env.APK_RELEASE_REPO ?? 'afmolla/flutter';
+
+export function apkDownloadUrl(version) {
+  const v = String(version).replace(/^v/i, '');
+  return `https://github.com/${apkReleaseRepo}/releases/download/v${v}/app-release.apk`;
+}
+
 export const config = {
-  port: Number(process.env.PORT ?? 3000),
+  port: Number(process.env.PORT ?? 3002),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
   latestVersion: process.env.LATEST_VERSION ?? '0.2.15',
@@ -11,7 +19,8 @@ export const config = {
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
-    `https://github.com/afmolla/vampir-koylu/releases/download/v${process.env.APK_PUBLISH_VERSION ?? '0.2.14'}/app-release.apk`,
+    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.12'),
+  apkReleaseRepo,
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-change-in-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',

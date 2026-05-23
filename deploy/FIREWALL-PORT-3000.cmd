@@ -1,7 +1,7 @@
 @echo off
-REM YONETICI olarak calistir - disaridan 3000 portu acilir
+REM YONETICI olarak calistir - disaridan API portu acilir (yerel: 3002)
 if exist "%~dp0repo-paths.cmd" call "%~dp0repo-paths.cmd"
-if not defined API_PORT set API_PORT=3000
+if not defined API_PORT set API_PORT=3002
 
 echo Windows Firewall: TCP %API_PORT% gelen izin...
 netsh advfirewall firewall delete rule name="Vampir Koylu API" >nul 2>&1
