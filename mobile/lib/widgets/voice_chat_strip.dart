@@ -15,6 +15,7 @@ class VoiceChatStrip extends StatefulWidget {
     this.enabled = true,
     this.compact = false,
     this.autoJoin = false,
+    this.generalVoice = false,
   });
 
   final io.Socket? socket;
@@ -23,21 +24,30 @@ class VoiceChatStrip extends StatefulWidget {
   final bool compact;
   /// Oyun/lobi acilinca bir kez ses kanalina katil.
   final bool autoJoin;
+  /// Ana sayfa / genel ses kanali.
+  final bool generalVoice;
 
   @override
   State<VoiceChatStrip> createState() => _VoiceChatStripState();
 }
 
-class _VoiceChatStripState extends State<VoiceChatStrip> {
+class _VoiceChatStripState extends State<VoiceChatStrip>
+    with SingleTickerProviderStateMixin {
   bool _joined = false;
   bool _micMuted = false;
   bool _joining = false;
+  bool _speaking = false;
   VoiceRtcManager? _rtc;
   String? _myUserId;
+  late AnimationController _pulseCtrl;
 
   @override
   void initState() {
     super.initState();
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
     if (widget.autoJoin && widget.enabled) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _joinVoice());
     }
@@ -57,6 +67,7 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
 
   @override
   void dispose() {
+    _pulseCtrl.dispose();
     unawaited(_leaveVoice());
     super.dispose();
   }
@@ -102,7 +113,9 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
       if (_myUserId == null) return;
 
       final completer = Completer<bool>();
-      socket.emitWithAck('voice:join', {}, ack: (data) async {
+      socket.emitWithAck('voice:join', {
+        if (widget.generalVoice) 'general': true,
+      }, ack: (data) async {
         try {
           if (data is Map && data['ok'] == true) {
             _rtc = VoiceRtcManager(socket: socket, myUserId: _myUserId!);
@@ -110,7 +123,12 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
             await _rtc!.setMicrophoneMuted(_micMuted);
             final peers = data['peers'] as List<dynamic>? ?? [];
             _rtc!.handlePeersList(peers);
-            if (mounted) setState(() => _joined = true);
+            if (mounted) {
+              setState(() {
+                _joined = true;
+                _speaking = !_micMuted;
+              });
+            }
           } else if (mounted) {
             final err = data is Map ? data['error'] : 'voice_join_failed';
             ScaffoldMessenger.of(context).showSnackBar(
@@ -145,7 +163,37 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
     if (!_joined || _rtc == null) return;
     final next = !_micMuted;
     await _rtc!.setMicrophoneMuted(next);
-    if (mounted) setState(() => _micMuted = next);
+    if (mounted) {
+      setState(() {
+        _micMuted = next;
+        _speaking = _joined && !next;
+      });
+    }
+  }
+
+  Widget _voiceLevelBars() {
+    if (!_joined || _micMuted) return const SizedBox.shrink();
+    return AnimatedBuilder(
+      animation: _pulseCtrl,
+      builder: (context, _) {
+        final v = 0.35 + _pulseCtrl.value * 0.65;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(4, (i) {
+            final h = 6.0 + (v * 14 * (0.6 + (i % 3) * 0.2));
+            return Container(
+              width: 3,
+              height: h,
+              margin: const EdgeInsets.only(left: 2),
+              decoration: BoxDecoration(
+                color: Colors.greenAccent.withValues(alpha: 0.5 + v * 0.5),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            );
+          }),
+        );
+      },
+    );
   }
 
   IconData get _micIcon {
@@ -225,15 +273,27 @@ class _VoiceChatStripState extends State<VoiceChatStrip> {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    _joining
-                        ? 'Baglaniyor...'
-                        : _joined
-                            ? (_micMuted
-                                ? 'Mikrofon kapali — acmak icin dokun'
-                                : 'Mikrofon acik — odadakiler duyar')
-                            : 'Katil\'a bas, mikrofon izni ver',
-                    style: const TextStyle(fontSize: 12, color: Colors.white60),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _joining
+                              ? 'Baglaniyor...'
+                              : _joined
+                                  ? (_micMuted
+                                      ? 'Mikrofon kapali'
+                                      : 'Sesin algilaniyor')
+                                  : widget.generalVoice
+                                      ? 'Genel sesli sohbet'
+                                      : 'Oda sesli sohbeti',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white60,
+                          ),
+                        ),
+                      ),
+                      _voiceLevelBars(),
+                    ],
                   ),
                 ],
               ),

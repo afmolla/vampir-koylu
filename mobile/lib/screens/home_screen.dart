@@ -5,7 +5,10 @@ import '../l10n/app_localizations.dart';
 import '../services/engagement_service.dart';
 import '../services/session_store.dart';
 import '../services/socket_service.dart';
+import '../services/room_session.dart';
 import '../widgets/chat_popup_launcher.dart';
+import '../widgets/coins_balance_chip.dart';
+import '../widgets/room_communication_sheet.dart';
 import '../widgets/user_avatar.dart';
 import 'friends_screen.dart';
 import 'leaderboard_screen.dart';
@@ -245,6 +248,8 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: Text(l10n.appTitle),
         actions: [
+          if (!widget.offlineMode)
+            CoinsBalanceChip(coins: profile['coins'] as int? ?? 0),
           if (!widget.offlineMode) ...[
             IconButton(
               icon: const Icon(Icons.leaderboard_outlined),
@@ -279,7 +284,26 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: !widget.offlineMode && _socketReady
-          ? ChatFab(socket: _socketService.socket, nick: widget.nick)
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                FloatingActionButton.extended(
+                  heroTag: 'home_voice',
+                  onPressed: () => showRoomCommunicationSheet(
+                    context: context,
+                    socket: _socketService.socket,
+                    nick: widget.nick,
+                    title: 'Genel sohbet & ses',
+                    generalVoice: true,
+                  ),
+                  icon: const Icon(Icons.headset_mic),
+                  label: const Text('Ses & sohbet'),
+                ),
+                const SizedBox(height: 10),
+                ChatFab(socket: _socketService.socket, nick: widget.nick),
+              ],
+            )
           : null,
       body: RefreshIndicator(
         onRefresh: _loadHome,
@@ -364,20 +388,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
               ),
-              if (!widget.offlineMode) ...[
+              if (RoomSession.hasActiveRoom) ...[
                 const SizedBox(height: 8),
-                const Card(
-                  color: Color(0xFF1B2838),
+                Card(
+                  color: const Color(0xFF1B3D2F),
                   child: ListTile(
-                    leading: Icon(Icons.headset_mic, color: Colors.greenAccent),
-                    title: Text(
-                      'Sesli sohbet',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Odaya girince altta «Sesli sohbet · Katıl» paneli cikar. '
-                      'Mikrofon izni ver; yesil ikon = acik.',
-                      style: TextStyle(fontSize: 12),
+                    leading: const Icon(Icons.meeting_room, color: Colors.greenAccent),
+                    title: Text('Aktif oda: ${RoomSession.activeRoomCode}'),
+                    subtitle: const Text('Oda acik — geri don veya baska islem yap'),
+                    trailing: FilledButton(
+                      onPressed: () {
+                        if (RoomSession.lastRoomState != null) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => OnlineRoomScreen(
+                                nick: widget.nick,
+                                socketService: _socketService,
+                                initialRoom: RoomSession.lastRoomState!,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                      child: const Text('Odaya dön'),
                     ),
                   ),
                 ),

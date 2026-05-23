@@ -162,8 +162,10 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             );
             return;
+          } on ApiException catch (e) {
+            if (e.statusCode == 401) await session.clear();
           } catch (_) {
-            await session.clear();
+            /* ag hatasi — oturumu silme */
           }
         }
       }

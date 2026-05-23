@@ -61,6 +61,11 @@ export function canAccessTextChannel({ channel, userId, room }) {
   return { ok: false, error: 'invalid_channel' };
 }
 
+export function canAccessVoiceGeneral({ userId }) {
+  if (!userId) return { ok: false, error: 'unauthorized' };
+  return { ok: true, channel: 'general:voice' };
+}
+
 export function canAccessVoiceProximity({ userId, room }) {
   if (!room) return { ok: false, error: 'not_in_room' };
   const inRoom = room.players.some((p) => p.userId === userId);
@@ -82,6 +87,7 @@ export function listClientChannels(room, userId) {
   const out = [];
   if (!g || room.status !== 'playing') {
     out.push({ id: `room:${room.code}`, type: 'room', voice: true });
+    out.push({ id: 'general', type: 'general', voice: true });
     return out;
   }
   const gp = g.players.find((p) => p.userId === userId);

@@ -9,6 +9,8 @@ import {
   leaveRoom,
   startGame,
   fillBotsInRoom,
+  setPlayerReady,
+  drainBotChat,
   gameAction,
   viewsForRoom,
   getRoomForSocket,
@@ -21,6 +23,7 @@ import { filterProfanity } from './routes/social.js';
 import { setIo } from './ioInstance.js';
 import {
   canAccessTextChannel,
+  canAccessVoiceGeneral,
   canAccessVoiceProximity,
   chatRoomForSocket,
 } from './game/chatChannels.js';
@@ -46,6 +49,18 @@ function emitRoomState(io, room) {
 function joinChatChannels(socket, room, userId) {
   for (const ch of chatRoomForSocket(room, userId)) {
     socket.join(ch);
+  }
+}
+
+function emitBotChatMessages(io, messages) {
+  for (const m of messages ?? []) {
+    const message = saveMessage({
+      channel: m.channel,
+      userId: m.userId,
+      nick: m.nick,
+      content: m.content,
+    });
+    io.to(`chat:${m.channel}`).emit('chat:message', message);
   }
 }
 
@@ -227,7 +242,19 @@ export function attachSocket(httpServer) {
         joinChatChannels(socket, room, userId);
         emitRoomState(io, room);
       }
+      emitBotChatMessages(io, result.botChat);
       if (typeof ack === 'function') ack({ ok: true, room: result.room });
+    });
+
+    socket.on('room:ready', (payload, ack) => {
+      const result = setPlayerReady(socket.id, userId, payload?.ready === true);
+      if (result.error) {
+        if (typeof ack === 'function') ack({ ok: false, error: result.error });
+        return;
+      }
+      const room = getRoomForSocket(socket.id);
+      if (room) emitRoomState(io, room);
+      if (typeof ack === 'function') ack({ ok: true });
     });
 
     socket.on('room:leave', (_payload, ack) => {
@@ -267,6 +294,7 @@ export function attachSocket(httpServer) {
       if (room) {
         for (const ch of chatRoomForSocket(room, userId)) socket.join(ch);
         emitRoomState(io, room);
+        emitBotChatMessages(io, result.botChat);
       }
       if (typeof ack === 'function') ack({ ok: true });
     });
@@ -279,6 +307,7 @@ export function attachSocket(httpServer) {
       }
       const room = getRoomForSocket(socket.id);
       if (room) emitRoomState(io, room);
+      emitBotChatMessages(io, result.botChat);
       if (typeof ack === 'function') ack({ ok: true });
     });
 
@@ -336,7 +365,10 @@ export function attachSocket(httpServer) {
     /** Yakın ses — WebRTC sinyal relay (beta, kozmetik ses efekti client'ta) */
     socket.on('voice:join', (payload, ack) => {
       const room = getRoomForSocket(socket.id);
-      const access = canAccessVoiceProximity({ userId, room });
+      const access =
+        payload?.general === true
+          ? canAccessVoiceGeneral({ userId })
+          : canAccessVoiceProximity({ userId, room });
       if (!access.ok) {
         if (typeof ack === 'function') ack({ ok: false, error: access.error });
         return;

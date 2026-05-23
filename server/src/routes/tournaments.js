@@ -42,7 +42,10 @@ tournamentsRouter.post('/:id/register', (req, res) => {
   const raw = String(req.body?.method ?? 'coins');
   const method =
     raw === 'iap' ? 'iap' : raw === 'balance' ? 'balance' : 'coins';
-  const result = registerForTournament(userId, req.params.id, method);
+  const preferredRole = String(req.body?.preferredRole ?? 'random');
+  const result = registerForTournament(userId, req.params.id, method, {
+    preferredRole,
+  });
   if (result.error) {
     const status =
       result.error === 'insufficient_coins' ||

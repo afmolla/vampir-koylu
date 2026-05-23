@@ -379,11 +379,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: _loading ? null : _facebookLogin,
-                        icon: const Icon(Icons.facebook),
-                        label: Text(l10n.facebookSignIn),
-                      ),
+                      if (AuthConfig.facebookSignInEnabled)
+                        OutlinedButton.icon(
+                          onPressed: _loading ? null : _facebookLogin,
+                          icon: const Icon(Icons.facebook),
+                          label: Text(l10n.facebookSignIn),
+                        ),
                       const SizedBox(height: 16),
                       TextButton.icon(
                         onPressed: () {

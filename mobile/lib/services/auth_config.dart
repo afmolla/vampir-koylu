@@ -12,6 +12,9 @@ class AuthConfig {
 
   static const _prefsKey = 'google_web_client_id';
   static String? _cachedGoogleId;
+  static bool _facebookEnabled = false;
+
+  static bool get facebookSignInEnabled => _facebookEnabled;
 
   static String get googleServerClientId {
     final cached = _cachedGoogleId?.trim();
@@ -46,9 +49,10 @@ class AuthConfig {
               .get(Uri.parse('$base/api/config/public'))
               .timeout(const Duration(seconds: 8));
           if (res.statusCode != 200) continue;
-          final body = jsonDecode(res.body);
-          if (body is! Map<String, dynamic>) continue;
-          final id = body['googleWebClientId'] as String?;
+          final raw = jsonDecode(res.body);
+          if (raw is! Map<String, dynamic>) continue;
+          _facebookEnabled = raw['facebookSignInEnabled'] == true;
+          final id = raw['googleWebClientId'] as String?;
           if (id != null && id.trim().isNotEmpty) {
             _cachedGoogleId = id.trim();
             await prefs.setString(_prefsKey, _cachedGoogleId!);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/billing_service.dart';
 import '../services/profile_service.dart';
 import '../services/session_store.dart';
+import '../widgets/coins_balance_chip.dart';
 import 'tournament_lobby_screen.dart';
 
 class TournamentDetailScreen extends StatefulWidget {
@@ -24,8 +25,23 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   final _billing = BillingService();
   Map<String, dynamic>? _t;
   int _myCoins = 0;
+  String _selectedRole = 'random';
   bool _loading = true;
   bool _paying = false;
+
+  static const _roleFees = {
+    'random': 0,
+    'villager': 15,
+    'doctor': 15,
+    'seer': 15,
+    'vampire': 75,
+  };
+
+  int get _entryFee => _t?['entryFeeCoins'] as int? ?? 75;
+
+  int get _roleFee => _roleFees[_selectedRole] ?? 0;
+
+  int get _totalFee => _entryFee + _roleFee;
 
   @override
   void initState() {
@@ -61,13 +77,32 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   }
 
   Future<void> _registerCoins() async {
-    try {
-      final r = await _api.registerTournament(widget.tournamentId, method: 'coins');
-      if (!mounted) return;
+    if (_myCoins < _totalFee) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Kayıt tamam! ${r['paidCoins']} coin ödendi.')),
+        SnackBar(content: Text('Yetersiz coin ($_totalFee gerekli)')),
       );
-      setState(() => _t = r['tournament'] as Map<String, dynamic>?);
+      return;
+    }
+    try {
+      final r = await _api.registerTournament(
+        widget.tournamentId,
+        method: 'coins',
+        preferredRole: _selectedRole,
+      );
+      if (!mounted) return;
+      final remaining = r['coinsRemaining'] as int?;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Kayıt tamam! ${r['paidCoins']} coin (rol: $_selectedRole)',
+          ),
+        ),
+      );
+      setState(() {
+        _t = r['tournament'] as Map<String, dynamic>?;
+        if (remaining != null) _myCoins = remaining;
+        else _myCoins -= _totalFee;
+      });
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }
@@ -181,10 +216,13 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     final status = t['status'] as String? ?? 'registration';
     final paidOk = registered && !pending;
     final entryFee = t['entryFeeCoins'] as int? ?? 0;
-    final canAffordCoins = _myCoins >= entryFee;
+    final canAffordCoins = _myCoins >= _totalFee;
 
     return Scaffold(
-      appBar: AppBar(title: Text(t['title'] as String? ?? 'Turnuva')),
+      appBar: AppBar(
+        title: Text(t['title'] as String? ?? 'Turnuva'),
+        actions: [CoinsBalanceChip(coins: _myCoins)],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
@@ -200,6 +238,33 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             _infoRow('Kayıt sonu', '${t['registrationDeadline']}'),
           const SizedBox(height: 20),
           if (!registered) ...[
+            const Text(
+              'Karakter tercihi (ek coin)',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _roleFees.entries.map((e) {
+                final selected = _selectedRole == e.key;
+                return ChoiceChip(
+                  label: Text(
+                    e.key == 'random'
+                        ? 'Rastgele (0)'
+                        : '${e.key} (+${e.value})',
+                  ),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _selectedRole = e.key),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Toplam: $_totalFee coin (giris $_entryFee + rol $_roleFee)',
+              style: const TextStyle(color: Colors.amber),
+            ),
+            const SizedBox(height: 12),
             if (!canAffordCoins)
               Card(
                 color: Colors.red.withValues(alpha: 0.2),
@@ -214,7 +279,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
               child: FilledButton.icon(
                 onPressed: canAffordCoins ? _registerCoins : null,
                 icon: const Icon(Icons.monetization_on),
-                label: Text('Coin ile katıl ($entryFee)'),
+                label: Text('Coin ile katıl ($_totalFee)'),
               ),
             ),
             if (t['entryFeeTry'] != null) ...[

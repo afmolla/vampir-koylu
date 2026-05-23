@@ -80,8 +80,12 @@ class ProfileService {
   Future<Map<String, dynamic>> registerTournament(
     String id, {
     required String method,
+    String preferredRole = 'random',
   }) =>
-      _post('/api/tournaments/$id/register', {'method': method});
+      _post('/api/tournaments/$id/register', {
+        'method': method,
+        'preferredRole': preferredRole,
+      });
 
   Future<Map<String, dynamic>> confirmTournamentPayment(
     String id,

@@ -4,12 +4,14 @@ class OnlineRoomPlayer {
     required this.nick,
     required this.isHost,
     this.isBot = false,
+    this.ready = false,
   });
 
   final String userId;
   final String nick;
   final bool isHost;
   final bool isBot;
+  final bool ready;
 
   factory OnlineRoomPlayer.fromJson(Map<String, dynamic> j) {
     return OnlineRoomPlayer(
@@ -17,6 +19,7 @@ class OnlineRoomPlayer {
       nick: j['nick'] as String? ?? '?',
       isHost: j['isHost'] == true,
       isBot: j['isBot'] == true,
+      ready: j['ready'] == true,
     );
   }
 }
@@ -109,6 +112,26 @@ class OnlineRoomState {
   final bool fillWithBots;
   final List<OnlineRoomPlayer> players;
   final OnlineGameState? game;
+
+  Map<String, dynamic> toJson() => {
+        'code': code,
+        'status': status,
+        'maxPlayers': maxPlayers,
+        'minPlayers': minPlayers,
+        'fillWithBots': fillWithBots,
+        'players': players
+            .map(
+              (p) => {
+                'userId': p.userId,
+                'nick': p.nick,
+                'isHost': p.isHost,
+                'isBot': p.isBot,
+                'ready': p.ready,
+              },
+            )
+            .toList(),
+        if (game != null) 'game': {'phase': game!.phase},
+      };
 
   factory OnlineRoomState.fromJson(Map<String, dynamic> j) {
     final list = j['players'] as List<dynamic>? ?? [];

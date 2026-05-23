@@ -7,9 +7,8 @@ import '../models/online_room.dart';
 import '../services/socket_service.dart';
 import '../widgets/animated_game_background.dart';
 import '../models/game_roles.dart';
-import '../widgets/chat_bottom_sheet.dart';
-import '../widgets/multi_channel_chat.dart';
-import '../widgets/voice_chat_strip.dart';
+import '../services/room_session.dart';
+import '../widgets/room_communication_sheet.dart';
 import 'match_summary_screen.dart';
 import '../widgets/game_phase_ui.dart';
 import '../widgets/phase_banner.dart';
@@ -59,14 +58,83 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       _fillWithBots &&
       _room.players.length < _minPlayers;
 
+  bool get _myReady => _room.players.any(
+        (p) => p.nick == widget.nick && (p.ready || p.isBot),
+      );
+
   @override
   void initState() {
     super.initState();
     _room = OnlineRoomState.fromJson(widget.initialRoom);
     _fillWithBots = _room.fillWithBots;
+    RoomSession.setActive(
+      code: _room.code,
+      nick: widget.nick,
+      state: widget.initialRoom,
+    );
     widget.socketService.onRoomState(_onRoomState);
     widget.socketService.socket?.emit('chat:join', {'channel': _roomChannel});
+    widget.socketService.socket?.emit('chat:join', {'channel': 'general'});
     _checkRoleReveal(_room);
+  }
+
+  Future<void> _minimizeRoom() async {
+    RoomSession.updateState(_room.toJson());
+    if (mounted) Navigator.of(context).pop();
+  }
+
+  Future<void> _confirmPop() async {
+    final action = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Odadan çık?'),
+        content: const Text(
+          'Küçült: oda açık kalır, ana menüye dönersin.\n'
+          'Çık: odadan tamamen ayrılırsın.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'minimize'),
+            child: const Text('Küçült'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'leave'),
+            child: const Text('Çık'),
+          ),
+        ],
+      ),
+    );
+    if (action == 'minimize') {
+      await _minimizeRoom();
+    } else if (action == 'leave') {
+      if (!await _confirmLeave()) return;
+      _leaveRoom();
+      RoomSession.clear();
+      if (mounted) Navigator.of(context).pop();
+    }
+  }
+
+  void _openCommunication() {
+    final game = _room.game;
+    showRoomCommunicationSheet(
+      context: context,
+      socket: widget.socketService.socket,
+      nick: widget.nick,
+      title: 'Oda: ${_room.code}',
+      roomChannel: _roomChannel,
+      gameChannels: game?.chatChannels,
+    );
+  }
+
+  Future<void> _toggleReady() async {
+    final socket = widget.socketService.socket;
+    if (socket == null) return;
+    final next = !_myReady;
+    socket.emitWithAck('room:ready', {'ready': next}, ack: (_) {});
   }
 
   Future<bool> _confirmLeave() async {
@@ -95,6 +163,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
 
   void _leaveRoom() {
     widget.socketService.offRoomState();
+    RoomSession.clear();
     final socket = widget.socketService.socket;
     socket?.emitWithAck('room:leave', {}, ack: (_) {});
   }
@@ -146,6 +215,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
         _room = next;
         _fillWithBots = next.fillWithBots || _fillWithBots;
       });
+      RoomSession.updateState(next.toJson());
       _checkRoleReveal(next);
       if (next.game?.winner != null) _maybeOpenSummary(next);
     }
@@ -168,6 +238,8 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
         return 'Yeterli oyuncu yok — «Bot ile doldur» veya bekleyin.';
       case 'need_two_humans':
         return 'En az 1 kişi gerekli (bot modunda).';
+      case 'players_not_ready':
+        return 'Herkes hazır demeli.';
       case 'not_host':
         return 'Sadece oda kurucusu başlatabilir.';
       default:
@@ -252,45 +324,36 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        if (!await _confirmLeave()) return;
-        _leaveRoom();
-        if (!context.mounted) return;
-        Navigator.of(context).pop();
+        await _confirmPop();
       },
       child: Scaffold(
       extendBodyBehindAppBar: true,
-      bottomNavigationBar: showVoice
-          ? Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFF1A1218),
-                border: Border(top: BorderSide(color: Colors.white12)),
-              ),
-              child: SafeArea(
-                top: false,
-                child: VoiceChatStrip(
-                  socket: widget.socketService.socket,
-                  enabled: true,
-                  autoJoin: false,
-                ),
-              ),
-            )
-          : null,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            heroTag: 'room_chat',
+            onPressed: _openCommunication,
+            icon: const Icon(Icons.forum_outlined),
+            label: const Text('Sohbet & ses'),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton(
+            heroTag: 'room_min',
+            onPressed: _minimizeRoom,
+            child: const Icon(Icons.minimize),
+          ),
+        ],
+      ),
       appBar: AppBar(
         title: Text('${l10n.roomCode} ${_room.code}'),
         backgroundColor: Colors.transparent,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
-            tooltip: 'Sohbet',
-            onPressed: () {
-              showAppChatSheet(
-                context: context,
-                socket: widget.socketService.socket,
-                nick: widget.nick,
-                title: 'Oda sohbeti',
-              );
-            },
-          ),
+          if (inLobby)
+            TextButton(
+              onPressed: _toggleReady,
+              child: Text(_myReady ? 'Hazır ✓' : 'Hazır değil'),
+            ),
         ],
       ),
       body: Stack(
@@ -354,8 +417,21 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                                         [
                                           if (p.isHost) l10n.host,
                                           if (p.isBot) 'Bot',
+                                          if (!p.isBot && p.ready) 'Hazır',
+                                          if (!p.isBot && !p.ready) 'Bekliyor',
                                         ].join(' · '),
                                       ),
+                                      trailing: p.isBot
+                                          ? null
+                                          : Icon(
+                                              p.ready
+                                                  ? Icons.check_circle
+                                                  : Icons.hourglass_empty,
+                                              color: p.ready
+                                                  ? Colors.greenAccent
+                                                  : Colors.white38,
+                                              size: 20,
+                                            ),
                                     ),
                                   ),
                                 ),
@@ -443,27 +519,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                     ),
                   ),
                 ),
-                if (activeGame == null || activeGame.winner != null)
-                  Divider(
-                    height: 1,
-                    color: Colors.white.withValues(alpha: 0.12),
-                  ),
-                if (_room.status != 'finished')
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                    child: Text(
-                      l10n.chatRoom,
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                  ),
-                MultiChannelChat(
-                  socket: widget.socketService.socket,
-                  nick: widget.nick,
-                  height: showVoice ? 130 : 180,
-                  channels: activeGame?.chatChannels ?? game?.chatChannels ?? [
-                    {'id': _roomChannel, 'type': 'room'},
-                  ],
-                ),
+                const SizedBox(height: 72),
               ],
             ),
           ),

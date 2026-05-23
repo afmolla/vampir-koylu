@@ -20,6 +20,7 @@ import {
   incrementQuestMetric,
   isBotUserId,
 } from '../services/progression.js';
+import { botUserId, generateBotChat, randomBotNick } from '../game/botSocial.js';
 
 const DEFAULT_MIN_PLAYERS = 6;
 const ABSOLUTE_MIN_PLAYERS = 4;
@@ -136,6 +137,7 @@ function sanitizeRoom(room) {
       nick: p.nick,
       isHost: p.userId === room.hostId,
       isBot: Boolean(p.isBot) || isBotUserId(p.userId),
+      ready: Boolean(p.ready) || isBotUserId(p.userId),
     })),
     game: room.game ? publicGameState(room) : null,
   };
@@ -212,13 +214,29 @@ function addBotPlayers(room, targetCount) {
   let n = 1;
   while (room.players.length < targetCount) {
     room.players.push({
-      userId: `bot:${room.code}:${n}`,
-      nick: `Bot ${n}`,
+      userId: botUserId(room.code, n),
+      nick: randomBotNick(),
       socketId: null,
       isBot: true,
+      ready: true,
     });
     n += 1;
   }
+}
+
+export function drainBotChat(room, opts) {
+  return generateBotChat(room, opts);
+}
+
+function finishGameAction(room) {
+  tickBotActions(room);
+  const phase =
+    room.game?.phase === 'dayVote'
+      ? 'dayVote'
+      : room.game?.phase === 'night'
+        ? 'night'
+        : 'lobby';
+  return { room, botChat: generateBotChat(room, { phase }) };
 }
 
 function pickRandom(arr) {
@@ -318,7 +336,7 @@ export function createRoom({
       ? botDifficulty
       : 'normal',
     quickMatch: Boolean(quickMatch),
-    players: [{ userId: hostId, nick: hostNick, socketId }],
+    players: [{ userId: hostId, nick: hostNick, socketId, ready: false }],
     game: null,
   };
   rooms.set(code, room);
@@ -337,9 +355,20 @@ export function joinRoom({ code, userId, nick, socketId }) {
     return { room: playerView(room, userId) };
   }
   if (room.players.length >= room.maxPlayers) return { error: 'room_full' };
-  room.players.push({ userId, nick, socketId });
+  room.players.push({ userId, nick, socketId, ready: false });
   socketToRoom.set(socketId, room.code);
-  return { room: playerView(room, userId) };
+  return { room: playerView(room, userId), botChat: generateBotChat(room, { force: true }) };
+}
+
+export function setPlayerReady(socketId, userId, ready) {
+  const room = getRoomForSocket(socketId);
+  if (!room) return { error: 'not_in_room' };
+  if (room.status !== 'lobby') return { error: 'not_in_lobby' };
+  if (isBotUserId(userId)) return { error: 'bot_player' };
+  const p = room.players.find((pl) => pl.userId === userId);
+  if (!p) return { error: 'not_in_room' };
+  p.ready = Boolean(ready);
+  return { room: sanitizeRoom(room) };
 }
 
 function cancelGameForHostLeave(room) {
@@ -363,6 +392,12 @@ export function leaveRoom(socketId) {
 
   room.players = room.players.filter((p) => p.socketId !== socketId);
 
+  const humansLeft = room.players.filter((p) => !isBotUserId(p.userId));
+  if (humansLeft.length === 0) {
+    rooms.delete(code);
+    return { deleted: true, code, hostLeft: wasHostInGame };
+  }
+
   if (wasHostInGame) {
     applyHostLeavePenalty(leaving.userId);
     refundPlayersAfterHostLeave(room, leaving.userId);
@@ -379,12 +414,8 @@ export function leaveRoom(socketId) {
     return { deleted: false, code, room, hostLeft: true };
   }
 
-  if (room.players.length === 0) {
-    rooms.delete(code);
-    return { deleted: true, code };
-  }
   if (room.hostId && !room.players.some((p) => p.userId === room.hostId)) {
-    const next = room.players.find((p) => !isBotUserId(p.userId)) ?? room.players[0];
+    const next = humansLeft[0];
     if (next) room.hostId = next.userId;
   }
   return { deleted: false, code, room };
@@ -411,6 +442,14 @@ export function startGame(socketId, userId, { fillWithBots } = {}) {
 
   const humans = room.players.filter((p) => !isBotUserId(p.userId));
   if (humans.length < MIN_HUMANS_TO_START) return { error: 'need_two_humans' };
+
+  const notReady = humans.filter((p) => !p.ready);
+  if (notReady.length > 0) {
+    return {
+      error: 'players_not_ready',
+      waiting: notReady.map((p) => p.nick),
+    };
+  }
 
   if (fillWithBots !== undefined) room.fillWithBots = Boolean(fillWithBots);
   const useBots = room.fillWithBots;
@@ -453,7 +492,7 @@ export function startGame(socketId, userId, { fillWithBots } = {}) {
 
   tickBotActions(room);
 
-  return { room };
+  return { room, botChat: generateBotChat(room, { force: true }) };
 }
 
 function checkWinner(game) {
@@ -625,8 +664,7 @@ export function gameAction(socketId, userId, { type, targetId }) {
       (p) => p.alive && ROLES[p.role]?.nightAction === 'kill',
     );
     if (g.nightChoices.size >= killers.length) resolveNight(room);
-    tickBotActions(room);
-    return { room };
+    return finishGameAction(room);
   }
 
   if (type === 'doctor_protect' && g.phase === 'night' && me.role === 'doctor') {
@@ -643,8 +681,7 @@ export function gameAction(socketId, userId, { type, targetId }) {
     recordAccusation(g.matchLog, target.userId);
     const alive = g.players.filter((p) => p.alive);
     if (g.dayVotes.size >= alive.length) resolveDay(room);
-    tickBotActions(room);
-    return { room };
+    return finishGameAction(room);
   }
 
   if (type === 'deception' && g.phase === 'dayVote') {

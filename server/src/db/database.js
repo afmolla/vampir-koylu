@@ -141,6 +141,11 @@ function initTables() {
   } catch {
     /* exists */
   }
+  try {
+    db.exec(`ALTER TABLE tournament_entries ADD COLUMN preferred_role TEXT DEFAULT 'random'`);
+  } catch {
+    /* exists */
+  }
   for (const sql of [
     `ALTER TABLE users ADD COLUMN email TEXT`,
     `ALTER TABLE users ADD COLUMN password_hash TEXT`,

@@ -8,6 +8,19 @@ import {
 
 const IAP_PRODUCT_PREFIX = 'tournament_entry_';
 
+/** Turnuva rol tercihi ek ucreti (giris 75 ayri). */
+export const TOURNAMENT_ROLE_FEES = {
+  random: 0,
+  villager: 15,
+  doctor: 15,
+  seer: 15,
+  vampire: 75,
+};
+
+export function roleFeeCoins(role) {
+  return TOURNAMENT_ROLE_FEES[role] ?? 0;
+}
+
 export function seedTournamentsIfEmpty() {
   const db = getDb();
   const n = db.prepare('SELECT COUNT(*) AS c FROM tournaments').get().c;
@@ -131,7 +144,7 @@ export function getTournament(tournamentId, userId) {
   if (userId) {
     myEntry = db
       .prepare(
-        `SELECT payment_method, payment_status, joined_at FROM tournament_entries
+        `SELECT payment_method, payment_status, joined_at, preferred_role FROM tournament_entries
          WHERE tournament_id = ? AND user_id = ?`,
       )
       .get(tournamentId, userId);
@@ -155,8 +168,10 @@ export function getTournament(tournamentId, userId) {
           paymentMethod: myEntry.payment_method,
           paymentStatus: myEntry.payment_status,
           joinedAt: myEntry.joined_at,
+          preferredRole: myEntry.preferred_role ?? 'random',
         }
       : null,
+    roleFees: TOURNAMENT_ROLE_FEES,
     entries: leaderboard.map((e) => ({
       userId: e.user_id,
       nick: e.nick,
@@ -185,7 +200,12 @@ function discountedCoinFee(baseFee, rankTier) {
   return baseFee;
 }
 
-export function registerForTournament(userId, tournamentId, method = 'coins') {
+export function registerForTournament(
+  userId,
+  tournamentId,
+  method = 'coins',
+  { preferredRole = 'random' } = {},
+) {
   const db = getDb();
   seedTournamentsIfEmpty();
   const t = db.prepare('SELECT * FROM tournaments WHERE id = ?').get(tournamentId);
@@ -254,8 +274,13 @@ export function registerForTournament(userId, tournamentId, method = 'coins') {
     };
   }
 
-  const fee = discountedCoinFee(t.entry_fee_coins, profile.rank_tier);
-  if (profile.coins < fee) return { error: 'insufficient_coins', requiredCoins: fee };
+  const role = TOURNAMENT_ROLE_FEES[preferredRole] !== undefined ? preferredRole : 'random';
+  const entryFee = discountedCoinFee(t.entry_fee_coins, profile.rank_tier);
+  const roleFee = roleFeeCoins(role);
+  const fee = entryFee + roleFee;
+  if (profile.coins < fee) {
+    return { error: 'insufficient_coins', requiredCoins: fee, entryFee, roleFee };
+  }
 
   db.prepare('UPDATE user_profiles SET coins = coins - ? WHERE user_id = ?').run(fee, userId);
   db.prepare(
@@ -263,9 +288,9 @@ export function registerForTournament(userId, tournamentId, method = 'coins') {
   ).run(Math.floor(fee * 0.8), tournamentId);
 
   db.prepare(
-    `INSERT INTO tournament_entries (tournament_id, user_id, payment_method, payment_status)
-     VALUES (?, ?, 'coins', 'paid')`,
-  ).run(tournamentId, userId);
+    `INSERT INTO tournament_entries (tournament_id, user_id, payment_method, payment_status, preferred_role)
+     VALUES (?, ?, 'coins', 'paid', ?)`,
+  ).run(tournamentId, userId, role);
 
   syncRankTier(userId);
   tryAutoOpenLobby(tournamentId);
@@ -273,6 +298,10 @@ export function registerForTournament(userId, tournamentId, method = 'coins') {
   return {
     ok: true,
     paidCoins: fee,
+    entryFee,
+    roleFee,
+    preferredRole: role,
+    coinsRemaining: ensureProfile(userId).coins,
     tournament: getTournament(tournamentId, userId),
   };
 }
