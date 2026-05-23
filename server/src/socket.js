@@ -8,6 +8,7 @@ import {
   joinRoom,
   leaveRoom,
   startGame,
+  fillBotsInRoom,
   gameAction,
   viewsForRoom,
   getRoomForSocket,
@@ -243,9 +244,20 @@ export function attachSocket(httpServer) {
       }
     });
 
+    socket.on('room:fill-bots', (_payload, ack) => {
+      const result = fillBotsInRoom(socket.id, userId);
+      if (result.error) {
+        if (typeof ack === 'function') ack({ ok: false, error: result.error });
+        return;
+      }
+      const room = getRoomForSocket(socket.id);
+      if (room) emitRoomState(io, room);
+      if (typeof ack === 'function') ack({ ok: true });
+    });
+
     socket.on('room:start', (payload, ack) => {
       const result = startGame(socket.id, userId, {
-        fillWithBots: Boolean(payload?.fillWithBots),
+        fillWithBots: payload?.fillWithBots,
       });
       if (result.error) {
         if (typeof ack === 'function') ack({ ok: false, error: result.error });
@@ -376,9 +388,7 @@ export function attachSocket(httpServer) {
         return;
       }
 
-      if (room?.game) {
-        socket.to(`voice:${channel}`).emit('voice:signal', msg);
-      }
+      socket.to(`voice:${channel}`).emit('voice:signal', msg);
     });
 
     socket.on('disconnect', () => {

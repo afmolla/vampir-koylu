@@ -91,12 +91,14 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _channel == null
               ? const Center(child: Text('Oda açılamadı'))
-              : ChatPanel(
-                  socket: widget.socket,
-                  channel: _channel!,
-                  nick: widget.myNick,
-                  currentUserId: widget.myUserId,
-                  isPrivate: true,
+              : SafeArea(
+                  child: ChatPanel(
+                    socket: widget.socket,
+                    channel: _channel!,
+                    nick: widget.myNick,
+                    currentUserId: widget.myUserId,
+                    isPrivate: true,
+                  ),
                 ),
     );
   }

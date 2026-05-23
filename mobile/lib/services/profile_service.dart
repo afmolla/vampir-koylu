@@ -30,8 +30,26 @@ class ProfileService {
       },
       body: body != null ? jsonEncode(body) : null,
     );
-    if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
-    return jsonDecode(res.body) as Map<String, dynamic>;
+    Map<String, dynamic> decoded = {};
+    try {
+      final raw = jsonDecode(res.body);
+      if (raw is Map<String, dynamic>) decoded = raw;
+    } catch (_) {}
+    if (res.statusCode != 200) {
+      final err = decoded['error'] as String? ?? 'http_${res.statusCode}';
+      if (err == 'insufficient_coins') {
+        throw Exception(
+          'Yetersiz coin (gerekli: ${decoded['requiredCoins']})',
+        );
+      }
+      if (err == 'insufficient_balance') {
+        throw Exception(
+          'Yetersiz bakiye (gerekli: ${decoded['requiredBalance']} ₺)',
+        );
+      }
+      throw Exception(err);
+    }
+    return decoded;
   }
 
   Future<Map<String, dynamic>> fetchProfile() => _get('/api/profile/me');

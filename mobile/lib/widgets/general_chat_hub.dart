@@ -12,12 +12,13 @@ class GeneralChatHub extends StatefulWidget {
     super.key,
     required this.socket,
     required this.nick,
-    this.height = 220,
+    this.height,
   });
 
   final io.Socket? socket;
   final String nick;
-  final double height;
+  /// Sabit yukseklik; null ise ust widget (Expanded vb.) sinirlar.
+  final double? height;
 
   @override
   State<GeneralChatHub> createState() => _GeneralChatHubState();
@@ -104,76 +105,81 @@ class _GeneralChatHubState extends State<GeneralChatHub> {
     }
   }
 
+  Widget _buildContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            ChoiceChip(
+              label: const Text('Genel'),
+              selected: _tab == 0,
+              onSelected: (_) => setState(() => _tab = 0),
+            ),
+            const SizedBox(width: 8),
+            ChoiceChip(
+              label: Text('Özel (${_dms.length})'),
+              selected: _tab == 1,
+              onSelected: (_) {
+                setState(() => _tab = 1);
+                _refreshDms();
+              },
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Expanded(
+          child: _tab == 0
+              ? ChatPanel(
+                  socket: widget.socket,
+                  channel: 'general',
+                  nick: widget.nick,
+                  currentUserId: _myUserId,
+                  onPeerTap: (userId, nick) =>
+                      _openPrivateFromGeneral(userId, nick),
+                )
+              : _dms.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Genel sohbette birine dokun → özel oda',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _dms.length,
+                      itemBuilder: (context, i) {
+                        final d = _dms[i];
+                        return ListTile(
+                          dense: true,
+                          leading: const Icon(Icons.lock_outline, size: 20),
+                          title: Text(d.peerNick),
+                          subtitle: Text(
+                            d.lastMessage.isEmpty
+                                ? 'Mesaj yok'
+                                : d.lastMessage,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () => _openPrivate(
+                            d.peerUserId,
+                            d.peerNick,
+                            channel: d.channel,
+                          ),
+                        );
+                      },
+                    ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: widget.height,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              ChoiceChip(
-                label: const Text('Genel'),
-                selected: _tab == 0,
-                onSelected: (_) => setState(() => _tab = 0),
-              ),
-              const SizedBox(width: 8),
-              ChoiceChip(
-                label: Text('Özel (${_dms.length})'),
-                selected: _tab == 1,
-                onSelected: (_) {
-                  setState(() => _tab = 1);
-                  _refreshDms();
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Expanded(
-            child: _tab == 0
-                ? ChatPanel(
-                    socket: widget.socket,
-                    channel: 'general',
-                    nick: widget.nick,
-                    currentUserId: _myUserId,
-                    onPeerTap: (userId, nick) =>
-                        _openPrivateFromGeneral(userId, nick),
-                  )
-                : _dms.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'Genel sohbette birine dokun → özel oda',
-                          style: TextStyle(color: Colors.white54, fontSize: 12),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: _dms.length,
-                        itemBuilder: (context, i) {
-                          final d = _dms[i];
-                          return ListTile(
-                            dense: true,
-                            leading: const Icon(Icons.lock_outline, size: 20),
-                            title: Text(d.peerNick),
-                            subtitle: Text(
-                              d.lastMessage.isEmpty
-                                  ? 'Mesaj yok'
-                                  : d.lastMessage,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            onTap: () => _openPrivate(
-                              d.peerUserId,
-                              d.peerNick,
-                              channel: d.channel,
-                            ),
-                          );
-                        },
-                      ),
-          ),
-        ],
-      ),
-    );
+    final h = widget.height;
+    if (h != null) {
+      return SizedBox(height: h, child: _buildContent());
+    }
+    return _buildContent();
   }
 }

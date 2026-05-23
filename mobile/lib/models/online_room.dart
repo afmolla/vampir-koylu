@@ -3,17 +3,20 @@ class OnlineRoomPlayer {
     required this.userId,
     required this.nick,
     required this.isHost,
+    this.isBot = false,
   });
 
   final String userId;
   final String nick;
   final bool isHost;
+  final bool isBot;
 
   factory OnlineRoomPlayer.fromJson(Map<String, dynamic> j) {
     return OnlineRoomPlayer(
       userId: j['userId'] as String? ?? '',
       nick: j['nick'] as String? ?? '?',
       isHost: j['isHost'] == true,
+      isBot: j['isBot'] == true,
     );
   }
 }
@@ -93,6 +96,7 @@ class OnlineRoomState {
     required this.code,
     required this.status,
     required this.maxPlayers,
+    this.minPlayers = 6,
     required this.players,
     this.fillWithBots = false,
     this.game,
@@ -101,6 +105,7 @@ class OnlineRoomState {
   final String code;
   final String status;
   final int maxPlayers;
+  final int minPlayers;
   final bool fillWithBots;
   final List<OnlineRoomPlayer> players;
   final OnlineGameState? game;
@@ -112,6 +117,7 @@ class OnlineRoomState {
       code: j['code'] as String? ?? '',
       status: j['status'] as String? ?? 'lobby',
       maxPlayers: j['maxPlayers'] as int? ?? 6,
+      minPlayers: j['minPlayers'] as int? ?? 6,
       fillWithBots: j['fillWithBots'] == true,
       players: list
           .map((e) => OnlineRoomPlayer.fromJson(e as Map<String, dynamic>))

@@ -63,6 +63,7 @@ class ChatPanel extends StatefulWidget {
 class _ChatPanelState extends State<ChatPanel> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
+  final _focusNode = FocusNode();
   final _social = SocialService();
   final List<ChatMessage> _messages = [];
   final Set<String> _mutedUsers = {};
@@ -72,6 +73,9 @@ class _ChatPanelState extends State<ChatPanel> {
     super.initState();
     _loadHistory();
     widget.socket?.on('chat:message', _onMessage);
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) _scrollToBottom();
+    });
   }
 
   @override
@@ -91,6 +95,7 @@ class _ChatPanelState extends State<ChatPanel> {
   void dispose() {
     widget.socket?.off('chat:message', _onMessage);
     _social.dispose();
+    _focusNode.dispose();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -288,6 +293,10 @@ class _ChatPanelState extends State<ChatPanel> {
               Expanded(
                 child: TextField(
                   controller: _controller,
+                  focusNode: _focusNode,
+                  textInputAction: TextInputAction.send,
+                  keyboardType: TextInputType.text,
+                  scrollPadding: const EdgeInsets.only(bottom: 120),
                   style: const TextStyle(fontSize: 13),
                   decoration: InputDecoration(
                     hintText: l10n.chatHint,

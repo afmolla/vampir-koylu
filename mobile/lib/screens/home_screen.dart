@@ -311,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ListTile(
                   leading: const Icon(Icons.person_add, color: Colors.amber),
                   title: const Text('Hesabını kaydet'),
-                  subtitle: const Text('Kayıt ol · +100 coin bonus (yakında)'),
+                  subtitle: const Text('Kayıt ol · hesap bonusu korunur'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.of(context).push(

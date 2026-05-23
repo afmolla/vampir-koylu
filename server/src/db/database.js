@@ -42,7 +42,7 @@ function initTables() {
     CREATE TABLE IF NOT EXISTS user_profiles (
       user_id TEXT PRIMARY KEY,
       xp INTEGER NOT NULL DEFAULT 0,
-      coins INTEGER NOT NULL DEFAULT 100,
+      coins INTEGER NOT NULL DEFAULT 1000,
       balance INTEGER NOT NULL DEFAULT 0,
       rank_tier TEXT NOT NULL DEFAULT 'bronze',
       login_streak INTEGER NOT NULL DEFAULT 0,

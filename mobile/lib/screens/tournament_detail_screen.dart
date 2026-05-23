@@ -23,6 +23,7 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   final _api = ProfileService();
   final _billing = BillingService();
   Map<String, dynamic>? _t;
+  int _myCoins = 0;
   bool _loading = true;
   bool _paying = false;
 
@@ -42,8 +43,18 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final t = await _api.fetchTournament(widget.tournamentId);
-      if (mounted) setState(() => _t = t);
+      final results = await Future.wait([
+        _api.fetchTournament(widget.tournamentId),
+        _api.fetchProfile(),
+      ]);
+      final t = results[0];
+      final profile = results[1]['profile'] as Map<String, dynamic>?;
+      if (mounted) {
+        setState(() {
+          _t = t;
+          _myCoins = profile?['coins'] as int? ?? 0;
+        });
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -169,6 +180,8 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
     final lobbyCode = t['lobbyRoomCode'] as String?;
     final status = t['status'] as String? ?? 'registration';
     final paidOk = registered && !pending;
+    final entryFee = t['entryFeeCoins'] as int? ?? 0;
+    final canAffordCoins = _myCoins >= entryFee;
 
     return Scaffold(
       appBar: AppBar(title: Text(t['title'] as String? ?? 'Turnuva')),
@@ -177,8 +190,9 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
         children: [
           Text(t['description'] as String? ?? '', style: const TextStyle(color: Colors.white70)),
           const SizedBox(height: 16),
+          _infoRow('Senin coin', '$_myCoins'),
           _infoRow('Ödül havuzu', '${t['prizePoolCoins']} coin'),
-          _infoRow('Giriş ücreti', '${t['entryFeeCoins']} coin'),
+          _infoRow('Giriş ücreti', '$entryFee coin'),
           if (t['entryFeeTry'] != null) _infoRow('Ücretli katılım', '${t['entryFeeTry']} ₺'),
           _infoRow('Oyuncular', '${t['entryCount']} / ${t['maxPlayers']}'),
           _infoRow('Min oyuncu', '${t['minPlayers']}'),
@@ -186,12 +200,21 @@ class _TournamentDetailScreenState extends State<TournamentDetailScreen> {
             _infoRow('Kayıt sonu', '${t['registrationDeadline']}'),
           const SizedBox(height: 20),
           if (!registered) ...[
+            if (!canAffordCoins)
+              Card(
+                color: Colors.red.withValues(alpha: 0.2),
+                child: ListTile(
+                  leading: const Icon(Icons.warning_amber, color: Colors.amber),
+                  title: Text('Yetersiz coin ($entryFee gerekli)'),
+                  subtitle: Text('Günlük giriş +100 coin · yeni hesap 1000 coin'),
+                ),
+              ),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: _registerCoins,
+                onPressed: canAffordCoins ? _registerCoins : null,
                 icon: const Icon(Icons.monetization_on),
-                label: Text('Coin ile katıl (${t['entryFeeCoins']})'),
+                label: Text('Coin ile katıl ($entryFee)'),
               ),
             ),
             if (t['entryFeeTry'] != null) ...[

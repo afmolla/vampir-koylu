@@ -39,11 +39,19 @@ tournamentsRouter.get('/:id', (req, res) => {
 tournamentsRouter.post('/:id/register', (req, res) => {
   const userId = authUserId(req);
   if (!userId) return res.status(401).json({ error: 'unauthorized' });
-  const method = req.body?.method === 'iap' ? 'iap' : 'coins';
+  const raw = String(req.body?.method ?? 'coins');
+  const method =
+    raw === 'iap' ? 'iap' : raw === 'balance' ? 'balance' : 'coins';
   const result = registerForTournament(userId, req.params.id, method);
   if (result.error) {
     const status =
-      result.error === 'insufficient_coins' || result.error === 'rank_too_low' ? 400 : 404;
+      result.error === 'insufficient_coins' ||
+      result.error === 'insufficient_balance' ||
+      result.error === 'rank_too_low' ||
+      result.error === 'tournament_full' ||
+      result.error === 'already_registered'
+        ? 400
+        : 404;
     return res.status(status).json(result);
   }
   res.json(result);

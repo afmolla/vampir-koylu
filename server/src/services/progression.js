@@ -69,7 +69,7 @@ export function ensureProfile(userId) {
 
   db.prepare(
     `INSERT INTO user_profiles (user_id, xp, coins, balance, rank_tier, login_streak, last_login_date)
-     VALUES (?, 0, 100, 0, 'bronze', 0, NULL)`,
+     VALUES (?, 0, 1000, 0, 'bronze', 0, NULL)`,
   ).run(userId);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -236,7 +236,7 @@ export function claimDailyLogin(userId) {
   if (profile.last_login_date === yStr) streak += 1;
   else streak = 1;
 
-  const bonusCoins = 20 + Math.min(streak, 7) * 5;
+  const bonusCoins = 100;
   const bonusXp = 10 + Math.min(streak, 7) * 3;
 
   db.prepare(

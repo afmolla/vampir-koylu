@@ -14,6 +14,7 @@ class VoiceRtcManager {
   final Map<String, RTCPeerConnection> _peers = {};
   MediaStream? _localStream;
   bool _active = false;
+  bool _micMuted = false;
 
   static const _rtcConfig = {
     'iceServers': [
@@ -26,9 +27,15 @@ class VoiceRtcManager {
     _active = true;
 
     _localStream = await navigator.mediaDevices.getUserMedia({
-      'audio': true,
+      'audio': {
+        'echoCancellation': true,
+        'noiseSuppression': true,
+        'autoGainControl': true,
+      },
       'video': false,
     });
+
+    await Helper.setSpeakerphoneOn(true);
 
     socket.on('voice:signal', _onSignal);
     socket.on('voice:peer-joined', _onPeerJoined);
@@ -48,6 +55,19 @@ class VoiceRtcManager {
 
     await _localStream?.dispose();
     _localStream = null;
+    _micMuted = false;
+  }
+
+  bool get isMicMuted => _micMuted;
+
+  /// Mikrofon track — gercek ac/kapa (WebRTC).
+  Future<void> setMicrophoneMuted(bool muted) async {
+    _micMuted = muted;
+    final stream = _localStream;
+    if (stream == null) return;
+    for (final track in stream.getAudioTracks()) {
+      track.enabled = !muted;
+    }
   }
 
   void handlePeersList(List<dynamic> peers) {
@@ -147,6 +167,10 @@ class VoiceRtcManager {
     };
 
     pc.onTrack = (event) {
+      if (event.track.kind == 'audio') {
+        event.track.enabled = true;
+        unawaited(Helper.setSpeakerphoneOn(true));
+      }
       if (kDebugMode) {
         debugPrint('voice: remote track from $peerId');
       }

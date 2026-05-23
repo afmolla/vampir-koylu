@@ -7,7 +7,7 @@ import '../models/online_room.dart';
 import '../services/socket_service.dart';
 import '../widgets/animated_game_background.dart';
 import '../models/game_roles.dart';
-import '../widgets/general_chat_hub.dart';
+import '../widgets/chat_bottom_sheet.dart';
 import '../widgets/multi_channel_chat.dart';
 import '../widgets/voice_chat_strip.dart';
 import 'match_summary_screen.dart';
@@ -43,13 +43,21 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
         (p) => p.isHost && p.nick == widget.nick,
       );
 
-  int get _humanCount =>
-      _room.players.where((p) => !p.userId.startsWith('bot:')).length;
+  int get _humanCount => _room.players.where((p) => !p.isBot).length;
 
-  bool get _canStart =>
+  int get _minPlayers => _room.minPlayers;
+
+  bool get _canStart {
+    if (!_isHost || _room.status != 'lobby') return false;
+    if (_fillWithBots) return _humanCount >= 1;
+    return _humanCount >= 2 && _room.players.length >= _minPlayers;
+  }
+
+  bool get _canFillBots =>
       _isHost &&
-      _humanCount >= 2 &&
-      (_room.players.length >= 6 || _fillWithBots);
+      _room.status == 'lobby' &&
+      _fillWithBots &&
+      _room.players.length < _minPlayers;
 
   @override
   void initState() {
@@ -134,7 +142,10 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     }
 
     if (mounted) {
-      setState(() => _room = next);
+      setState(() {
+        _room = next;
+        _fillWithBots = next.fillWithBots || _fillWithBots;
+      });
       _checkRoleReveal(next);
       if (next.game?.winner != null) _maybeOpenSummary(next);
     }
@@ -149,9 +160,54 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     return g.phase;
   }
 
+  String _socketErrorMessage(dynamic data) {
+    if (data is! Map) return 'İşlem başarısız';
+    final err = data['error'] as String? ?? '';
+    switch (err) {
+      case 'need_more_players':
+        return 'Yeterli oyuncu yok — «Bot ile doldur» veya bekleyin.';
+      case 'need_two_humans':
+        return 'En az 1 kişi gerekli (bot modunda).';
+      case 'not_host':
+        return 'Sadece oda kurucusu başlatabilir.';
+      default:
+        return err.isEmpty ? 'İşlem başarısız' : err;
+    }
+  }
+
+  Future<void> _fillBots() async {
+    final socket = widget.socketService.socket;
+    if (socket == null) return;
+    final completer = Completer<bool>();
+    socket.emitWithAck('room:fill-bots', {}, ack: (data) {
+      if (data is Map && data['ok'] == true) {
+        completer.complete(true);
+      } else {
+        completer.completeError(Exception(_socketErrorMessage(data)));
+      }
+    });
+    try {
+      await completer.future.timeout(const Duration(seconds: 8));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Botlar odaya eklendi')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$e')),
+        );
+      }
+    }
+  }
+
   Future<void> _startGame() async {
     final socket = widget.socketService.socket;
     if (socket == null) return;
+    if (_fillWithBots && _room.players.length < _minPlayers) {
+      await _fillBots();
+    }
     final completer = Completer<bool>();
     socket.emitWithAck('room:start', {
       'fillWithBots': _fillWithBots,
@@ -159,9 +215,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       if (data is Map && data['ok'] == true) {
         completer.complete(true);
       } else {
-        completer.completeError(
-          Exception(data is Map ? data['error'] : 'start_failed'),
-        );
+        completer.completeError(Exception(_socketErrorMessage(data)));
       }
     });
     try {
@@ -169,7 +223,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text('$e')),
         );
       }
     }
@@ -192,7 +246,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     final inLobby = _room.status == 'lobby';
     final inGame = game != null && !inLobby;
     final activeGame = inGame ? game : null;
-    final showVoice = activeGame != null && activeGame.winner == null;
+    final showVoice = _room.status != 'finished';
 
     return PopScope(
       canPop: false,
@@ -209,40 +263,22 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
         title: Text('${l10n.roomCode} ${_room.code}'),
         backgroundColor: Colors.transparent,
         actions: [
+          if (showVoice)
+            VoiceChatStrip(
+              socket: widget.socketService.socket,
+              enabled: true,
+              compact: true,
+              autoJoin: inGame && game?.winner == null,
+            ),
           IconButton(
-            icon: const Icon(Icons.mark_chat_unread_outlined),
-            tooltip: 'Özel mesajlar',
+            icon: const Icon(Icons.chat_bubble_outline),
+            tooltip: 'Sohbet',
             onPressed: () {
-              showModalBottomSheet<void>(
+              showAppChatSheet(
                 context: context,
-                isScrollControlled: true,
-                backgroundColor: const Color(0xFF1A1218),
-                builder: (ctx) => Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(ctx).viewInsets.bottom,
-                  ),
-                  child: SizedBox(
-                    height: MediaQuery.of(ctx).size.height * 0.55,
-                    child: Column(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Text(
-                            'Genel & özel sohbet',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        Expanded(
-                          child: GeneralChatHub(
-                            socket: widget.socketService.socket,
-                            nick: widget.nick,
-                            height: MediaQuery.of(ctx).size.height * 0.45,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                socket: widget.socketService.socket,
+                nick: widget.nick,
+                title: 'Oda sohbeti',
               );
             },
           ),
@@ -305,8 +341,12 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                                         color: p.isHost ? Colors.amber : null,
                                       ),
                                       title: Text(p.nick),
-                                      subtitle:
-                                          p.isHost ? Text(l10n.host) : null,
+                                      subtitle: Text(
+                                        [
+                                          if (p.isHost) l10n.host,
+                                          if (p.isBot) 'Bot',
+                                        ].join(' · '),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -345,7 +385,9 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                         ),
                         if (inLobby) ...[
                           Text(
-                            '${_room.players.length}/${_room.maxPlayers} oyuncu · en az 6 kişi',
+                            _fillWithBots
+                                ? '${_room.players.length}/${_room.maxPlayers} · bot ile min $_minPlayers'
+                                : '${_room.players.length}/${_room.maxPlayers} · min $_minPlayers kişi',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.amber),
                           ),
@@ -360,6 +402,17 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                               onChanged: (v) =>
                                   setState(() => _fillWithBots = v ?? true),
                             ),
+                            if (_canFillBots)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: OutlinedButton.icon(
+                                  onPressed: _fillBots,
+                                  icon: const Icon(Icons.smart_toy_outlined),
+                                  label: Text(
+                                    'Bot ile doldur ($_minPlayers kişi)',
+                                  ),
+                                ),
+                              ),
                             const SizedBox(height: 8),
                             FilledButton(
                               onPressed: _canStart ? _startGame : null,
@@ -386,14 +439,6 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                     height: 1,
                     color: Colors.white.withValues(alpha: 0.12),
                   ),
-                if (showVoice) ...[
-                  VoiceChatStrip(
-                    socket: widget.socketService.socket,
-                    enabled: activeGame.chatChannels.any(
-                      (c) => (c as Map)['type'] == 'proximity',
-                    ),
-                  ),
-                ],
                 if (_room.status != 'finished')
                   Padding(
                     padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
@@ -405,7 +450,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                 MultiChannelChat(
                   socket: widget.socketService.socket,
                   nick: widget.nick,
-                  height: showVoice ? 140 : 180,
+                  height: 180,
                   channels: activeGame?.chatChannels ?? game?.chatChannels ?? [
                     {'id': _roomChannel, 'type': 'room'},
                   ],

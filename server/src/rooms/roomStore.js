@@ -390,6 +390,19 @@ export function leaveRoom(socketId) {
   return { deleted: false, code, room };
 }
 
+export function fillBotsInRoom(socketId, userId) {
+  const room = getRoomForSocket(socketId);
+  if (!room) return { error: 'not_in_room' };
+  if (room.hostId !== userId) return { error: 'not_host' };
+  if (room.status !== 'lobby') return { error: 'already_started' };
+  if (room.isTournament) return { error: 'tournament_room' };
+
+  const target = room.minPlayers ?? DEFAULT_MIN_PLAYERS;
+  addBotPlayers(room, Math.min(room.maxPlayers, target));
+  room.fillWithBots = true;
+  return { room: sanitizeRoom(room) };
+}
+
 export function startGame(socketId, userId, { fillWithBots } = {}) {
   const room = getRoomForSocket(socketId);
   if (!room) return { error: 'not_in_room' };
@@ -399,7 +412,8 @@ export function startGame(socketId, userId, { fillWithBots } = {}) {
   const humans = room.players.filter((p) => !isBotUserId(p.userId));
   if (humans.length < MIN_HUMANS_TO_START) return { error: 'need_two_humans' };
 
-  const useBots = fillWithBots ?? room.fillWithBots;
+  if (fillWithBots !== undefined) room.fillWithBots = Boolean(fillWithBots);
+  const useBots = room.fillWithBots;
   const needed = room.minPlayers ?? DEFAULT_MIN_PLAYERS;
   if (room.players.length < needed) {
     if (!useBots) return { error: 'need_more_players', required: needed };

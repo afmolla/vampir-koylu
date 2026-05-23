@@ -62,7 +62,15 @@ export function canAccessTextChannel({ channel, userId, room }) {
 }
 
 export function canAccessVoiceProximity({ userId, room }) {
-  if (!room?.game) return { ok: false, error: 'no_game' };
+  if (!room) return { ok: false, error: 'not_in_room' };
+  const inRoom = room.players.some((p) => p.userId === userId);
+  if (!inRoom) return { ok: false, error: 'not_in_room' };
+
+  if (room.status === 'lobby') {
+    return { ok: true, channel: `proximity:${room.code}` };
+  }
+
+  if (!room.game) return { ok: false, error: 'no_game' };
   const gp = room.game.players.find((p) => p.userId === userId);
   if (!gp?.alive) return { ok: false, error: 'dead_no_voice' };
   return { ok: true, channel: `proximity:${room.code}` };
@@ -73,7 +81,7 @@ export function listClientChannels(room, userId) {
   const g = room.game;
   const out = [];
   if (!g || room.status !== 'playing') {
-    out.push({ id: `room:${room.code}`, type: 'room', voice: false });
+    out.push({ id: `room:${room.code}`, type: 'room', voice: true });
     return out;
   }
   const gp = g.players.find((p) => p.userId === userId);
