@@ -42,6 +42,16 @@ class ApiClient {
     }
   }
 
+  Future<Map<String, dynamic>> getPublicConfig() async {
+    final res = await _client
+        .get(_uri('/api/config/public'))
+        .timeout(requestTimeout);
+    if (res.statusCode != 200) {
+      throw ApiException(res.statusCode, res.body);
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
   Future<Map<String, dynamic>> getVersion() async {
     final version = await _appVersion();
     final res = await _client

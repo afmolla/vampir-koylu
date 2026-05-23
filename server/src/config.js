@@ -1,6 +1,12 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const serverRoot = path.join(__dirname, '..');
+
+dotenv.config({ path: path.join(serverRoot, '.env') });
+dotenv.config({ path: path.join(serverRoot, 'auth-secrets.env') });
 
 /** Gercek APK dosyalari (v0.2.12'ye kadar) afmolla/flutter release'lerinde. */
 const apkReleaseRepo = process.env.APK_RELEASE_REPO ?? 'afmolla/flutter';
@@ -14,8 +20,8 @@ export const config = {
   port: Number(process.env.PORT ?? 3002),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
-  latestVersion: process.env.LATEST_VERSION ?? '0.2.20',
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.20',
+  latestVersion: process.env.LATEST_VERSION ?? '0.2.21',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.21',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??

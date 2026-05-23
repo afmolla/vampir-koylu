@@ -17,6 +17,7 @@ import { engagementRouter } from './routes/engagement.js';
 import { friendsRouter } from './routes/friends.js';
 import { socialRouter } from './routes/social.js';
 import { paymentsRouter } from './routes/payments.js';
+import { publicConfigRouter } from './routes/publicConfig.js';
 import { seedTournamentsIfEmpty } from './services/tournaments.js';
 
 export function createApp() {
@@ -45,6 +46,7 @@ export function createApp() {
   );
 
   app.use('/health', healthRouter);
+  app.use('/api/config/public', publicConfigRouter);
   app.use('/api/version', versionRouter);
   app.use('/api/auth', authRouter);
   app.use('/api/rooms', roomsRouter);

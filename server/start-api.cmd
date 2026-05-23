@@ -8,7 +8,7 @@ if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
 if not defined API_PORT set API_PORT=3002
-if not defined LATEST_VERSION set LATEST_VERSION=0.2.20
+if not defined LATEST_VERSION set LATEST_VERSION=0.2.21
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
 if not defined GITHUB_REPO set GITHUB_REPO=afmolla/vampir-koylu
 
@@ -107,12 +107,20 @@ set NODE_ENV=production
 set MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
 set LATEST_VERSION=%LATEST_VERSION%
 set FORCE_UPDATE=true
-set APK_PUBLISH_VERSION=0.2.20
+set APK_PUBLISH_VERSION=0.2.21
 set APK_RELEASE_REPO=afmolla/vampir-koylu
 set UPDATE_URL_ANDROID=https://github.com/%APK_RELEASE_REPO%/releases/download/v%APK_PUBLISH_VERSION%/app-release.apk
 set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 set ADMIN_API_KEY=vampir-admin-change-me
+
+if not exist "auth-secrets.env" (
+  if exist "auth-secrets.env.example" (
+    echo       UYARI: auth-secrets.env yok - Google giris icin:
+    echo         copy auth-secrets.env.example auth-secrets.env
+    echo         GOOGLE_CLIENT_ID=Web_Client_ID.apps.googleusercontent.com
+  )
+)
 
 (
   echo PORT=%API_PORT%
@@ -127,6 +135,13 @@ set ADMIN_API_KEY=vampir-admin-change-me
   echo JWT_EXPIRES_IN=7d
   echo ADMIN_API_KEY=%ADMIN_API_KEY%
 ) > .env
+
+if exist "auth-secrets.env" (
+  echo       auth-secrets.env birlestiriliyor...
+  type auth-secrets.env >> .env
+) else (
+  echo       Google giris: auth-secrets.env olustur ^(ornek: auth-secrets.env.example^)
+)
 
 REM --- 4) Node baslat ---
 echo [4/5] API baslatiliyor...

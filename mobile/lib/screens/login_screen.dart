@@ -9,6 +9,7 @@ import '../core/config.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/app_version_footer.dart';
 import '../services/api_client.dart';
+import '../services/auth_config.dart';
 import '../services/auth_flow.dart';
 import '../services/session_store.dart';
 import 'offline_entry_screen.dart';
@@ -28,13 +29,21 @@ class _LoginScreenState extends State<LoginScreen> {
   final _api = ApiClient();
   final _session = SessionStore();
   bool _loading = false;
+  bool _authConfigReady = false;
+
   bool _rememberMe = true;
   int _tab = 0;
 
   @override
   void initState() {
     super.initState();
+    _loadAuthConfig();
     _loadSaved();
+  }
+
+  Future<void> _loadAuthConfig() async {
+    await AuthConfig.load();
+    if (mounted) setState(() => _authConfigReady = true);
   }
 
   Future<void> _loadSaved() async {
@@ -113,12 +122,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _googleLogin() async {
-    if (AppConfig.googleServerClientId.isEmpty) {
+    await AuthConfig.load(forceRefresh: true);
+    final clientId = AuthConfig.googleServerClientId;
+    if (clientId.isEmpty) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Google: APK build\'de GOOGLE_SERVER_CLIENT_ID gerekli.',
+            'Google giris yapilandirilmamis.\n'
+            'VPS: server\\auth-secrets.env dosyasina GOOGLE_CLIENT_ID ekleyip API\'yi yeniden baslat.',
           ),
+          duration: Duration(seconds: 6),
         ),
       );
       return;
@@ -126,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _loading = true);
     try {
       final google = GoogleSignIn(
-        serverClientId: AppConfig.googleServerClientId,
+        serverClientId: clientId,
       );
       final account = await google.signIn();
       if (account == null) return;
@@ -335,9 +349,34 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
-                        onPressed: _loading ? null : _googleLogin,
+                        onPressed: (_loading || !_authConfigReady)
+                            ? null
+                            : (AuthConfig.hasGoogleClientId
+                                ? _googleLogin
+                                : () async {
+                                    await AuthConfig.load(forceRefresh: true);
+                                    if (!mounted) return;
+                                    if (AuthConfig.hasGoogleClientId) {
+                                      await _googleLogin();
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Google giris henuz ayarlanmadi.\n'
+                                            'Sunucuda auth-secrets.env → GOOGLE_CLIENT_ID',
+                                          ),
+                                          duration: Duration(seconds: 5),
+                                        ),
+                                      );
+                                    }
+                                  }),
                         icon: const Icon(Icons.g_mobiledata, size: 28),
-                        label: Text(l10n.googleSignIn),
+                        label: Text(
+                          AuthConfig.hasGoogleClientId
+                              ? l10n.googleSignIn
+                              : 'Google (yapilandiriliyor…)',
+                        ),
                       ),
                       const SizedBox(height: 12),
                       OutlinedButton.icon(

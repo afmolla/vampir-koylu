@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../core/config.dart';
@@ -5,6 +7,7 @@ import '../core/server_config.dart';
 import '../core/version_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
+import '../services/auth_config.dart';
 import '../services/session_store.dart';
 import 'force_update_screen.dart';
 import 'home_screen.dart';
@@ -79,6 +82,7 @@ class _SplashScreenState extends State<SplashScreen> {
       }
 
       await _api.checkServer();
+      unawaited(AuthConfig.load(forceRefresh: true));
       serverOk = true;
       if (!mounted) return;
       _setSteps(server: _CheckStep.ok, version: _CheckStep.running);

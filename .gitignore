@@ -10,6 +10,7 @@ mobile/.flutter-plugins-dependencies
 .env
 .env.*
 !.env.example
+server/auth-secrets.env
 
 # IDE
 .idea/

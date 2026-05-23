@@ -81,12 +81,17 @@ jobs:
         working-directory: mobile
         env:
           API_BASE_URL: ${{ github.event.inputs.api_base_url || 'http://85.95.251.204:3002' }}
+          GOOGLE_SERVER_CLIENT_ID: ${{ secrets.GOOGLE_SERVER_CLIENT_ID }}
           GRADLE_OPTS: -Xmx4g
         run: |
           set -o pipefail
           echo "Building tag=${{ steps.ref.outputs.tag }} API_BASE_URL=$API_BASE_URL"
           flutter doctor -v
-          flutter build apk --release --dart-define=API_BASE_URL="$API_BASE_URL" 2>&1 | tee ../build-apk.log
+          DART_DEFINES="--dart-define=API_BASE_URL=$API_BASE_URL"
+          if [ -n "$GOOGLE_SERVER_CLIENT_ID" ]; then
+            DART_DEFINES="$DART_DEFINES --dart-define=GOOGLE_SERVER_CLIENT_ID=$GOOGLE_SERVER_CLIENT_ID"
+          fi
+          flutter build apk --release $DART_DEFINES 2>&1 | tee ../build-apk.log
 
       - name: Upload build log on failure
         if: failure()

@@ -1,29 +1,70 @@
 # Google / Facebook giriş
 
-## Sunucu (.env veya start-api ortamı)
+## 1. Google Cloud Console
 
-```env
-GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
-FACEBOOK_APP_ID=123456789
-FACEBOOK_APP_SECRET=xxxxx
+1. [Google Cloud Console](https://console.cloud.google.com/) → proje seç / oluştur  
+2. **APIs & Services** → **OAuth consent screen** → yapılandır  
+3. **Credentials** → **Create credentials** → **OAuth client ID**
+
+### Web client (zorunlu — sunucu + mobil)
+
+- Application type: **Web application**  
+- Authorized redirect URIs: boş bırakılabilir (mobil idToken akışı)  
+- Oluşan **Client ID** → `GOOGLE_CLIENT_ID` (`.apps.googleusercontent.com` ile biter)
+
+### Android client (zorunlu — Play / release APK)
+
+- Application type: **Android**  
+- Package name: `com.vampirkoylu.vampir_koylu`  
+- SHA-1 (release imza):
+
+```cmd
+keytool -list -v -keystore mobile\android\signing\release.keystore -alias vampir -storepass vampir_koylu_store -storetype PKCS12
 ```
 
-`BASLAT-API.cmd` sonrası `server\.env` dosyasına ekle ve API’yi yeniden başlat.
+`SHA1:` satırını Google Console’a yapıştır.
 
-## Android APK build
+## 2. Sunucu (VPS)
+
+```cmd
+cd C:\inetpub\wwwroot\oyun1\server
+copy auth-secrets.env.example auth-secrets.env
+notepad auth-secrets.env
+```
+
+`auth-secrets.env` içine:
+
+```env
+GOOGLE_CLIENT_ID=WEB_CLIENT_ID.apps.googleusercontent.com
+```
+
+API’yi yeniden başlat:
+
+```cmd
+BASLAT-API.cmd
+```
+
+Kontrol:  
+`http://85.95.251.204:3002/api/config/public`  
+→ `"googleSignInEnabled": true`
+
+## 3. Mobil
+
+**v0.2.21+** Client ID’yi sunucudan otomatik alır (`/api/config/public`).  
+Yeni APK şart değil; sunucuda `GOOGLE_CLIENT_ID` yeterli.
+
+İsteğe bağlı APK build:
 
 ```bash
 flutter build apk --release \
-  --dart-define=API_BASE_URL=http://85.95.251.204:3000 \
+  --dart-define=API_BASE_URL=http://85.95.251.204:3002 \
   --dart-define=GOOGLE_SERVER_CLIENT_ID=WEB_CLIENT_ID.apps.googleusercontent.com
 ```
 
-Facebook: `android/app/src/main/res/values/strings.xml` içine `facebook_app_id` (flutter_facebook_auth dokümantasyonu).
+GitHub Actions: repo **Secrets** → `GOOGLE_SERVER_CLIENT_ID` (aynı Web client ID).
 
 ## API uçları
 
-- `POST /api/auth/register` — email, password, nick
-- `POST /api/auth/login` — email, password
-- `POST /api/auth/google` — `{ "idToken": "..." }`
+- `GET /api/config/public` — Google Web Client ID (mobil)  
+- `POST /api/auth/google` — `{ "idToken": "..." }`  
 - `POST /api/auth/facebook` — `{ "accessToken": "..." }`
-- `POST /api/auth/guest` — misafir (avatar otomatik)
