@@ -32,11 +32,7 @@ class VoiceRtcManager {
     if (kIsWeb) return;
     try {
       await Helper.setAndroidAudioConfiguration(
-        AndroidAudioConfiguration(
-          androidAudioMode: AndroidAudioMode.inCommunication,
-          androidStreamType: AndroidStreamType.voiceCall,
-          androidAudioFocusMode: AndroidAudioFocusMode.gain,
-        ),
+        AndroidAudioConfiguration.communication,
       );
       await Helper.setSpeakerphoneOn(true);
     } catch (e) {
