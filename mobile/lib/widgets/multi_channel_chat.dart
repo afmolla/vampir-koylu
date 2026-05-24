@@ -11,12 +11,14 @@ class MultiChannelChat extends StatefulWidget {
     required this.nick,
     required this.channels,
     this.height = 160,
+    this.expanded = false,
   });
 
   final io.Socket? socket;
   final String nick;
   final List<Map<String, dynamic>> channels;
   final double height;
+  final bool expanded;
 
   @override
   State<MultiChannelChat> createState() => _MultiChannelChatState();
@@ -43,14 +45,13 @@ class _MultiChannelChatState extends State<MultiChannelChat> {
   Widget build(BuildContext context) {
     final channels = widget.channels;
     if (channels.isEmpty) {
-      return SizedBox(
-        height: widget.height,
-        child: ChatPanel(
-          socket: widget.socket,
-          channel: 'general',
-          nick: widget.nick,
-        ),
+      final panel = ChatPanel(
+        socket: widget.socket,
+        channel: 'general',
+        nick: widget.nick,
       );
+      if (widget.expanded) return panel;
+      return SizedBox(height: widget.height, child: panel);
     }
 
     final safeIndex = _index.clamp(0, channels.length - 1);
@@ -77,14 +78,23 @@ class _MultiChannelChatState extends State<MultiChannelChat> {
           ),
         ),
         const SizedBox(height: 6),
-        SizedBox(
-          height: widget.height,
-          child: ChatPanel(
-            socket: widget.socket,
-            channel: channelId,
-            nick: widget.nick,
+        if (widget.expanded)
+          Expanded(
+            child: ChatPanel(
+              socket: widget.socket,
+              channel: channelId,
+              nick: widget.nick,
+            ),
+          )
+        else
+          SizedBox(
+            height: widget.height,
+            child: ChatPanel(
+              socket: widget.socket,
+              channel: channelId,
+              nick: widget.nick,
+            ),
           ),
-        ),
       ],
     );
   }

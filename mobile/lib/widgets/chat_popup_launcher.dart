@@ -2,15 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 import '../l10n/app_localizations.dart';
-import 'chat_bottom_sheet.dart';
+import 'room_communication_sheet.dart';
 
-/// Alttan acilan sohbet — klavye ile state kaybolmaz.
+/// Tek sohbet girisi — ses panelin icinde.
 void showChatPopup({
   required BuildContext context,
   required io.Socket? socket,
   required String nick,
 }) {
-  showAppChatSheet(context: context, socket: socket, nick: nick);
+  showRoomCommunicationSheet(
+    context: context,
+    socket: socket,
+    nick: nick,
+    useGeneralHub: true,
+    generalVoice: true,
+    autoJoinVoice: false,
+  );
 }
 
 class ChatFab extends StatelessWidget {
@@ -25,10 +32,11 @@ class ChatFab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FloatingActionButton.extended(
       onPressed: () => showChatPopup(context: context, socket: socket, nick: nick),
-      icon: const Icon(Icons.chat_bubble_outline),
-      label: Text(AppLocalizations.of(context)!.chat),
+      icon: const Icon(Icons.forum_outlined),
+      label: Text(l10n.chat),
     );
   }
 }

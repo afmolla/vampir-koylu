@@ -17,6 +17,7 @@ import {
   quickMatch,
   getLiveSummary,
   listPublicRooms,
+  tickLobbyBotChatsAll,
 } from './rooms/roomStore.js';
 import { trackConnection, trackDisconnect } from './services/liveStats.js';
 import { filterProfanity } from './routes/social.js';
@@ -123,6 +124,11 @@ export function attachSocket(httpServer) {
   }
 
   setInterval(broadcastLive, 15000);
+
+  setInterval(() => {
+    const messages = tickLobbyBotChatsAll();
+    if (messages.length) emitBotChatMessages(io, messages);
+  }, 20000);
 
   io.on('connection', (socket) => {
     const userId = socket.data.user.sub;

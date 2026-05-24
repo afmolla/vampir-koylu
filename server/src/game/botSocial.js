@@ -63,7 +63,7 @@ export function generateBotChat(room, { phase = 'lobby', force = false } = {}) {
   const bots = room.players.filter((p) => isBotUserId(p.userId));
   if (!bots.length) return [];
 
-  const chance = force ? 1 : phase === 'lobby' ? 0.45 : 0.55;
+  const chance = force ? 1 : phase === 'lobby' ? 0.72 : 0.62;
   if (Math.random() > chance) return [];
 
   const speaker = pick(bots);

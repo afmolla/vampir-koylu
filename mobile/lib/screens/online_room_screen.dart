@@ -160,6 +160,8 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
       title: AppLocalizations.of(context)!.roomChatTitle(_room.code),
       roomChannel: _roomChannel,
       gameChannels: game?.chatChannels,
+      generalVoice: false,
+      autoJoinVoice: false,
     );
   }
 
@@ -370,7 +372,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
             heroTag: 'room_chat',
             onPressed: _openCommunication,
             icon: const Icon(Icons.forum_outlined),
-            label: Text(l10n.chatAndVoice),
+            label: Text(l10n.chat),
           ),
           const SizedBox(height: 10),
           FloatingActionButton(

@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
-/// WebRTC yakın ses — socket sinyal relay ile.
+/// WebRTC ses — socket sinyal relay.
 class VoiceRtcManager {
   VoiceRtcManager({required this.socket, required this.myUserId});
 
@@ -12,6 +12,7 @@ class VoiceRtcManager {
   final String myUserId;
 
   final Map<String, RTCPeerConnection> _peers = {};
+  final Map<String, MediaStream> _remoteStreams = {};
   MediaStream? _localStream;
   bool _active = false;
   bool _micMuted = false;
@@ -19,12 +20,35 @@ class VoiceRtcManager {
   static const _rtcConfig = {
     'iceServers': [
       {'urls': 'stun:stun.l.google.com:19302'},
+      {'urls': 'stun:stun1.l.google.com:19302'},
+      {'urls': 'stun:stun2.l.google.com:19302'},
     ],
+    'sdpSemantics': 'unified-plan',
   };
+
+  bool _shouldOfferTo(String peerId) => myUserId.compareTo(peerId) < 0;
+
+  Future<void> _configureAudioSession() async {
+    if (kIsWeb) return;
+    try {
+      await Helper.setAndroidAudioConfiguration(
+        AndroidAudioConfiguration(
+          androidAudioMode: AndroidAudioMode.inCommunication,
+          androidStreamType: AndroidStreamType.voiceCall,
+          androidAudioFocusMode: AndroidAudioFocusMode.gain,
+        ),
+      );
+      await Helper.setSpeakerphoneOn(true);
+    } catch (e) {
+      if (kDebugMode) debugPrint('voice: audio session $e');
+    }
+  }
 
   Future<void> start() async {
     if (_active) return;
     _active = true;
+
+    await _configureAudioSession();
 
     _localStream = await navigator.mediaDevices.getUserMedia({
       'audio': {
@@ -34,8 +58,6 @@ class VoiceRtcManager {
       },
       'video': false,
     });
-
-    await Helper.setSpeakerphoneOn(true);
 
     socket.on('voice:signal', _onSignal);
     socket.on('voice:peer-joined', _onPeerJoined);
@@ -52,6 +74,7 @@ class VoiceRtcManager {
       await pc.close();
     }
     _peers.clear();
+    _remoteStreams.clear();
 
     await _localStream?.dispose();
     _localStream = null;
@@ -60,7 +83,6 @@ class VoiceRtcManager {
 
   bool get isMicMuted => _micMuted;
 
-  /// Mikrofon track — gercek ac/kapa (WebRTC).
   Future<void> setMicrophoneMuted(bool muted) async {
     _micMuted = muted;
     final stream = _localStream;
@@ -74,7 +96,7 @@ class VoiceRtcManager {
     for (final id in peers) {
       final peerId = id.toString();
       if (peerId != myUserId) {
-        unawaited(_connectToPeer(peerId, createOffer: true));
+        unawaited(_connectToPeer(peerId, createOffer: _shouldOfferTo(peerId)));
       }
     }
   }
@@ -83,7 +105,7 @@ class VoiceRtcManager {
     if (data is! Map) return;
     final peerId = data['userId'] as String?;
     if (peerId == null || peerId == myUserId) return;
-    await _connectToPeer(peerId, createOffer: true);
+    await _connectToPeer(peerId, createOffer: _shouldOfferTo(peerId));
   }
 
   Future<void> _onPeerLeft(dynamic data) async {
@@ -92,6 +114,7 @@ class VoiceRtcManager {
     if (peerId == null) return;
     final pc = _peers.remove(peerId);
     await pc?.close();
+    _remoteStreams.remove(peerId);
   }
 
   Future<void> _onSignal(dynamic data) async {
@@ -140,6 +163,17 @@ class VoiceRtcManager {
     }
   }
 
+  Future<void> _playRemoteAudio(String peerId, MediaStream stream) async {
+    _remoteStreams[peerId] = stream;
+    for (final track in stream.getAudioTracks()) {
+      track.enabled = true;
+      try {
+        await Helper.setVolume(1.0, track);
+      } catch (_) {}
+    }
+    await Helper.setSpeakerphoneOn(true);
+  }
+
   Future<RTCPeerConnection> _getOrCreatePeer(String peerId) async {
     if (_peers.containsKey(peerId)) return _peers[peerId]!;
 
@@ -153,7 +187,7 @@ class VoiceRtcManager {
     }
 
     pc.onIceCandidate = (c) {
-      if (c.candidate != null) {
+      if (c.candidate != null && c.candidate!.isNotEmpty) {
         _emitSignal(
           to: peerId,
           type: 'candidate',
@@ -169,15 +203,12 @@ class VoiceRtcManager {
     pc.onTrack = (event) async {
       if (event.track.kind == 'audio') {
         event.track.enabled = true;
-        await Helper.setSpeakerphoneOn(true);
         if (event.streams.isNotEmpty) {
-          for (final t in event.streams.first.getAudioTracks()) {
-            t.enabled = true;
-          }
+          await _playRemoteAudio(peerId, event.streams[0]);
         }
       }
       if (kDebugMode) {
-        debugPrint('voice: remote track from $peerId');
+        debugPrint('voice: remote audio from $peerId');
       }
     };
 

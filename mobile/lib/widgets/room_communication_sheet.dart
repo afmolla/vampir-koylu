@@ -1,19 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import '../l10n/app_localizations.dart';
+import 'general_chat_hub.dart';
 import 'multi_channel_chat.dart';
 import 'voice_chat_strip.dart';
 
-/// Oda / genel sohbet + ses — acilir kapanir panel.
+List<Map<String, dynamic>> _textChannels(List<Map<String, dynamic>> channels) {
+  return channels
+      .where((c) => (c['type'] as String? ?? '') != 'proximity')
+      .toList();
+}
+
+/// Tek panel: ustte ses, altta sohbet (genel+ozel veya oda kanallari).
 void showRoomCommunicationSheet({
   required BuildContext context,
   required io.Socket? socket,
   required String nick,
-  String title = 'Sohbet & ses',
+  String? title,
   String? roomChannel,
   List<Map<String, dynamic>>? gameChannels,
   bool generalVoice = false,
+  bool useGeneralHub = false,
+  bool autoJoinVoice = false,
 }) {
+  final l10n = AppLocalizations.of(context)!;
+  final sheetTitle = title ?? l10n.chat;
+
+  final channels = gameChannels ??
+      [
+        if (roomChannel != null)
+          {'id': roomChannel, 'type': 'room'}
+        else
+          {'id': 'general', 'type': 'general'},
+      ];
+  final textCh = _textChannels(channels);
+
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -23,18 +45,14 @@ void showRoomCommunicationSheet({
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
     builder: (ctx) {
-      final h = MediaQuery.sizeOf(ctx).height * 0.78;
-      final channels = gameChannels ??
-          [
-            if (roomChannel != null)
-              {'id': roomChannel, 'type': 'room'}
-            else
-              {'id': 'general', 'type': 'general'},
-          ];
+      final insets = MediaQuery.viewInsetsOf(ctx);
+      final maxH = MediaQuery.sizeOf(ctx).height;
+      final sheetH = (maxH * 0.88 - insets.bottom).clamp(340.0, maxH * 0.92);
+
       return Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(ctx).bottom),
+        padding: EdgeInsets.only(bottom: insets.bottom),
         child: SizedBox(
-          height: h,
+          height: sheetH,
           child: Column(
             children: [
               const SizedBox(height: 8),
@@ -52,12 +70,19 @@ void showRoomCommunicationSheet({
                   children: [
                     Expanded(
                       child: Text(
-                        title,
+                        sheetTitle,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
+                    ),
+                    VoiceChatStrip(
+                      socket: socket,
+                      enabled: socket != null,
+                      compact: true,
+                      generalVoice: generalVoice,
+                      autoJoin: autoJoinVoice,
                     ),
                     IconButton(
                       icon: const Icon(Icons.close),
@@ -66,17 +91,23 @@ void showRoomCommunicationSheet({
                   ],
                 ),
               ),
-              VoiceChatStrip(
-                socket: socket,
-                enabled: socket != null,
-                generalVoice: generalVoice,
-              ),
+              const Divider(height: 1, color: Colors.white12),
               Expanded(
-                child: MultiChannelChat(
-                  socket: socket,
-                  nick: nick,
-                  channels: channels,
-                ),
+                child: useGeneralHub
+                    ? GeneralChatHub(
+                        socket: socket,
+                        nick: nick,
+                      )
+                    : MultiChannelChat(
+                        socket: socket,
+                        nick: nick,
+                        channels: textCh.isEmpty
+                            ? [
+                                {'id': 'general', 'type': 'general'},
+                              ]
+                            : textCh,
+                        expanded: true,
+                      ),
               ),
             ],
           ),

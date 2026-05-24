@@ -242,6 +242,17 @@ export function drainBotChat(room, opts) {
   return generateBotChat(room, opts);
 }
 
+/** Lobi botlari arada sohbet yazar. */
+export function tickLobbyBotChatsAll() {
+  const out = [];
+  for (const room of rooms.values()) {
+    if (room.status !== 'lobby') continue;
+    if (!room.players.some((p) => isBotUserId(p.userId))) continue;
+    out.push(...generateBotChat(room, { phase: 'lobby' }));
+  }
+  return out;
+}
+
 function finishGameAction(room) {
   tickBotActions(room);
   const phase =

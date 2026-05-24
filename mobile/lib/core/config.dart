@@ -15,11 +15,11 @@ class AppConfig {
 
   static String get apiBaseUrl => ServerConfig.effectiveBaseUrl;
 
-  static const String clientVersion = '0.2.25';
+  static const String clientVersion = '0.2.26';
 
   static const String updateTargetVersion = String.fromEnvironment(
     'UPDATE_TARGET_VERSION',
-    defaultValue: '0.2.25',
+    defaultValue: '0.2.26',
   );
 
   /// Yayınlanmış APK'lar şimdilik eski repoda; yeni repoya taşınınca primary yeterli olur.

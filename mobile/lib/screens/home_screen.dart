@@ -8,7 +8,6 @@ import '../services/socket_service.dart';
 import '../services/room_session.dart';
 import '../widgets/chat_popup_launcher.dart';
 import '../widgets/coins_balance_chip.dart';
-import '../widgets/room_communication_sheet.dart';
 import '../widgets/user_avatar.dart';
 import 'friends_screen.dart';
 import 'leaderboard_screen.dart';
@@ -288,26 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       floatingActionButton: !widget.offlineMode && _socketReady
-          ? Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                FloatingActionButton.extended(
-                  heroTag: 'home_voice',
-                  onPressed: () => showRoomCommunicationSheet(
-                    context: context,
-                    socket: _socketService.socket,
-                    nick: widget.nick,
-                    title: AppLocalizations.of(context)!.generalChatTitle,
-                    generalVoice: true,
-                  ),
-                  icon: const Icon(Icons.headset_mic),
-                  label: Text(AppLocalizations.of(context)!.chatAndVoice),
-                ),
-                const SizedBox(height: 10),
-                ChatFab(socket: _socketService.socket, nick: widget.nick),
-              ],
-            )
+          ? ChatFab(socket: _socketService.socket, nick: widget.nick)
           : null,
       body: RefreshIndicator(
         onRefresh: _loadHome,

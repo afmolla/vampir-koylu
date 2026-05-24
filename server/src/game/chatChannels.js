@@ -86,19 +86,17 @@ export function listClientChannels(room, userId) {
   const g = room.game;
   const out = [];
   if (!g || room.status !== 'playing') {
-    out.push({ id: `room:${room.code}`, type: 'room', voice: true });
-    out.push({ id: 'general', type: 'general', voice: true });
+    out.push({ id: `room:${room.code}`, type: 'room' });
     return out;
   }
   const gp = g.players.find((p) => p.userId === userId);
   if (!gp) return out;
 
   if (gp.alive) {
-    out.push({ id: `room:${room.code}`, type: 'room', voice: true });
-    out.push({ id: `proximity:${room.code}`, type: 'proximity', voice: true });
+    out.push({ id: `room:${room.code}`, type: 'room' });
   } else {
-    out.push({ id: `room:${room.code}`, type: 'room', voice: false });
-    out.push({ id: `dead:${room.code}`, type: 'dead', voice: false });
+    out.push({ id: `room:${room.code}`, type: 'room' });
+    out.push({ id: `dead:${room.code}`, type: 'dead' });
   }
   if (isEvilTeam(gp.role)) {
     out.push({ id: `vampire:${room.code}`, type: 'vampire', voice: false });

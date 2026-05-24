@@ -8,7 +8,7 @@ if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
 if not defined API_PORT set API_PORT=3002
-if not defined LATEST_VERSION set LATEST_VERSION=0.2.25
+if not defined LATEST_VERSION set LATEST_VERSION=0.2.26
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
 if not defined GITHUB_REPO set GITHUB_REPO=afmolla/vampir-koylu
 
@@ -107,7 +107,7 @@ set NODE_ENV=production
 set MIN_REQUIRED_VERSION=%MIN_REQUIRED_VERSION%
 set LATEST_VERSION=%LATEST_VERSION%
 set FORCE_UPDATE=true
-set APK_PUBLISH_VERSION=0.2.25
+set APK_PUBLISH_VERSION=0.2.26
 set APK_RELEASE_REPO=afmolla/vampir-koylu
 set UPDATE_URL_ANDROID=https://github.com/%APK_RELEASE_REPO%/releases/download/v%APK_PUBLISH_VERSION%/app-release.apk
 set JWT_SECRET=vampir-koylu-production-change-me

@@ -1,6 +1,11 @@
 # Vampir Köylü — Geliştirme planı
 
-## v0.2.25 (bu sürüm)
+## v0.2.26 (bu sürüm)
+- [x] Tek sohbet paneli (ses üstte, yazı altta; çift FAB kaldırıldı)
+- [x] WebRTC ses: Android ses modu, offer çakışması, uzak ses çalma
+- [x] Botlar lobide daha sık metin sohbeti (~20 sn)
+
+## v0.2.25
 - [x] Sağ üst coin + TL bakiye (ana sayfa, lobi, oda, turnuva)
 - [x] Giriş: e-posta veya kullanıcı adı; benzersiz nick
 - [x] Misafir nick: kayıtlı ad ve çevrimiçi oyuncu kontrolü
