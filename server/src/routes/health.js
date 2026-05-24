@@ -3,7 +3,7 @@ import { getDb } from '../db/database.js';
 import { config } from '../config.js';
 
 /** Sunucu yazılım sürümü — /health'te 0.2.7 görünmüyorsa eski API çalışıyor demektir. */
-export const SERVER_BUILD = '0.2.26';
+export const SERVER_BUILD = '0.2.27';
 
 export const healthRouter = Router();
 
@@ -23,6 +23,7 @@ healthRouter.get('/', (_req, res) => {
         updateUrlLatest: config.updateUrlLatest,
         apkPublishVersion: config.apkPublishVersion,
       },
+      googleSignInEnabled: Boolean(config.googleClientId?.trim()),
       database: { ok: true, engine: 'sqlite', users: row?.n ?? 0 },
     });
   } catch (err) {

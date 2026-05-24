@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Oturum: [persist]=true iken token diskte kalir (beni hatirla).
 class SessionStore {
   static const _tokenKey = 'auth_token';
   static const _userIdKey = 'user_id';
@@ -8,6 +9,10 @@ class SessionStore {
   static const _localeKey = 'locale';
   static const _offlineKey = 'offline_mode';
   static const _rememberKey = 'remember_me';
+  static const _loginKey = 'saved_login';
+
+  /// Beni hatirla kapali oturum — uygulama acikken API icin.
+  static String? _memoryToken;
 
   Future<void> saveSession({
     required String token,
@@ -15,9 +20,16 @@ class SessionStore {
     required String nick,
     required String locale,
     String? avatarUrl,
+    bool persist = true,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
+    if (persist) {
+      await prefs.setString(_tokenKey, token);
+      _memoryToken = null;
+    } else {
+      _memoryToken = token;
+      await prefs.remove(_tokenKey);
+    }
     await prefs.setString(_userIdKey, userId);
     await prefs.setString(_nickKey, nick);
     if (avatarUrl != null && avatarUrl.isNotEmpty) {
@@ -27,12 +39,34 @@ class SessionStore {
     await prefs.setBool(_offlineKey, false);
   }
 
-  /// Sunucu yokken: sadece yerel nick + botlu solo oyun.
+  Future<void> saveLoginIdentifier(String login) async {
+    final trimmed = login.trim();
+    if (trimmed.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_loginKey, trimmed);
+  }
+
+  Future<String?> getLoginIdentifier() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_loginKey);
+  }
+
+  /// Beni hatirla kapatilinca veya cikista kalici oturumu sil.
+  Future<void> clearPersistedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    _memoryToken = null;
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_loginKey);
+    await prefs.remove(_userIdKey);
+    await prefs.remove(_avatarKey);
+  }
+
   Future<void> saveOfflineGuest({
     required String nick,
     required String locale,
   }) async {
     final prefs = await SharedPreferences.getInstance();
+    _memoryToken = null;
     await prefs.remove(_tokenKey);
     await prefs.setString(_nickKey, nick);
     await prefs.setString(_localeKey, locale);
@@ -61,7 +95,15 @@ class SessionStore {
 
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+    final disk = prefs.getString(_tokenKey);
+    if (disk != null && disk.isNotEmpty) return disk;
+    return _memoryToken;
+  }
+
+  Future<bool> hasPersistedSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final t = prefs.getString(_tokenKey);
+    return t != null && t.isNotEmpty;
   }
 
   Future<String?> getAvatarUrl() async {
@@ -87,6 +129,9 @@ class SessionStore {
   Future<void> setRememberMe(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_rememberKey, value);
+    if (!value) {
+      await clearPersistedCredentials();
+    }
   }
 
   Future<bool> getRememberMe() async {
@@ -95,11 +140,13 @@ class SessionStore {
   }
 
   Future<void> clear() async {
+    _memoryToken = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_userIdKey);
     await prefs.remove(_avatarKey);
     await prefs.remove(_nickKey);
     await prefs.remove(_offlineKey);
+    await prefs.remove(_loginKey);
   }
 }

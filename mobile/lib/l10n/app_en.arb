@@ -169,6 +169,7 @@
   "errorEmailTaken": "This email is already registered.",
   "errorWeakPassword": "Password must be at least 6 characters.",
   "errorGoogleNotConfigured": "Google sign-in is not configured on the server.",
+  "errorGoogleNoIdToken": "Google did not return a sign-in token. Check OAuth client ID and app SHA-1 in Google Cloud.",
   "errorFacebookNotConfigured": "Facebook sign-in is not configured on the server.",
   "errorSocialToken": "Social sign-in could not be verified.",
   "errorLoginFailed": "Sign in failed.",

@@ -39,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         data: data,
         locale: _locale,
         rememberMe: _rememberMe,
+        loginIdentifier: _emailController.text.trim(),
       );
     } on ApiException catch (e) {
       if (!mounted) return;

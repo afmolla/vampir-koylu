@@ -750,6 +750,7 @@ abstract class AppLocalizations {
   String get errorEmailTaken;
   String get errorWeakPassword;
   String get errorGoogleNotConfigured;
+  String get errorGoogleNoIdToken;
   String get errorFacebookNotConfigured;
   String get errorSocialToken;
   String get errorLoginFailed;

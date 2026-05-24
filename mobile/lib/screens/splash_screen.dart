@@ -143,30 +143,50 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       final session = SessionStore();
-      if (await session.getRememberMe()) {
+      final remember = await session.getRememberMe();
+      final hasPersisted = await session.hasPersistedSession();
+      if (remember && hasPersisted) {
         final token = await session.getToken();
         final nick = await session.getNick();
         if (token != null && token.isNotEmpty && nick != null && nick.isNotEmpty) {
+          var displayNick = nick;
+          String? avatar;
           try {
-            final me = await _api.getMe(token: token);
+            final me = await _api
+                .getMe(token: token)
+                .timeout(const Duration(seconds: 12));
             final user = me['user'] as Map<String, dynamic>?;
             if (user?['id'] != null) {
               await session.saveUserId(user!['id'] as String);
             }
-            final avatar = user?['avatarUrl'] as String?;
+            displayNick = user?['nick'] as String? ?? nick;
+            avatar = user?['avatarUrl'] as String?;
             if (avatar != null) await session.setAvatarUrl(avatar);
-            if (!mounted) return;
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => HomeScreen(nick: nick, avatarUrl: avatar),
-              ),
-            );
-            return;
           } on ApiException catch (e) {
-            if (e.statusCode == 401) await session.clear();
+            if (e.statusCode == 401 || e.statusCode == 404) {
+              await session.clear();
+              if (!mounted) return;
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+              return;
+            }
+            /* ag hatasi: kayitli oturumla devam */
           } catch (_) {
-            /* ag hatasi — oturumu silme */
+            /* ag hatasi: kayitli oturumla devam */
           }
+          if (!mounted) return;
+          final savedAvatar = avatar ?? await session.getAvatarUrl();
+          if (!mounted) return;
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => HomeScreen(
+                nick: displayNick,
+                avatarUrl: savedAvatar,
+              ),
+            ),
+          );
+          return;
         }
       }
 

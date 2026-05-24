@@ -448,6 +448,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Google sign-in is not configured on the server.';
 
   @override
+  String get errorGoogleNoIdToken =>
+      'Google did not return a sign-in token. Check OAuth client ID and app SHA-1 in Google Cloud.';
+
+  @override
   String get errorFacebookNotConfigured =>
       'Facebook sign-in is not configured on the server.';
 

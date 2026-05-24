@@ -48,23 +48,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _loadSaved() async {
     final nick = await _session.getNick();
+    final login = await _session.getLoginIdentifier();
     final remember = await _session.getRememberMe();
     if (!mounted) return;
     setState(() {
       _rememberMe = remember;
       if (nick != null && nick.isNotEmpty) _nickController.text = nick;
+      if (login != null && login.isNotEmpty) {
+        _emailController.text = login;
+        _tab = 0;
+      }
     });
   }
 
   String get _locale =>
       Localizations.localeOf(context).languageCode == 'en' ? 'en' : 'tr';
 
-  Future<void> _finishLogin(Map<String, dynamic> data) async {
+  Future<void> _finishLogin(
+    Map<String, dynamic> data, {
+    String? loginIdentifier,
+  }) async {
     await AuthFlow.completeLogin(
       context,
       data: data,
       locale: _locale,
       rememberMe: _rememberMe,
+      loginIdentifier: loginIdentifier,
     );
   }
 
@@ -87,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final data = await _api.guestLogin(nick: nick, locale: _locale);
       if (!mounted) return;
-      await _finishLogin(data);
+      await _finishLogin(data, loginIdentifier: nick);
     } on ApiException catch (e) {
       if (mounted) _showApiError(e);
     } catch (_) {
@@ -108,7 +117,10 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
       if (!mounted) return;
-      await _finishLogin(data);
+      await _finishLogin(
+        data,
+        loginIdentifier: _emailController.text.trim(),
+      );
     } on ApiException catch (e) {
       if (mounted) _showApiError(e);
     } catch (_) {
@@ -139,22 +151,44 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final google = GoogleSignIn(
         serverClientId: clientId,
+        scopes: const ['email', 'profile', 'openid'],
       );
+      try {
+        await google.signOut();
+      } catch (_) {}
       final account = await google.signIn();
-      if (account == null) return;
+      if (account == null) {
+        if (mounted) setState(() => _loading = false);
+        return;
+      }
       final auth = await account.authentication;
       final idToken = auth.idToken;
-      if (idToken == null) throw Exception('no_id_token');
+      if (idToken == null || idToken.isEmpty) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.errorGoogleNoIdToken),
+            duration: const Duration(seconds: 6),
+          ),
+        );
+        return;
+      }
       final data = await _api.googleLogin(idToken: idToken);
       if (!mounted) return;
-      await _finishLogin(data);
+      await _finishLogin(
+        data,
+        loginIdentifier: account.email,
+      );
     } on ApiException catch (e) {
       if (mounted) _showApiError(e);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.googleLoginCancelled),
+            content: Text(
+              '${AppLocalizations.of(context)!.googleLoginCancelled}\n$e',
+            ),
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -347,8 +381,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         contentPadding: EdgeInsets.zero,
                         title: Text(l10n.rememberMe),
                         value: _rememberMe,
-                        onChanged: (v) =>
-                            setState(() => _rememberMe = v ?? true),
+                        onChanged: (v) async {
+                          final next = v ?? true;
+                          setState(() => _rememberMe = next);
+                          await _session.setRememberMe(next);
+                        },
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(

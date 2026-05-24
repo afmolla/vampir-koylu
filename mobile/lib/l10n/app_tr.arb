@@ -169,6 +169,7 @@
   "errorEmailTaken": "Bu e-posta zaten kayıtlı.",
   "errorWeakPassword": "Şifre en az 6 karakter olmalı.",
   "errorGoogleNotConfigured": "Google giriş sunucuda yapılandırılmamış.",
+  "errorGoogleNoIdToken": "Google oturum jetonu alınamadı. Cloud Console'da Web Client ID ve uygulama SHA-1 kontrol edin.",
   "errorFacebookNotConfigured": "Facebook giriş sunucuda yapılandırılmamış.",
   "errorSocialToken": "Sosyal giriş doğrulanamadı.",
   "errorLoginFailed": "Giriş başarısız.",

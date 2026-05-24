@@ -152,20 +152,29 @@ export function loginWithCredentials({ login, password }) {
   return { user: rowToUser(row) };
 }
 
+function googleAudiences() {
+  const ids = [config.googleClientId, config.googleAndroidClientId]
+    .map((s) => String(s ?? '').trim())
+    .filter(Boolean);
+  return [...new Set(ids)];
+}
+
 export async function loginWithGoogle({ idToken }) {
-  if (!config.googleClientId) return { error: 'google_not_configured' };
+  const audiences = googleAudiences();
+  if (!audiences.length) return { error: 'google_not_configured' };
   const token = String(idToken ?? '').trim();
   if (!token) return { error: 'missing_token' };
 
-  const client = new OAuth2Client(config.googleClientId);
+  const client = new OAuth2Client(audiences[0]);
   let payload;
   try {
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: config.googleClientId,
+      audience: audiences.length === 1 ? audiences[0] : audiences,
     });
     payload = ticket.getPayload();
-  } catch {
+  } catch (err) {
+    console.error('google verifyIdToken:', err?.message ?? err);
     return { error: 'invalid_google_token' };
   }
 

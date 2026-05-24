@@ -11,17 +11,29 @@ class AuthFlow {
     required Map<String, dynamic> data,
     required String locale,
     required bool rememberMe,
+    String? loginIdentifier,
   }) async {
     final token = data['token'] as String;
     final user = data['user'] as Map<String, dynamic>;
-    await SessionStore().setRememberMe(rememberMe);
-    await SessionStore().saveSession(
+    final store = SessionStore();
+
+    await store.setRememberMe(rememberMe);
+    await store.saveSession(
       token: token,
       userId: user['id'] as String,
       nick: user['nick'] as String,
       locale: locale,
       avatarUrl: user['avatarUrl'] as String?,
+      persist: rememberMe,
     );
+
+    if (rememberMe) {
+      final login = loginIdentifier?.trim();
+      if (login != null && login.isNotEmpty) {
+        await store.saveLoginIdentifier(login);
+      }
+    }
+
     await LocalNotificationsService.instance.init();
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
@@ -57,6 +69,8 @@ class AuthFlow {
       case 'invalid_google_token':
       case 'invalid_facebook_token':
         return l10n.errorSocialToken;
+      case 'missing_token':
+        return l10n.errorGoogleNoIdToken;
       default:
         return l10n.errorLoginFailed;
     }

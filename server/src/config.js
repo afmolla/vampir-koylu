@@ -24,17 +24,19 @@ export const config = {
   port: Number(process.env.PORT ?? 3002),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
-  latestVersion: process.env.LATEST_VERSION ?? '0.2.26',
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.26',
+  latestVersion: process.env.LATEST_VERSION ?? '0.2.27',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.27',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
-    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.26'),
+    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.27'),
   updateUrlLatest: apkLatestDownloadUrl(),
   apkReleaseRepo,
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-change-in-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
+  /** Isteg bagli: Android OAuth client (id token aud bazen bu olur) */
+  googleAndroidClientId: process.env.GOOGLE_ANDROID_CLIENT_ID ?? '',
   facebookAppId: process.env.FACEBOOK_APP_ID ?? '',
   facebookAppSecret: process.env.FACEBOOK_APP_SECRET ?? '',
   /** Admin bakiye yukleme: X-Admin-Key basligi */

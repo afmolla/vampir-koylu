@@ -447,6 +447,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Google giriş sunucuda yapılandırılmamış.';
 
   @override
+  String get errorGoogleNoIdToken =>
+      'Google oturum jetonu alınamadı. Cloud Console\'da Web Client ID ve uygulama SHA-1 kontrol edin.';
+
+  @override
   String get errorFacebookNotConfigured =>
       'Facebook giriş sunucuda yapılandırılmamış.';
 
