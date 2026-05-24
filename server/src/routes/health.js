@@ -3,7 +3,7 @@ import { getDb } from '../db/database.js';
 import { config } from '../config.js';
 
 /** Sunucu yazılım sürümü — /health'te 0.2.7 görünmüyorsa eski API çalışıyor demektir. */
-export const SERVER_BUILD = '0.2.28';
+export const SERVER_BUILD = '0.2.29';
 
 export const healthRouter = Router();
 

@@ -9,7 +9,7 @@ on:
       tag:
         description: 'Build edilecek tag (ornek v0.1.9, v0.2.2)'
         required: false
-        default: 'v0.2.25'
+        default: 'v0.2.29'
       api_base_url:
         description: 'API_BASE_URL (sunucu)'
         required: false

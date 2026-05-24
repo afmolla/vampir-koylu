@@ -57,16 +57,9 @@ String? versionFromApkUrl(String url) {
   return m?.group(1);
 }
 
-/// Guncelleme APK — her zaman en guncel yayin surumune gider (eski 0.2.16 degil).
+/// Guncelleme APK — sunucunun bildirdigi surum (apkPublishVersion), GitHub /latest degil.
 String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
   final targetVer = resolveTargetVersion(versionResponse);
-  final canonical = AppConfig.apkUrlForVersion(targetVer);
-
-  final latestUrl =
-      (versionResponse['updateUrlLatest'] as String? ?? '').trim();
-  if (latestUrl.isNotEmpty && latestUrl.endsWith('.apk')) {
-    return latestUrl;
-  }
 
   final raw = (versionResponse['updateUrlAndroid'] as String? ?? '').trim();
   if (raw.isNotEmpty && raw.endsWith('.apk')) {
@@ -76,7 +69,7 @@ String resolveUpdateApkUrl(Map<String, dynamic> versionResponse) {
     }
   }
 
-  return canonical;
+  return AppConfig.apkUrlForVersion(targetVer);
 }
 
 /// Indirme denemeleri: sadece hedef surum ve ustu (eski surumlere dusme yok).
@@ -116,8 +109,9 @@ List<String> apkDownloadCandidates(
     }
   }
 
-  addUrl(AppConfig.apkLatestDownloadUrl);
   addUrl(primary);
+  // GitHub "latest" eski kalabilir (or. 0.2.25); surumlu URL'lerden sonra dene.
+  addUrl(AppConfig.apkLatestDownloadUrl);
 
   return out;
 }
