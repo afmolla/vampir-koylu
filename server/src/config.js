@@ -24,12 +24,12 @@ export const config = {
   port: Number(process.env.PORT ?? 3002),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
-  latestVersion: process.env.LATEST_VERSION ?? '0.2.27',
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.27',
+  latestVersion: process.env.LATEST_VERSION ?? '0.2.28',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.28',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
-    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.27'),
+    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.28'),
   updateUrlLatest: apkLatestDownloadUrl(),
   apkReleaseRepo,
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-change-in-production',
@@ -41,6 +41,9 @@ export const config = {
   facebookAppSecret: process.env.FACEBOOK_APP_SECRET ?? '',
   /** Admin bakiye yukleme: X-Admin-Key basligi */
   adminApiKey: process.env.ADMIN_API_KEY ?? '',
+  /** Uygulama içi yönetici nick (virgülle çoklu): afmolla */
+  adminNicks: process.env.ADMIN_NICKS ?? 'afmolla',
+  adminEmails: process.env.ADMIN_EMAILS ?? '',
   publicAppUrl: process.env.PUBLIC_APP_URL ?? 'https://vampir-koylu.app',
   smtpHost: process.env.SMTP_HOST ?? '',
   smtpPort: Number(process.env.SMTP_PORT ?? 587),

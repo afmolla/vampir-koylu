@@ -216,6 +216,19 @@
   "stay": "Kal",
   "quitGameConfirm": "Oyundan çık?",
   "quitGamePenalty": "Çık (-25 coin)",
+  "adminTabProfile": "Profil",
+  "adminTabMembers": "Üyeler",
+  "adminSearchHint": "Nick veya e-posta ara",
+  "adminFilterRegistered": "Üyeler",
+  "adminFilterGuest": "Misafir",
+  "adminFilterAll": "Tümü",
+  "adminTotalUsers": "Toplam: {count} kullanıcı",
+  "@adminTotalUsers": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "adminNoUsers": "Kullanıcı bulunamadı",
+  "adminBadgeGuest": "Misafir",
+  "adminBadgeMember": "Üye",
   "inviteToRoom": "{nick} seni {code} odasına davet ediyor",
   "@inviteToRoom": {
     "placeholders": {

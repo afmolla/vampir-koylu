@@ -13,6 +13,7 @@ import {
 import { requestPasswordReset, resetPasswordWithToken } from '../services/mail.js';
 import { applyReferralCode } from '../services/engagement.js';
 import { recordLogin } from '../services/engagement.js';
+import { isAppAdmin } from '../services/appAdmin.js';
 
 export const authRouter = Router();
 
@@ -34,6 +35,7 @@ function authResponse(user, res) {
       locale: user.locale,
       email: user.email,
       avatarUrl: user.avatarUrl,
+      isAdmin: isAppAdmin(user),
     },
   });
 }
@@ -166,6 +168,7 @@ authRouter.get('/me', (req, res) => {
         locale: user.locale,
         email: user.email,
         avatarUrl: user.avatarUrl,
+        isAdmin: isAppAdmin(user),
       },
     });
   } catch {

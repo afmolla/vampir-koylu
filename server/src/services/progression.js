@@ -1,4 +1,5 @@
 import { getDb } from '../db/database.js';
+import { isAppAdmin } from './appAdmin.js';
 
 export const RANKS = [
   { id: 'bronze', minXp: 0, theme: 'Bronze', labelTr: 'Bronz Köylü', labelEn: 'Bronze Villager', perkTr: 'Temel oyun', perkEn: 'Core play' },
@@ -142,6 +143,7 @@ export function getProfileBundle(userId) {
     stats,
     dailyQuests: questDefs,
     ownedCosmetics: owned,
+    isAdmin: isAppAdmin(userId),
     catalog: COSMETIC_CATALOG,
     ranks: RANKS,
   };

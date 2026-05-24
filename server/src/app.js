@@ -13,6 +13,7 @@ import { profileRouter } from './routes/profile.js';
 import { shopRouter } from './routes/shop.js';
 import { tournamentsRouter } from './routes/tournaments.js';
 import { adminRouter } from './routes/admin.js';
+import { adminPanelRouter } from './routes/adminPanel.js';
 import { engagementRouter } from './routes/engagement.js';
 import { friendsRouter } from './routes/friends.js';
 import { socialRouter } from './routes/social.js';
@@ -55,6 +56,7 @@ export function createApp() {
   app.use('/api/shop', shopRouter);
   app.use('/api/tournaments', tournamentsRouter);
   app.use('/api/admin', adminRouter);
+  app.use('/api/admin-panel', adminPanelRouter);
   app.use('/api/engagement', engagementRouter);
   app.use('/api/friends', friendsRouter);
   app.use('/api/social', socialRouter);

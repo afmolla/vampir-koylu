@@ -795,6 +795,16 @@ abstract class AppLocalizations {
   String get quitGameConfirm;
   String get quitGamePenalty;
   String inviteToRoom(String nick, String code);
+  String get adminTabProfile;
+  String get adminTabMembers;
+  String get adminSearchHint;
+  String get adminFilterRegistered;
+  String get adminFilterGuest;
+  String get adminFilterAll;
+  String adminTotalUsers(int count);
+  String get adminNoUsers;
+  String get adminBadgeGuest;
+  String get adminBadgeMember;
 }
 
 class _AppLocalizationsDelegate

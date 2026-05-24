@@ -589,4 +589,34 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String inviteToRoom(String nick, String code) =>
       '$nick invites you to room $code';
+
+  @override
+  String get adminTabProfile => 'Profile';
+
+  @override
+  String get adminTabMembers => 'Members';
+
+  @override
+  String get adminSearchHint => 'Search nick or email';
+
+  @override
+  String get adminFilterRegistered => 'Members';
+
+  @override
+  String get adminFilterGuest => 'Guest';
+
+  @override
+  String get adminFilterAll => 'All';
+
+  @override
+  String adminTotalUsers(int count) => 'Total: $count users';
+
+  @override
+  String get adminNoUsers => 'No users found';
+
+  @override
+  String get adminBadgeGuest => 'Guest';
+
+  @override
+  String get adminBadgeMember => 'Member';
 }

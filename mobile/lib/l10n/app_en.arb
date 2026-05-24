@@ -216,6 +216,19 @@
   "stay": "Stay",
   "quitGameConfirm": "Leave game?",
   "quitGamePenalty": "Leave (-25 coins)",
+  "adminTabProfile": "Profile",
+  "adminTabMembers": "Members",
+  "adminSearchHint": "Search nick or email",
+  "adminFilterRegistered": "Members",
+  "adminFilterGuest": "Guest",
+  "adminFilterAll": "All",
+  "adminTotalUsers": "Total: {count} users",
+  "@adminTotalUsers": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "adminNoUsers": "No users found",
+  "adminBadgeGuest": "Guest",
+  "adminBadgeMember": "Member",
   "inviteToRoom": "{nick} invites you to room {code}",
   "@inviteToRoom": {
     "placeholders": {

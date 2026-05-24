@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+import '../widgets/admin_users_tab.dart';
 import '../widgets/rank_progress_card.dart';
 import '../services/engagement_service.dart';
 import '../services/profile_service.dart';
@@ -108,31 +110,87 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
       );
     }
 
+    final l10n = AppLocalizations.of(context)!;
+    final isAdmin = _bundle?['isAdmin'] == true;
     final profile = _bundle?['profile'] as Map<String, dynamic>? ?? {};
     final stats = _bundle?['stats'] as Map<String, dynamic>? ?? {};
     final quests = _bundle?['dailyQuests'] as List<dynamic>? ?? [];
     final rankProgress = _bundle?['rankProgress'] as Map<String, dynamic>?;
 
+    final shopAction = IconButton(
+      icon: const Icon(Icons.storefront),
+      onPressed: () async {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => CosmeticShopScreen(bundle: _bundle),
+          ),
+        );
+        _load();
+      },
+    );
+
+    if (isAdmin) {
+      return DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.adminTabProfile),
+            actions: [shopAction],
+            bottom: TabBar(
+              tabs: [
+                Tab(text: l10n.adminTabProfile),
+                Tab(
+                  text: l10n.adminTabMembers,
+                  icon: const Icon(Icons.admin_panel_settings_outlined),
+                ),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              RefreshIndicator(
+                onRefresh: _load,
+                child: _buildProfileList(
+                  locale: locale,
+                  profile: profile,
+                  stats: stats,
+                  quests: quests,
+                  rankProgress: rankProgress,
+                ),
+              ),
+              const AdminUsersTab(),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profil'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.storefront),
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => CosmeticShopScreen(bundle: _bundle),
-                ),
-              );
-              _load();
-            },
-          ),
-        ],
+        title: Text(l10n.adminTabProfile),
+        actions: [shopAction],
       ),
       body: RefreshIndicator(
         onRefresh: _load,
-        child: ListView(
+        child: _buildProfileList(
+          locale: locale,
+          profile: profile,
+          stats: stats,
+          quests: quests,
+          rankProgress: rankProgress,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileList({
+    required String locale,
+    required Map<String, dynamic> profile,
+    required Map<String, dynamic> stats,
+    required List<dynamic> quests,
+    required Map<String, dynamic>? rankProgress,
+  }) {
+    return ListView(
           padding: const EdgeInsets.all(16),
           children: [
             RankProgressCard(
@@ -323,9 +381,7 @@ class _ProfileHubScreenState extends State<ProfileHubScreen> {
               style: TextStyle(color: Colors.white54, fontSize: 12),
             ),
           ],
-        ),
-      ),
-    );
+        );
   }
 
   String _questTitle(String id) {
