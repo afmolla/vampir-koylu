@@ -42,6 +42,7 @@ class _InGameChatPreviewState extends State<InGameChatPreview> {
 
   @override
   void dispose() {
+    _latest = null;
     widget.socket?.off('chat:message', _onMessage);
     super.dispose();
   }

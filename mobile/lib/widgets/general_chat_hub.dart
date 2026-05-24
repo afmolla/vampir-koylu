@@ -35,7 +35,6 @@ class _GeneralChatHubState extends State<GeneralChatHub> {
   void initState() {
     super.initState();
     _loadUser();
-    _refreshDms();
     widget.socket?.on('chat:message', _onAnyMessage);
     if (widget.socket != null) {
       _dm.listenDmOpened(widget.socket!, (_) => _refreshDms());
@@ -44,6 +43,7 @@ class _GeneralChatHubState extends State<GeneralChatHub> {
 
   @override
   void dispose() {
+    _dms = [];
     widget.socket?.off('chat:message', _onAnyMessage);
     super.dispose();
   }
@@ -72,16 +72,7 @@ class _GeneralChatHubState extends State<GeneralChatHub> {
         });
       }
     } catch (_) {
-      final list = await _dm.listViaHttp();
-      if (mounted) {
-        setState(() {
-          _dms = list
-              .where((d) =>
-                  d.peerUserId.isNotEmpty &&
-                  (_myUserId == null || d.peerUserId != _myUserId))
-              .toList();
-        });
-      }
+      if (mounted) setState(() => _dms = []);
     }
   }
 

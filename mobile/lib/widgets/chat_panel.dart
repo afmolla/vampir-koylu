@@ -1,12 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
-import '../core/config.dart';
 import '../l10n/app_localizations.dart';
-import '../services/session_store.dart';
 import '../services/social_service.dart';
 
 class ChatMessage {
@@ -71,7 +66,6 @@ class _ChatPanelState extends State<ChatPanel> {
   @override
   void initState() {
     super.initState();
-    _loadHistory();
     widget.socket?.on('chat:message', _onMessage);
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) _scrollToBottom();
@@ -93,6 +87,7 @@ class _ChatPanelState extends State<ChatPanel> {
 
   @override
   void dispose() {
+    _messages.clear();
     widget.socket?.off('chat:message', _onMessage);
     _social.dispose();
     _focusNode.dispose();
@@ -152,34 +147,6 @@ class _ChatPanelState extends State<ChatPanel> {
       setState(() => _messages.add(msg));
       _scrollToBottom();
     }
-  }
-
-  Future<void> _loadHistory() async {
-    try {
-      final encoded = Uri.encodeComponent(widget.channel);
-      final headers = <String, String>{};
-      if (widget.channel.startsWith('dm:')) {
-        final token = await SessionStore().getToken();
-        if (token != null) headers['Authorization'] = 'Bearer $token';
-      }
-      final res = await http.get(
-        Uri.parse('${AppConfig.apiBaseUrl}/api/chat/$encoded'),
-        headers: headers,
-      );
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as Map<String, dynamic>;
-        final list = data['messages'] as List<dynamic>? ?? [];
-        if (mounted) {
-          setState(() {
-            _messages.clear();
-            _messages.addAll(
-              list.map((e) => ChatMessage.fromJson(e as Map<String, dynamic>)),
-            );
-          });
-          _scrollToBottom();
-        }
-      }
-    } catch (_) {}
   }
 
   void _scrollToBottom() {

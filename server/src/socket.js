@@ -32,11 +32,15 @@ import { ensureProfile } from './services/progression.js';
 import {
   buildDmChannelId,
   joinSocketsToDmChannel,
-  joinUserToAllDmSockets,
-  listDmConversations,
   peerUserId,
   upsertDmSession,
 } from './services/dmChannels.js';
+import {
+  clearUserEphemeralChat,
+  createEphemeralMessage,
+  listActiveDmConversations,
+  trackDmOpen,
+} from './services/ephemeralChat.js';
 
 function emitRoomState(io, room) {
   for (const { userId, view } of viewsForRoom(room)) {
@@ -55,7 +59,7 @@ function joinChatChannels(socket, room, userId) {
 
 function emitBotChatMessages(io, messages) {
   for (const m of messages ?? []) {
-    const message = saveMessage({
+    const message = createEphemeralMessage({
       channel: m.channel,
       userId: m.userId,
       nick: m.nick,
@@ -63,22 +67,6 @@ function emitBotChatMessages(io, messages) {
     });
     io.to(`chat:${m.channel}`).emit('chat:message', message);
   }
-}
-
-function saveMessage({ channel, userId, nick, content }) {
-  const db = getDb();
-  const stmt = db.prepare(
-    'INSERT INTO messages (channel, user_id, nick, content) VALUES (?, ?, ?, ?)',
-  );
-  const result = stmt.run(channel, userId, nick, content);
-  return {
-    id: Number(result.lastInsertRowid),
-    channel,
-    user_id: userId,
-    nick,
-    content,
-    created_at: new Date().toISOString(),
-  };
 }
 
 export function attachSocket(httpServer) {
@@ -140,7 +128,6 @@ export function attachSocket(httpServer) {
 
     socket.join('chat:general');
     socket.join(`user:${userId}`);
-    joinUserToAllDmSockets(socket, userId);
 
     socket.on('chat:dm:open', (payload, ack) => {
       try {
@@ -159,16 +146,21 @@ export function attachSocket(httpServer) {
           return;
         }
         upsertDmSession(channel, userId, targetUserId);
-        socket.join(`chat:${channel}`);
-        joinSocketsToDmChannel(io, channel, userId, targetUserId);
-
         const db = getDb();
         const peer = db.prepare('SELECT id, nick FROM users WHERE id = ?').get(targetUserId);
+        const peerNick = peer?.nick ?? payload?.targetNick ?? '?';
+        const myNick = String(payload?.myNick ?? 'Player').slice(0, 24);
+
+        trackDmOpen(userId, channel, targetUserId, peerNick);
+        trackDmOpen(targetUserId, channel, userId, myNick);
+
+        socket.join(`chat:${channel}`);
+        joinSocketsToDmChannel(io, channel, userId, targetUserId);
 
         io.to(`user:${targetUserId}`).emit('chat:dm:opened', {
           channel,
           fromUserId: userId,
-          fromNick: payload?.myNick ?? 'Player',
+          fromNick: myNick,
         });
 
         if (typeof ack === 'function') {
@@ -188,7 +180,7 @@ export function attachSocket(httpServer) {
     });
 
     socket.on('chat:dm:list', (_payload, ack) => {
-      const list = listDmConversations(userId);
+      const list = listActiveDmConversations(userId);
       if (typeof ack === 'function') ack({ ok: true, conversations: list });
     });
 
@@ -358,7 +350,7 @@ export function attachSocket(httpServer) {
           }
         }
 
-        const message = saveMessage({
+        const message = createEphemeralMessage({
           channel,
           userId,
           nick: String(nick).slice(0, 24),
@@ -450,6 +442,7 @@ export function attachSocket(httpServer) {
     });
 
     socket.on('disconnect', () => {
+      clearUserEphemeralChat(userId);
       trackDisconnect(userId);
       if (socket.data.voiceChannel) {
         socket.leave(`voice:${socket.data.voiceChannel}`);
