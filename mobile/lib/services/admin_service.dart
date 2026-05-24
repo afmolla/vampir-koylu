@@ -41,5 +41,28 @@ class AdminService {
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> adjustCoins({
+    required String userId,
+    required int delta,
+  }) async {
+    final token = await SessionStore().getToken();
+    if (token == null) throw Exception('unauthorized');
+
+    final res = await _client.patch(
+      Uri.parse('${AppConfig.apiBaseUrl}/api/admin-panel/users/$userId/coins'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'delta': delta}),
+    );
+
+    if (res.statusCode == 403) throw Exception('forbidden');
+    if (res.statusCode != 200) {
+      throw Exception('HTTP ${res.statusCode}');
+    }
+    return jsonDecode(res.body) as Map<String, dynamic>;
+  }
+
   void dispose() => _client.close();
 }

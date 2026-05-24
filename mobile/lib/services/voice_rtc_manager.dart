@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
+import 'auth_config.dart';
+
 /// WebRTC ses — socket sinyal relay.
 class VoiceRtcManager {
   VoiceRtcManager({required this.socket, required this.myUserId});
@@ -17,14 +19,10 @@ class VoiceRtcManager {
   bool _active = false;
   bool _micMuted = false;
 
-  static const _rtcConfig = {
-    'iceServers': [
-      {'urls': 'stun:stun.l.google.com:19302'},
-      {'urls': 'stun:stun1.l.google.com:19302'},
-      {'urls': 'stun:stun2.l.google.com:19302'},
-    ],
-    'sdpSemantics': 'unified-plan',
-  };
+  static Map<String, dynamic> get _rtcConfig => {
+        'iceServers': AuthConfig.iceServers,
+        'sdpSemantics': 'unified-plan',
+      };
 
   bool _shouldOfferTo(String peerId) => myUserId.compareTo(peerId) < 0;
 

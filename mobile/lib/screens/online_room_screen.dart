@@ -11,6 +11,7 @@ import '../services/room_session.dart';
 import '../services/session_store.dart';
 import '../widgets/in_game_chat_preview.dart';
 import '../widgets/wallet_app_bar_actions.dart';
+import 'friends_screen.dart';
 import '../widgets/room_communication_sheet.dart';
 import 'match_summary_screen.dart';
 import '../widgets/game_phase_ui.dart';
@@ -338,6 +339,14 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     }
   }
 
+  String _actionTypeForPhase(dynamic game) {
+    if (game.phase == 'night') {
+      if (game.yourRole == 'doctor') return 'doctor_protect';
+      return 'night_kill';
+    }
+    return 'day_vote';
+  }
+
   Future<void> _gameAction(String type, int targetId) async {
     final socket = widget.socketService.socket;
     if (socket == null) return;
@@ -387,6 +396,21 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
         backgroundColor: Colors.transparent,
         actions: [
           const WalletAppBarActions(),
+          if (inLobby && _isHost)
+            IconButton(
+              icon: const Icon(Icons.group_add),
+              tooltip: 'Arkadaş davet',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => FriendsScreen(
+                      roomCode: _room.code,
+                      hostNick: widget.nick,
+                    ),
+                  ),
+                );
+              },
+            ),
           if (inLobby)
             TextButton(
               onPressed: _toggleReady,
@@ -494,10 +518,10 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                                             ),
                                       onTap: canTarget
                                           ? () {
-                                              final type = game.phase == 'night'
-                                                  ? 'night_kill'
-                                                  : 'day_vote';
-                                              _gameAction(type, p.id);
+                                              _gameAction(
+                                                _actionTypeForPhase(game),
+                                                p.id,
+                                              );
                                             }
                                           : null,
                                     ),

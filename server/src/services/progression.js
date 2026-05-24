@@ -322,6 +322,41 @@ export function resolveUserId({ userId, nick, email }) {
 }
 
 /** Admin / sistem: bakiye yukleme (TL birimi, tam sayi). */
+export function emitWalletUpdate(userId) {
+  if (!userId || isBotUserId(userId)) return;
+  const profile = ensureProfile(userId);
+  import('../ioInstance.js')
+    .then(({ emitToUser }) => {
+      emitToUser(userId, 'wallet:update', {
+        coins: profile.coins ?? 0,
+        balance: profile.balance ?? 0,
+      });
+    })
+    .catch(() => {});
+}
+
+/** Uygulama yöneticisi: coin ekle/çıkar. */
+export function addUserCoins(targetUserId, delta, note = '') {
+  const db = getDb();
+  const amount = Math.trunc(Number(delta));
+  if (!targetUserId || !Number.isFinite(amount) || amount === 0) {
+    return { error: 'invalid_amount' };
+  }
+  ensureProfile(targetUserId);
+  db.prepare(
+    `UPDATE user_profiles SET coins = MAX(0, coins + ?) WHERE user_id = ?`,
+  ).run(amount, targetUserId);
+  syncRankTier(targetUserId);
+  emitWalletUpdate(targetUserId);
+  return {
+    ok: true,
+    userId: targetUserId,
+    delta: amount,
+    bundle: getProfileBundle(targetUserId),
+    note: String(note ?? '').slice(0, 200),
+  };
+}
+
 export function addUserBalance(targetUserId, amount, note = '') {
   const db = getDb();
   const delta = Math.trunc(Number(amount));
@@ -339,6 +374,8 @@ export function addUserBalance(targetUserId, amount, note = '') {
     `INSERT INTO balance_ledger (user_id, amount, balance_after, note)
      VALUES (?, ?, ?, ?)`,
   ).run(targetUserId, delta, next, String(note ?? '').slice(0, 200));
+
+  emitWalletUpdate(targetUserId);
 
   return {
     ok: true,
@@ -414,12 +451,18 @@ export function applyMatchRewards(userId, summary, playerRole) {
     xp += 25;
     coins += 15;
   }
+  const profile = ensureProfile(userId);
+  const tier = profile.rank_tier ?? 'bronze';
+  if (['silver', 'gold', 'platinum', 'diamond', 'immortal_vampire'].includes(tier)) {
+    coins = Math.floor(coins * 1.05);
+  }
   db.prepare(`UPDATE user_profiles SET xp = xp + ?, coins = coins + ? WHERE user_id = ?`).run(
     xp,
     coins,
     userId,
   );
   syncRankTier(userId);
+  emitWalletUpdate(userId);
 
   db.prepare(
     `INSERT INTO match_summaries (user_id, room_code, summary_json, created_at)
@@ -448,6 +491,7 @@ export function purchaseCosmetic(userId, cosmeticId) {
     'INSERT INTO owned_cosmetics (user_id, cosmetic_id, purchased_at) VALUES (?, ?, datetime(\'now\'))',
   ).run(userId, cosmeticId);
 
+  emitWalletUpdate(userId);
   return { ok: true, bundle: getProfileBundle(userId) };
 }
 

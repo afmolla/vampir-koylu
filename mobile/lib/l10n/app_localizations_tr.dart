@@ -550,8 +550,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get leaveRoomHint =>
-      'Küçült: oda açık kalır, ana menüye dönersin.\n'
-      'Çık: odadan tamamen ayrılırsın.';
+      'Küçült: oda açık kalır, ana menüye dönersin.\nÇık: odadan tamamen ayrılırsın.';
 
   @override
   String get hostLeaveWarning =>
@@ -564,7 +563,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get generalChatTitle => 'Genel sohbet & ses';
 
   @override
-  String roomChatTitle(String code) => 'Oda: $code';
+  String roomChatTitle(String code) {
+    return 'Oda: $code';
+  }
 
   @override
   String get minimize => 'Küçült';
@@ -585,10 +586,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get quitGamePenalty => 'Çık (-25 coin)';
 
   @override
-  String inviteToRoom(String nick, String code) =>
-      '$nick seni $code odasına davet ediyor';
-
-  @override
   String get adminTabProfile => 'Profil';
 
   @override
@@ -607,7 +604,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get adminFilterAll => 'Tümü';
 
   @override
-  String adminTotalUsers(int count) => 'Toplam: $count kullanıcı';
+  String adminTotalUsers(int count) {
+    return 'Toplam: $count kullanıcı';
+  }
 
   @override
   String get adminNoUsers => 'Kullanıcı bulunamadı';
@@ -617,4 +616,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get adminBadgeMember => 'Üye';
+
+  @override
+  String inviteToRoom(String nick, String code) {
+    return '$nick seni $code odasına davet ediyor';
+  }
 }

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../core/config.dart';
+import '../l10n/app_localizations.dart';
+import '../services/auth_flow.dart';
 import '../services/session_store.dart';
 
 class ProfileSettingsScreen extends StatefulWidget {
@@ -69,7 +71,18 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
         },
         body: jsonEncode(body),
       );
-      if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
+      if (res.statusCode != 200) {
+        dynamic body;
+        try {
+          body = jsonDecode(res.body);
+        } catch (_) {}
+        final code = AuthFlow.parseError(body);
+        if (mounted && code != null) {
+          final l10n = AppLocalizations.of(context)!;
+          throw Exception(AuthFlow.errorMessage(l10n, code));
+        }
+        throw Exception('HTTP ${res.statusCode}');
+      }
       final data = jsonDecode(res.body) as Map<String, dynamic>;
       final user = data['user'] as Map<String, dynamic>? ?? {};
       await SessionStore().saveSession(

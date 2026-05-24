@@ -77,7 +77,15 @@ export async function notifyDailyBonus(userId) {
 export async function notifyFriendRoomInvite(userId, hostNick, roomCode) {
   return sendPushToUser(userId, {
     title: 'Oda daveti',
-    body: '$hostNick seni $roomCode odasına davet ediyor',
+    body: `${hostNick} seni ${roomCode} odasına davet ediyor`,
     data: { type: 'room_invite', roomCode },
+  });
+}
+
+export async function notifyTournamentWinner(tournamentId, title, userId, prizeCoins) {
+  return sendPushToUser(userId, {
+    title: 'Turnuva kazandın!',
+    body: `${title}: +${prizeCoins} coin ödül.`,
+    data: { type: 'tournament_win', tournamentId, prizeCoins: String(prizeCoins) },
   });
 }

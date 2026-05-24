@@ -235,6 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: UserAvatar(
             avatarUrl: _avatarUrl,
             nick: widget.nick,
+            frameId: profile['equippedFrame'] as String?,
             radius: 18,
             onTap: () {
               Navigator.of(context).push(

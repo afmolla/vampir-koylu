@@ -201,7 +201,13 @@ function canPlayerAct(room, userId) {
   if (!me?.alive) return false;
   if (g.phase === 'night') {
     const meta = ROLES[me.role];
-    return meta?.nightAction === 'kill' && !g.nightChoices.has(userId);
+    if (meta?.nightAction === 'kill') {
+      return !g.nightChoices.has(userId);
+    }
+    if (me.role === 'doctor') {
+      return ![...g.nightProtects.values()].includes(userId);
+    }
+    return false;
   }
   if (g.phase === 'dayVote') {
     return !g.dayVotes.has(userId);
@@ -217,6 +223,9 @@ function validTargets(room, userId) {
   const alive = g.players.filter((p) => p.alive && p.userId !== userId);
   if (g.phase === 'night' && ROLES[me.role]?.nightAction === 'kill') {
     return alive.filter((p) => !isEvilTeam(p.role)).map((p) => p.id);
+  }
+  if (g.phase === 'night' && me.role === 'doctor') {
+    return g.players.filter((p) => p.alive).map((p) => p.id);
   }
   if (g.phase === 'dayVote') {
     return alive.map((p) => p.id);
@@ -451,7 +460,11 @@ export function fillBotsInRoom(socketId, userId) {
   if (!room) return { error: 'not_in_room' };
   if (room.hostId !== userId) return { error: 'not_host' };
   if (room.status !== 'lobby') return { error: 'already_started' };
-  if (room.isTournament) return { error: 'tournament_room' };
+  if (room.isTournament) {
+    const allow =
+      (process.env.TOURNAMENT_ALLOW_BOTS ?? 'false').toLowerCase() === 'true';
+    if (!allow) return { error: 'tournament_room' };
+  }
 
   const target = room.minPlayers ?? DEFAULT_MIN_PLAYERS;
   addBotPlayers(room, Math.min(room.maxPlayers, target));
@@ -539,6 +552,14 @@ function finalizeMatch(room) {
     }
   }
   room.game.matchSummary = summary;
+
+  if (room.isTournament && room.tournamentId) {
+    import('../services/tournaments.js')
+      .then(({ applyTournamentRewards }) =>
+        applyTournamentRewards(room.tournamentId, summary, room),
+      )
+      .catch((err) => console.error('[tournament] payout', err));
+  }
 
   import('../services/engagement.js')
     .then(({ onMatchEnd }) => {
@@ -696,7 +717,7 @@ export function gameAction(socketId, userId, { type, targetId }) {
     const target = g.players.find((p) => p.id === targetId && p.alive);
     if (!target) return { error: 'invalid_target' };
     g.nightProtects.set(target.userId, userId);
-    return { room };
+    return finishGameAction(room);
   }
 
   if (type === 'day_vote' && g.phase === 'dayVote') {

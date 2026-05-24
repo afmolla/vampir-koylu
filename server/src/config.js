@@ -24,12 +24,12 @@ export const config = {
   port: Number(process.env.PORT ?? 3002),
   nodeEnv: process.env.NODE_ENV ?? 'development',
   minRequiredVersion: process.env.MIN_REQUIRED_VERSION ?? '0.2.6',
-  latestVersion: process.env.LATEST_VERSION ?? '0.2.30',
-  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.30',
+  latestVersion: process.env.LATEST_VERSION ?? '0.2.31',
+  apkPublishVersion: process.env.APK_PUBLISH_VERSION ?? '0.2.31',
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
-    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.30'),
+    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.31'),
   updateUrlLatest: apkLatestDownloadUrl(),
   apkReleaseRepo,
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-change-in-production',
@@ -54,4 +54,26 @@ export const config = {
   fcmServerKey: process.env.FCM_SERVER_KEY ?? '',
   googlePlayPackageName: process.env.GOOGLE_PLAY_PACKAGE_NAME ?? 'com.vampirkoylu.vampir_koylu',
   googlePlayServiceAccount: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT ?? '',
+  turnUrl: process.env.TURN_URL ?? '',
+  turnUsername: process.env.TURN_USERNAME ?? '',
+  turnCredential: process.env.TURN_CREDENTIAL ?? '',
+  tournamentAllowBots:
+    (process.env.TOURNAMENT_ALLOW_BOTS ?? 'false').toLowerCase() === 'true',
 };
+
+/** WebRTC ICE — STUN + opsiyonel TURN. */
+export function buildIceServers() {
+  const servers = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ];
+  const turn = config.turnUrl?.trim();
+  if (turn) {
+    servers.push({
+      urls: turn,
+      username: config.turnUsername || undefined,
+      credential: config.turnCredential || undefined,
+    });
+  }
+  return servers;
+}

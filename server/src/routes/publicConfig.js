@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { config } from '../config.js';
+import { buildIceServers, config } from '../config.js';
 
 export const publicConfigRouter = Router();
 
-/** Mobil: Google/Facebook OAuth kimlikleri (gizli anahtar yok). */
+/** Mobil: Google/Facebook OAuth + WebRTC ICE. */
 publicConfigRouter.get('/', (_req, res) => {
   const googleId = config.googleClientId?.trim() ?? '';
   res.json({
@@ -13,5 +13,7 @@ publicConfigRouter.get('/', (_req, res) => {
     facebookSignInEnabled:
       Boolean(config.facebookAppId?.trim()) &&
       Boolean(config.facebookAppSecret?.trim()),
+    iceServers: buildIceServers(),
+    tournamentAllowBots: config.tournamentAllowBots,
   });
 });

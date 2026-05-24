@@ -19,7 +19,6 @@ function authUserId(req) {
 /**
  * Google Play satın alma doğrulama.
  * Üretimde Google Play Developer API ile doğrulanmalı.
- * Geliştirme: purchaseToken + paymentRef eşleşmesi ile onay.
  */
 paymentsRouter.post('/play/verify', async (req, res) => {
   const userId = authUserId(req);
@@ -30,9 +29,23 @@ paymentsRouter.post('/play/verify', async (req, res) => {
     return res.status(400).json({ error: 'missing_fields' });
   }
 
-  if (config.googlePlayPackageName && config.googlePlayServiceAccount) {
+  const hasPlayApi =
+    Boolean(config.googlePlayPackageName?.trim()) &&
+    Boolean(config.googlePlayServiceAccount?.trim());
+
+  if (hasPlayApi) {
     // TODO: googleapis androidpublisher.purchases.products.get
-    console.log('[play] verify stub — service account configured but not wired');
+    console.log('[play] verify — service account configured, API not wired yet');
+  } else if (config.nodeEnv === 'production') {
+    return res.status(503).json({
+      error: 'play_verify_not_configured',
+      message: 'Google Play doğrulama sunucuda yapılandırılmamış.',
+    });
+  } else if (!purchaseToken) {
+    return res.status(400).json({
+      error: 'missing_purchase_token',
+      message: 'Geliştirme modunda bile purchaseToken gerekli.',
+    });
   }
 
   const result = confirmTournamentPayment(userId, tournamentId, paymentRef);
@@ -40,7 +53,8 @@ paymentsRouter.post('/play/verify', async (req, res) => {
 
   res.json({
     ok: true,
-    verified: true,
+    verified: hasPlayApi,
+    devMode: !hasPlayApi,
     purchaseToken: purchaseToken ?? null,
     productId: productId ?? null,
     tournament: result.tournament,

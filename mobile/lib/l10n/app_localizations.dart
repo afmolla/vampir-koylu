@@ -722,89 +722,503 @@ abstract class AppLocalizations {
   /// **'No records'**
   String get summaryNone;
 
+  /// No description provided for @emailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
   String get emailLabel;
+
+  /// No description provided for @loginIdentifier.
+  ///
+  /// In en, this message translates to:
+  /// **'Email or username'**
   String get loginIdentifier;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
   String get passwordLabel;
+
+  /// No description provided for @rememberMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember me'**
   String get rememberMe;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
   String get signIn;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
   String get createAccount;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
   String get forgotPassword;
+
+  /// No description provided for @enterEmailForReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address'**
   String get enterEmailForReset;
+
+  /// No description provided for @resetLinkSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset link sent (check email / server log)'**
   String get resetLinkSent;
+
+  /// No description provided for @accountTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Account'**
   String get accountTab;
+
+  /// No description provided for @guestTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
   String get guestTab;
+
+  /// No description provided for @registerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
   String get registerTitle;
+
+  /// No description provided for @usernameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
   String get usernameLabel;
+
+  /// No description provided for @passwordMinHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Password (min 6)'**
   String get passwordMinHint;
+
+  /// No description provided for @registerButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
   String get registerButton;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'I already have an account'**
   String get alreadyHaveAccount;
+
+  /// No description provided for @registerFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed. Check your connection.'**
   String get registerFailed;
+
+  /// No description provided for @loginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed'**
   String get loginFailed;
+
+  /// No description provided for @googleLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in failed'**
   String get googleLoginFailed;
+
+  /// No description provided for @errorNickTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This username is already taken.'**
   String get errorNickTaken;
+
+  /// No description provided for @errorNickInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'This nickname is used by an online player. Try another.'**
   String get errorNickInUse;
+
+  /// No description provided for @errorInvalidNick.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname must be 2–24 characters.'**
   String get errorInvalidNick;
+
+  /// No description provided for @errorCannotDmSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'You cannot open a private chat with yourself.'**
   String get errorCannotDmSelf;
+
+  /// No description provided for @errorDmOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open private chat.'**
   String get errorDmOpenFailed;
+
+  /// No description provided for @errorInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Email, username or password is incorrect.'**
   String get errorInvalidCredentials;
+
+  /// No description provided for @errorEmailTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered.'**
   String get errorEmailTaken;
+
+  /// No description provided for @errorWeakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters.'**
   String get errorWeakPassword;
+
+  /// No description provided for @errorGoogleNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in is not configured on the server.'**
   String get errorGoogleNotConfigured;
+
+  /// No description provided for @errorGoogleNoIdToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Google did not return a sign-in token. Check OAuth client ID and app SHA-1 in Google Cloud.'**
   String get errorGoogleNoIdToken;
+
+  /// No description provided for @errorFacebookNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook sign-in is not configured on the server.'**
   String get errorFacebookNotConfigured;
+
+  /// No description provided for @errorSocialToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Social sign-in could not be verified.'**
   String get errorSocialToken;
+
+  /// No description provided for @errorLoginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed.'**
   String get errorLoginFailed;
+
+  /// No description provided for @chatAndVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat & voice'**
   String get chatAndVoice;
+
+  /// No description provided for @voiceChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice chat'**
   String get voiceChat;
+
+  /// No description provided for @joinVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Join voice'**
   String get joinVoice;
+
+  /// No description provided for @leaveVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave voice'**
   String get leaveVoice;
+
+  /// No description provided for @chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
   String get chat;
+
+  /// No description provided for @openChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open chat'**
   String get openChat;
+
+  /// No description provided for @closeChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Close chat'**
   String get closeChat;
+
+  /// No description provided for @ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready'**
   String get ready;
+
+  /// No description provided for @notReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Not ready'**
   String get notReady;
+
+  /// No description provided for @minimizeRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize room'**
   String get minimizeRoom;
+
+  /// No description provided for @leaveRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave room'**
   String get leaveRoom;
+
+  /// No description provided for @transferHost.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer host'**
   String get transferHost;
+
+  /// No description provided for @closeRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Close room'**
   String get closeRoom;
+
+  /// No description provided for @copyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
   String get copyCode;
+
+  /// No description provided for @codeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied'**
   String get codeCopied;
+
+  /// No description provided for @youAreHost.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the host'**
   String get youAreHost;
+
+  /// No description provided for @generalVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'General voice'**
   String get generalVoice;
+
+  /// No description provided for @generalVoiceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Talk with everyone in the lobby'**
   String get generalVoiceHint;
+
+  /// No description provided for @coins.
+  ///
+  /// In en, this message translates to:
+  /// **'Coins'**
   String get coins;
+
+  /// No description provided for @dailyReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily reward'**
   String get dailyReward;
+
+  /// No description provided for @tournamentRolePick.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferred role'**
   String get tournamentRolePick;
+
+  /// No description provided for @roleFee.
+  ///
+  /// In en, this message translates to:
+  /// **'Role fee'**
   String get roleFee;
+
+  /// No description provided for @joinTournament.
+  ///
+  /// In en, this message translates to:
+  /// **'Join tournament'**
   String get joinTournament;
+
+  /// No description provided for @splashConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to server…'**
   String get splashConnecting;
+
+  /// No description provided for @splashOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Server unreachable — offline mode available'**
   String get splashOffline;
+
+  /// No description provided for @googleLoginCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in cancelled or failed'**
   String get googleLoginCancelled;
+
+  /// No description provided for @facebookLoginCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Facebook sign-in cancelled or failed'**
   String get facebookLoginCancelled;
+
+  /// No description provided for @googleConfiguring.
+  ///
+  /// In en, this message translates to:
+  /// **'Google (configuring…)'**
   String get googleConfiguring;
+
+  /// No description provided for @leaveRoomConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave room?'**
   String get leaveRoomConfirm;
+
+  /// No description provided for @leaveRoomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize: room stays open, return to main menu.\nLeave: you exit the room completely.'**
   String get leaveRoomHint;
+
+  /// No description provided for @hostLeaveWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'As host, leaving cancels the game and costs 25 coins.'**
   String get hostLeaveWarning;
+
+  /// No description provided for @readyCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready ✓'**
   String get readyCheck;
+
+  /// No description provided for @generalChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'General chat & voice'**
   String get generalChatTitle;
+
+  /// No description provided for @roomChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Room: {code}'**
   String roomChatTitle(String code);
+
+  /// No description provided for @minimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize'**
   String get minimize;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
   String get cancel;
+
+  /// No description provided for @exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
   String get exit;
+
+  /// No description provided for @stay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
   String get stay;
+
+  /// No description provided for @quitGameConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave game?'**
   String get quitGameConfirm;
+
+  /// No description provided for @quitGamePenalty.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave (-25 coins)'**
   String get quitGamePenalty;
-  String inviteToRoom(String nick, String code);
+
+  /// No description provided for @adminTabProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
   String get adminTabProfile;
+
+  /// No description provided for @adminTabMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
   String get adminTabMembers;
+
+  /// No description provided for @adminSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search nick or email'**
   String get adminSearchHint;
+
+  /// No description provided for @adminFilterRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
   String get adminFilterRegistered;
+
+  /// No description provided for @adminFilterGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
   String get adminFilterGuest;
+
+  /// No description provided for @adminFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
   String get adminFilterAll;
+
+  /// No description provided for @adminTotalUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {count} users'**
   String adminTotalUsers(int count);
+
+  /// No description provided for @adminNoUsers.
+  ///
+  /// In en, this message translates to:
+  /// **'No users found'**
   String get adminNoUsers;
+
+  /// No description provided for @adminBadgeGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest'**
   String get adminBadgeGuest;
+
+  /// No description provided for @adminBadgeMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
   String get adminBadgeMember;
+
+  /// No description provided for @inviteToRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'{nick} invites you to room {code}'**
+  String inviteToRoom(String nick, String code);
 }
 
 class _AppLocalizationsDelegate

@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 import '../core/config.dart';
+import 'wallet_refresh.dart';
 
 class SocketService {
   io.Socket? _socket;
@@ -39,7 +40,13 @@ class SocketService {
       if (!completer.isCompleted) completer.complete(s);
     }
 
-    _socket!.onConnect((_) => done(_socket!));
+    _socket!.onConnect((_) {
+      _socket?.off('wallet:update');
+      _socket?.on('wallet:update', (data) {
+        if (data is Map) WalletRefresh.apply(Map<String, dynamic>.from(data));
+      });
+      done(_socket!);
+    });
     _socket!.onConnectError((err) {
       if (!completer.isCompleted) {
         completer.completeError(Exception('Socket: $err'));

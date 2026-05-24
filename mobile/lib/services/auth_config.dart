@@ -13,6 +13,16 @@ class AuthConfig {
   static const _prefsKey = 'google_web_client_id';
   static String? _cachedGoogleId;
   static bool _facebookEnabled = false;
+  static List<Map<String, dynamic>> _iceServers = _defaultIce;
+  static bool _tournamentAllowBots = false;
+
+  static List<Map<String, dynamic>> _defaultIce = [
+    {'urls': 'stun:stun.l.google.com:19302'},
+    {'urls': 'stun:stun1.l.google.com:19302'},
+  ];
+
+  static List<Map<String, dynamic>> get iceServers => _iceServers;
+  static bool get tournamentAllowBots => _tournamentAllowBots;
 
   static bool get facebookSignInEnabled => _facebookEnabled;
 
@@ -52,6 +62,14 @@ class AuthConfig {
           final raw = jsonDecode(res.body);
           if (raw is! Map<String, dynamic>) continue;
           _facebookEnabled = raw['facebookSignInEnabled'] == true;
+          _tournamentAllowBots = raw['tournamentAllowBots'] == true;
+          final ice = raw['iceServers'];
+          if (ice is List && ice.isNotEmpty) {
+            _iceServers = ice
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
+          }
           final id = raw['googleWebClientId'] as String?;
           if (id != null && id.trim().isNotEmpty) {
             _cachedGoogleId = id.trim();

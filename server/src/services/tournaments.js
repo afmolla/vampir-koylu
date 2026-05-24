@@ -1,6 +1,11 @@
 import { randomUUID } from 'crypto';
 import { getDb } from '../db/database.js';
-import { ensureProfile, syncRankTier } from './progression.js';
+import {
+  ensureProfile,
+  emitWalletUpdate,
+  isBotUserId,
+  syncRankTier,
+} from './progression.js';
 import {
   createTournamentRoom,
   getTournamentRoomSnapshot,
@@ -247,6 +252,7 @@ export function registerForTournament(
        VALUES (?, ?, 'balance', 'paid')`,
     ).run(tournamentId, userId);
     syncRankTier(userId);
+    emitWalletUpdate(userId);
     tryAutoOpenLobby(tournamentId);
     return {
       ok: true,
@@ -293,6 +299,7 @@ export function registerForTournament(
   ).run(tournamentId, userId, role);
 
   syncRankTier(userId);
+  emitWalletUpdate(userId);
   tryAutoOpenLobby(tournamentId);
 
   return {
@@ -321,6 +328,7 @@ export function confirmTournamentPayment(userId, tournamentId, paymentRef) {
     `UPDATE tournament_entries SET payment_status = 'paid' WHERE tournament_id = ? AND user_id = ?`,
   ).run(tournamentId, userId);
 
+  emitWalletUpdate(userId);
   tryAutoOpenLobby(tournamentId);
   return { ok: true, tournament: getTournament(tournamentId, userId) };
 }
@@ -424,4 +432,61 @@ export function getTournamentLobby(tournamentId) {
     minPlayers: t.min_players,
     maxPlayers: t.max_players,
   };
+}
+
+const EVIL_ROLES = new Set(['vampire', 'silent_killer', 'double_agent']);
+
+/** Turnuva maçı bitince ödül havuzunu kazanan insana aktar. */
+export function applyTournamentRewards(tournamentId, summary, room) {
+  const db = getDb();
+  const t = db.prepare('SELECT * FROM tournaments WHERE id = ?').get(tournamentId);
+  if (!t || t.status === 'finished' || !summary?.winner) return;
+
+  const pool = Math.max(0, Math.trunc(t.prize_pool_coins ?? 0));
+  const g = room?.game;
+  if (!g) return;
+
+  const isEvilWin = summary.winner === 'vampire';
+  const humans = g.players.filter((p) => !isBotUserId(p.userId));
+
+  let winnerUserId = summary.mvp?.userId;
+  const mvpP = g.players.find((p) => p.userId === winnerUserId);
+  const mvpOnWinSide =
+    mvpP &&
+    (isEvilWin ? EVIL_ROLES.has(mvpP.role) : !EVIL_ROLES.has(mvpP.role));
+
+  if (!winnerUserId || !mvpOnWinSide || isBotUserId(winnerUserId)) {
+    winnerUserId = humans.find((p) =>
+      isEvilWin ? EVIL_ROLES.has(p.role) : !EVIL_ROLES.has(p.role),
+    )?.userId;
+  }
+  if (!winnerUserId) return;
+
+  if (pool > 0) {
+    db.prepare('UPDATE user_profiles SET coins = coins + ? WHERE user_id = ?').run(
+      pool,
+      winnerUserId,
+    );
+  }
+
+  db.prepare(
+    `UPDATE tournaments SET status = 'finished', winner_user_id = ?, prize_pool_coins = 0 WHERE id = ?`,
+  ).run(winnerUserId, tournamentId);
+
+  db.prepare(
+    `UPDATE tournament_entries SET placement = NULL, prize_coins = 0 WHERE tournament_id = ?`,
+  ).run(tournamentId);
+  db.prepare(
+    `UPDATE tournament_entries SET placement = 1, prize_coins = ? WHERE tournament_id = ? AND user_id = ?`,
+  ).run(pool, tournamentId, winnerUserId);
+
+  emitWalletUpdate(winnerUserId);
+
+  import('./pushNotifications.js')
+    .then(({ notifyTournamentWinner }) =>
+      notifyTournamentWinner(tournamentId, t.title, winnerUserId, pool),
+    )
+    .catch(() => {});
+
+  return { ok: true, winnerUserId, prizeCoins: pool };
 }

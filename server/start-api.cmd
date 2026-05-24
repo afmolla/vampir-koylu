@@ -8,7 +8,7 @@ if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
 if not defined API_PORT set API_PORT=3002
-if not defined LATEST_VERSION set LATEST_VERSION=0.2.30
+if not defined LATEST_VERSION set LATEST_VERSION=0.2.31
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
 if not defined GITHUB_REPO set GITHUB_REPO=afmolla/vampir-koylu
 

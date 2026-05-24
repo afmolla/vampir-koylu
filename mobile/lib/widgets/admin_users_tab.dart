@@ -165,12 +165,25 @@ class _AdminUsersTabState extends State<AdminUsersTab> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 isThreeLine: true,
-                                trailing: Text(
-                                  _formatDate(u['createdAt'] as String?),
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.white54,
-                                  ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.monetization_on_outlined),
+                                      tooltip: 'Coin',
+                                      onPressed: () => _adjustCoins(
+                                        u['id'] as String? ?? '',
+                                        u['nick'] as String? ?? '?',
+                                      ),
+                                    ),
+                                    Text(
+                                      _formatDate(u['createdAt'] as String?),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.white54,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               );
                             },
@@ -184,6 +197,53 @@ class _AdminUsersTabState extends State<AdminUsersTab> {
   String _formatDate(String? iso) {
     if (iso == null || iso.length < 10) return '';
     return iso.substring(0, 10);
+  }
+
+  Future<void> _adjustCoins(String userId, String nick) async {
+    if (userId.isEmpty) return;
+    final deltaCtrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Coin — $nick'),
+        content: TextField(
+          controller: deltaCtrl,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            labelText: 'Ekle (+) veya çıkar (-)',
+            hintText: 'ör. 100 veya -50',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('İptal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Uygula'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final delta = int.tryParse(deltaCtrl.text.trim());
+    if (delta == null || delta == 0) return;
+    try {
+      await _api.adjustCoins(userId: userId, delta: delta);
+      await _load();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Coin güncellendi ($delta)')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('$e')),
+        );
+      }
+    }
   }
 
   String _initial(String? nick) {

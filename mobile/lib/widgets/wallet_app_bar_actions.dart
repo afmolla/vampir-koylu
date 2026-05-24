@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../services/engagement_service.dart';
+import '../services/wallet_refresh.dart';
 import 'coins_balance_chip.dart';
 
 /// AppBar sag ust — coin ve bakiye (sunucudan yukler veya disaridan verilir).
@@ -27,9 +28,22 @@ class _WalletAppBarActionsState extends State<WalletAppBarActions> {
   int _balance = 0;
   bool _loading = true;
 
+  VoidCallback? _walletListener;
+
   @override
   void initState() {
     super.initState();
+    _walletListener = () {
+      final w = WalletRefresh.notifier.value;
+      if (w != null && mounted) {
+        setState(() {
+          _coins = w['coins'] ?? _coins;
+          _balance = w['balance'] ?? _balance;
+          _loading = false;
+        });
+      }
+    };
+    WalletRefresh.notifier.addListener(_walletListener!);
     _applyPropsOrLoad();
   }
 
@@ -45,6 +59,9 @@ class _WalletAppBarActionsState extends State<WalletAppBarActions> {
 
   @override
   void dispose() {
+    if (_walletListener != null) {
+      WalletRefresh.notifier.removeListener(_walletListener!);
+    }
     _engagement.dispose();
     super.dispose();
   }

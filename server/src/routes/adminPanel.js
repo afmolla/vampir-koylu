@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 import { isAppAdmin } from '../services/appAdmin.js';
 import { listUsersForAdmin } from '../services/adminUsers.js';
+import { addUserCoins } from '../services/progression.js';
 
 export const adminPanelRouter = Router();
 
@@ -41,4 +42,15 @@ adminPanelRouter.get('/users', requireAppAdmin, (req, res) => {
     offset: req.query.offset,
   });
   res.json({ ok: true, ...data });
+});
+
+/** PATCH body: { delta: number } — coin ekle (+) veya çıkar (-) */
+adminPanelRouter.patch('/users/:targetId/coins', requireAppAdmin, (req, res) => {
+  const delta = Number(req.body?.delta);
+  if (!Number.isFinite(delta) || delta === 0) {
+    return res.status(400).json({ error: 'invalid_delta' });
+  }
+  const result = addUserCoins(req.params.targetId, delta, 'admin_panel');
+  if (result.error) return res.status(400).json(result);
+  res.json(result);
 });

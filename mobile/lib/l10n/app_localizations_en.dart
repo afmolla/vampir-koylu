@@ -382,8 +382,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterEmailForReset => 'Enter your email address';
 
   @override
-  String get resetLinkSent =>
-      'Reset link sent (check email / server log)';
+  String get resetLinkSent => 'Reset link sent (check email / server log)';
 
   @override
   String get accountTab => 'Account';
@@ -407,8 +406,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadyHaveAccount => 'I already have an account';
 
   @override
-  String get registerFailed =>
-      'Registration failed. Check your connection.';
+  String get registerFailed => 'Registration failed. Check your connection.';
 
   @override
   String get loginFailed => 'Sign in failed';
@@ -534,15 +532,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splashConnecting => 'Connecting to server…';
 
   @override
-  String get splashOffline =>
-      'Server unreachable — offline mode available';
+  String get splashOffline => 'Server unreachable — offline mode available';
 
   @override
   String get googleLoginCancelled => 'Google sign-in cancelled or failed';
 
   @override
-  String get facebookLoginCancelled =>
-      'Facebook sign-in cancelled or failed';
+  String get facebookLoginCancelled => 'Facebook sign-in cancelled or failed';
 
   @override
   String get googleConfiguring => 'Google (configuring…)';
@@ -552,8 +548,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get leaveRoomHint =>
-      'Minimize: room stays open, return to main menu.\n'
-      'Leave: you exit the room completely.';
+      'Minimize: room stays open, return to main menu.\nLeave: you exit the room completely.';
 
   @override
   String get hostLeaveWarning =>
@@ -566,7 +561,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get generalChatTitle => 'General chat & voice';
 
   @override
-  String roomChatTitle(String code) => 'Room: $code';
+  String roomChatTitle(String code) {
+    return 'Room: $code';
+  }
 
   @override
   String get minimize => 'Minimize';
@@ -587,10 +584,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quitGamePenalty => 'Leave (-25 coins)';
 
   @override
-  String inviteToRoom(String nick, String code) =>
-      '$nick invites you to room $code';
-
-  @override
   String get adminTabProfile => 'Profile';
 
   @override
@@ -609,7 +602,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminFilterAll => 'All';
 
   @override
-  String adminTotalUsers(int count) => 'Total: $count users';
+  String adminTotalUsers(int count) {
+    return 'Total: $count users';
+  }
 
   @override
   String get adminNoUsers => 'No users found';
@@ -619,4 +614,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminBadgeMember => 'Member';
+
+  @override
+  String inviteToRoom(String nick, String code) {
+    return '$nick invites you to room $code';
+  }
 }

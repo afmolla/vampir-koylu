@@ -1,31 +1,14 @@
-# Vampir Köylü — Geliştirme planı
+# Vampir Köylü — Roadmap
 
-## v0.2.26 (bu sürüm)
-- [x] Tek sohbet paneli (ses üstte, yazı altta; çift FAB kaldırıldı)
-- [x] WebRTC ses: Android ses modu, offer çakışması, uzak ses çalma
-- [x] Botlar lobide daha sık metin sohbeti (~20 sn)
+**Güncel:** v0.2.31 · [GELISTIRME-PLANI.md](./GELISTIRME-PLANI.md)
 
-## v0.2.25
-- [x] Sağ üst coin + TL bakiye (ana sayfa, lobi, oda, turnuva)
-- [x] Giriş: e-posta veya kullanıcı adı; benzersiz nick
-- [x] Misafir nick: kayıtlı ad ve çevrimiçi oyuncu kontrolü
-- [x] Kendinle özel DM engeli
-- [x] Oyun içi sohbet önizleme (tek satır, tıkla aç)
-- [x] TR/EN çeviri (giriş, oda, sohbet temel)
+## v0.2.31 (yayında)
+- Doktor gece koruması, turnuva ödül dağıtımı
+- Wallet socket, admin coin, arkadaş davet, TURN config
+- Push token kaydı, Play verify sıkılaştırma, kozmetik çerçeve
 
-## v0.2.26 (sıradaki)
-- [ ] Kalan ekranların tam i18n (turnuva, profil, arkadaşlar, mağaza)
-- [ ] Coin/bakiye socket ile anlık güncelleme (harcama sonrası)
-- [ ] Google OAuth: VPS `auth-secrets.env` doğrulama rehberi
+## Sıradaki
+- Tam i18n, gerçek FCM, Google Play API, ek rol geceleri, HTTPS
 
-## v0.2.27
-- [ ] Turnuva UI çeviri + ödeme akışı iyileştirme
-- [ ] Oda sohbet bildirim sesi (opsiyonel)
-- [ ] Profil: nick değişince `nick_taken` gösterimi
-
-## Sürekli güncelleme (OTA)
-- Paket: `com.vampirkoylu.vampir_koylu` (değiştirmeyin)
-- İmza: `mobile/android/signing/release.keystore` (CI ve yerel aynı)
-- Yayın: `git tag v0.2.xx` + push → GitHub Actions APK → Releases
-- VPS: `deploy/repo-paths.cmd` içindeki `LATEST_VERSION` + API yeniden başlat
-- Kullanıcı: uygulama içi «Güncelle» → aynı imzalı APK üzerine kurulum
+## OTA
+`git tag v0.2.31` → GitHub Actions → VPS `BASLAT-API.cmd`

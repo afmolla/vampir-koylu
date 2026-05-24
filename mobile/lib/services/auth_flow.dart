@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../screens/home_screen.dart';
 import 'local_notifications_service.dart';
+import 'push_registration.dart';
 import 'session_store.dart';
 
 class AuthFlow {
@@ -35,6 +38,7 @@ class AuthFlow {
     }
 
     await LocalNotificationsService.instance.init();
+    unawaited(PushRegistration.registerAfterLogin());
     if (!context.mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
