@@ -2,36 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
 import '../l10n/app_localizations.dart';
+import '../services/chat_session_store.dart';
 import '../services/social_service.dart';
 
-class ChatMessage {
-  final int id;
-  final String channel;
-  final String userId;
-  final String nick;
-  final String content;
-  final String createdAt;
-
-  ChatMessage({
-    required this.id,
-    required this.channel,
-    required this.userId,
-    required this.nick,
-    required this.content,
-    required this.createdAt,
-  });
-
-  factory ChatMessage.fromJson(Map<String, dynamic> j) {
-    return ChatMessage(
-      id: j['id'] as int? ?? 0,
-      channel: j['channel'] as String? ?? '',
-      userId: j['user_id'] as String? ?? '',
-      nick: j['nick'] as String? ?? '?',
-      content: j['content'] as String? ?? '',
-      createdAt: j['created_at'] as String? ?? '',
-    );
-  }
-}
+export '../services/chat_session_store.dart' show ChatMessage;
 
 class ChatPanel extends StatefulWidget {
   const ChatPanel({
@@ -60,13 +34,15 @@ class _ChatPanelState extends State<ChatPanel> {
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
   final _social = SocialService();
-  final List<ChatMessage> _messages = [];
   final Set<String> _mutedUsers = {};
+  List<ChatMessage> _messages = [];
 
   @override
   void initState() {
     super.initState();
-    widget.socket?.on('chat:message', _onMessage);
+    ChatSessionStore.bindSocket(widget.socket);
+    _reloadFromStore();
+    ChatSessionStore.revision.addListener(_reloadFromStore);
     _focusNode.addListener(() {
       if (_focusNode.hasFocus) _scrollToBottom();
     });
@@ -76,19 +52,24 @@ class _ChatPanelState extends State<ChatPanel> {
   void didUpdateWidget(covariant ChatPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.channel != widget.channel) {
-      _messages.clear();
-      _loadHistory();
+      _reloadFromStore();
     }
     if (oldWidget.socket != widget.socket) {
-      oldWidget.socket?.off('chat:message', _onMessage);
-      widget.socket?.on('chat:message', _onMessage);
+      ChatSessionStore.bindSocket(widget.socket);
     }
+  }
+
+  void _reloadFromStore() {
+    if (!mounted) return;
+    setState(() {
+      _messages = ChatSessionStore.forChannel(widget.channel);
+    });
+    _scrollToBottom();
   }
 
   @override
   void dispose() {
-    _messages.clear();
-    widget.socket?.off('chat:message', _onMessage);
+    ChatSessionStore.revision.removeListener(_reloadFromStore);
     _social.dispose();
     _focusNode.dispose();
     _controller.dispose();
@@ -137,16 +118,6 @@ class _ChatPanelState extends State<ChatPanel> {
         ),
       ),
     );
-  }
-
-  void _onMessage(dynamic data) {
-    if (data is! Map) return;
-    final msg = ChatMessage.fromJson(Map<String, dynamic>.from(data));
-    if (msg.channel != widget.channel) return;
-    if (mounted) {
-      setState(() => _messages.add(msg));
-      _scrollToBottom();
-    }
   }
 
   void _scrollToBottom() {
@@ -207,46 +178,46 @@ class _ChatPanelState extends State<ChatPanel> {
                     return GestureDetector(
                       onLongPress: () => _showMessageActions(msg),
                       child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: RichText(
-                        text: TextSpan(
-                          children: [
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.baseline,
-                              baseline: TextBaseline.alphabetic,
-                              child: GestureDetector(
-                                onTap: canTapPeer
-                                    ? () => widget.onPeerTap!(
-                                          msg.userId,
-                                          msg.nick,
-                                        )
-                                    : null,
-                                child: Text(
-                                  '${msg.nick}: ',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: canTapPeer
-                                        ? Colors.lightBlueAccent
-                                        : Colors.amber,
-                                    fontSize: 13,
-                                    decoration: canTapPeer
-                                        ? TextDecoration.underline
-                                        : null,
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              WidgetSpan(
+                                alignment: PlaceholderAlignment.baseline,
+                                baseline: TextBaseline.alphabetic,
+                                child: GestureDetector(
+                                  onTap: canTapPeer
+                                      ? () => widget.onPeerTap!(
+                                            msg.userId,
+                                            msg.nick,
+                                          )
+                                      : null,
+                                  child: Text(
+                                    '${msg.nick}: ',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: canTapPeer
+                                          ? Colors.lightBlueAccent
+                                          : Colors.amber,
+                                      fontSize: 13,
+                                      decoration: canTapPeer
+                                          ? TextDecoration.underline
+                                          : null,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            TextSpan(
-                              text: msg.content,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
+                              TextSpan(
+                                text: msg.content,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                     );
                   },
                 ),

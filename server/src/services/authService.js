@@ -19,6 +19,7 @@ function rowToUser(row) {
     locale: row.locale,
     email: row.email ?? null,
     avatarUrl: row.avatar_url || DEFAULT_AVATAR_URL,
+    createdAt: row.created_at ?? null,
   };
 }
 

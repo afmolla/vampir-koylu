@@ -54,6 +54,8 @@ class ProfileService {
 
   Future<Map<String, dynamic>> fetchProfile() => _get('/api/profile/me');
 
+  Future<Map<String, dynamic>> fetchAuthMe() => _get('/api/auth/me');
+
   Future<Map<String, dynamic>> claimDailyLogin() =>
       _post('/api/profile/daily-login');
 

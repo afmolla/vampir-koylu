@@ -4,14 +4,14 @@ import 'package:vampir_koylu/core/version_utils.dart';
 void main() {
   test('resolveUpdateApkUrl prefers versioned server URL over latest', () {
     final url = resolveUpdateApkUrl({
-      'apkPublishVersion': '0.2.31',
-      'latestVersion': '0.2.31',
+      'apkPublishVersion': '0.2.32',
+      'latestVersion': '0.2.32',
       'updateUrlAndroid':
-          'https://github.com/afmolla/vampir-koylu/releases/download/v0.2.31/app-release.apk',
+          'https://github.com/afmolla/vampir-koylu/releases/download/v0.2.32/app-release.apk',
       'updateUrlLatest':
           'https://github.com/afmolla/vampir-koylu/releases/latest/download/app-release.apk',
     });
-    expect(url, contains('/v0.2.31/'));
+    expect(url, contains('/v0.2.32/'));
     expect(url, isNot(contains('/latest/')));
   });
 

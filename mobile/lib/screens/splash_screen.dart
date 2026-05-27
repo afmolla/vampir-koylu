@@ -8,6 +8,7 @@ import '../core/version_utils.dart';
 import '../l10n/app_localizations.dart';
 import '../services/api_client.dart';
 import '../services/auth_config.dart';
+import '../services/local_notifications_service.dart';
 import '../services/session_store.dart';
 import 'force_update_screen.dart';
 import 'home_screen.dart';
@@ -93,6 +94,8 @@ class _SplashScreenState extends State<SplashScreen> {
         versionResponse: version,
       );
       final latest = version['latestVersion'] as String?;
+      final updateAvailable =
+          latest != null && latest.isNotEmpty && isVersionOlder(_clientVersion, latest);
       final serverMisconfigured = latest != null &&
           latest.isNotEmpty &&
           !isVersionOlder(_clientVersion, latest) &&
@@ -101,6 +104,13 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (needsUpdate) {
+        if (updateAvailable) {
+          unawaited(
+            LocalNotificationsService.instance.notifyUpdateAvailable(
+              latestVersion: latest,
+            ),
+          );
+        }
         _setSteps(
           server: _CheckStep.ok,
           version: _CheckStep.failed,
@@ -126,6 +136,14 @@ class _SplashScreenState extends State<SplashScreen> {
         version: _CheckStep.ok,
         latest: latest,
       );
+
+      if (updateAvailable) {
+        unawaited(
+          LocalNotificationsService.instance.notifyUpdateAvailable(
+            latestVersion: latest,
+          ),
+        );
+      }
 
       if (serverMisconfigured && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

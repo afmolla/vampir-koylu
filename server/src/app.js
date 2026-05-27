@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const releasesDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../releases');
+const uploadsDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../uploads');
 import { versionRouter } from './routes/version.js';
 import { authRouter } from './routes/auth.js';
 import { healthRouter } from './routes/health.js';
@@ -34,6 +35,13 @@ export function createApp() {
       hint: 'Use /health or /api/version from the mobile app',
     });
   });
+
+  app.use(
+    '/uploads',
+    express.static(uploadsDir, {
+      maxAge: '7d',
+    }),
+  );
 
   app.use(
     '/releases',

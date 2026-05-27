@@ -3,6 +3,10 @@ node_modules/
 mobile/.dart_tool/
 mobile/.packages
 mobile/build/
+mobile/android/.gradle/
+mobile/android/app/build/
+mobile/android/build/
+mobile/android/.cxx/
 mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies
 
@@ -19,10 +23,14 @@ server/auth-secrets.env
 .DS_Store
 
 # Build / release
+releases/
+build-log/
 *.apk
 *.aab
 *.ipa
 server/dist/
+server/uploads/
+!server/uploads/avatars/.gitkeep
 coverage/
 
 # SQLite journal files

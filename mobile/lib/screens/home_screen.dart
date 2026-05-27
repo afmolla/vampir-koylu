@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import '../services/engagement_service.dart';
 import '../services/session_store.dart';
+import '../services/chat_session_store.dart';
 import '../services/socket_service.dart';
 import '../services/room_session.dart';
 import '../widgets/chat_popup_launcher.dart';
@@ -118,11 +119,29 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted && url != null) setState(() => _avatarUrl = url);
   }
 
+  void _openProfileSettings() {
+    Navigator.of(context)
+        .push(
+          MaterialPageRoute(
+            builder: (_) => ProfileSettingsScreen(
+              initialNick: widget.nick,
+              initialAvatarUrl: _avatarUrl,
+              offlineMode: widget.offlineMode,
+            ),
+          ),
+        )
+        .then((_) {
+          _loadAvatar();
+          if (!widget.offlineMode) _loadHome();
+        });
+  }
+
   Future<void> _connectSocket() async {
     try {
       final token = await SessionStore().getToken();
       if (token == null || token.isEmpty) return;
       await _socketService.connect(token: token);
+      ChatSessionStore.bindSocket(_socketService.socket);
       _socketService.socket?.emit('chat:join', {'channel': 'general'});
       _socketService.socket?.on('room:invite', _onRoomInvite);
       if (mounted) setState(() => _socketReady = true);
@@ -200,6 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _logout(BuildContext context) async {
+    ChatSessionStore.clearAll();
     await SessionStore().clear();
     if (!context.mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
@@ -213,6 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
+    ChatSessionStore.clearAll();
     _socketService.socket?.off('live:stats', _onLiveStats);
     _socketService.socket?.off('room:invite', _onRoomInvite);
     _socketService.disconnect();
@@ -237,14 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
             nick: widget.nick,
             frameId: profile['equippedFrame'] as String?,
             radius: 18,
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ProfileSettingsScreen()),
-              ).then((_) {
-                _loadAvatar();
-                _loadHome();
-              });
-            },
+            onTap: _openProfileSettings,
           ),
         ),
         title: Text(l10n.appTitle),
@@ -279,6 +293,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialPageRoute(builder: (_) => const ProfileHubScreen()),
                 ).then((_) => _loadHome());
               },
+            ),
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              tooltip: 'Profil ve ayarlar',
+              onPressed: _openProfileSettings,
             ),
           ],
           IconButton(

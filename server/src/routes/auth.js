@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
 import { config } from '../config.js';
+import { requireAuth } from '../middleware/requireAuth.js';
 import {
   getUserById,
   guestLogin,
@@ -10,10 +12,35 @@ import {
   registerAccount,
   updateAccount,
 } from '../services/authService.js';
+import {
+  AVATAR_MAX_BYTES,
+  avatarsDir,
+  deleteStoredAvatarIfLocal,
+  isAllowedAvatarMime,
+  newAvatarFilename,
+  publicAvatarUrl,
+} from '../services/avatarUpload.js';
 import { requestPasswordReset, resetPasswordWithToken } from '../services/mail.js';
 import { applyReferralCode } from '../services/engagement.js';
 import { recordLogin } from '../services/engagement.js';
 import { isAppAdmin } from '../services/appAdmin.js';
+
+const avatarUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, avatarsDir),
+    filename: (req, file, cb) => {
+      const name = newAvatarFilename(req.userId, file.mimetype);
+      cb(null, name);
+    },
+  }),
+  limits: { fileSize: AVATAR_MAX_BYTES, files: 1 },
+  fileFilter: (_req, file, cb) => {
+    if (!isAllowedAvatarMime(file.mimetype)) {
+      return cb(new Error('invalid_file_type'));
+    }
+    cb(null, true);
+  },
+});
 
 export const authRouter = Router();
 
@@ -35,6 +62,7 @@ function authResponse(user, res) {
       locale: user.locale,
       email: user.email,
       avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
       isAdmin: isAppAdmin(user),
     },
   });
@@ -80,6 +108,44 @@ authRouter.post('/reset-password', (req, res) => {
   res.json(result);
 });
 
+authRouter.post('/me/avatar', requireAuth, (req, res, next) => {
+  avatarUpload.single('avatar')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ error: 'file_too_large' });
+      }
+      if (err.message === 'invalid_file_type') {
+        return res.status(400).json({ error: 'invalid_file_type' });
+      }
+      return res.status(400).json({ error: 'upload_failed' });
+    }
+    next();
+  });
+}, (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no_file' });
+
+  try {
+    deleteStoredAvatarIfLocal(req.authUser.avatarUrl);
+    const avatarUrl = publicAvatarUrl(req, req.file.filename);
+    const result = updateAccount(req.userId, { avatarUrl });
+    if (result.error) return res.status(400).json(result);
+    res.json({
+      avatarUrl: result.user.avatarUrl,
+      user: {
+        id: result.user.id,
+        nick: result.user.nick,
+        isGuest: result.user.isGuest,
+        locale: result.user.locale,
+        email: result.user.email,
+        avatarUrl: result.user.avatarUrl,
+      },
+    });
+  } catch (e) {
+    console.error('avatar upload:', e);
+    res.status(500).json({ error: 'server_error' });
+  }
+});
+
 authRouter.patch('/me', (req, res) => {
   const header = req.headers.authorization ?? '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
@@ -96,6 +162,7 @@ authRouter.patch('/me', (req, res) => {
         locale: result.user.locale,
         email: result.user.email,
         avatarUrl: result.user.avatarUrl,
+        createdAt: result.user.createdAt,
       },
     });
   } catch {
@@ -168,6 +235,7 @@ authRouter.get('/me', (req, res) => {
         locale: user.locale,
         email: user.email,
         avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt,
         isAdmin: isAppAdmin(user),
       },
     });

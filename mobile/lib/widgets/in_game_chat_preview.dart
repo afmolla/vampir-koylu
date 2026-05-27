@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 
-import 'chat_panel.dart';
+import '../services/chat_session_store.dart';
 
 /// Oyun sirasinda son gelen mesaji tek satirda gosterir; tiklaninca sohbet acilir.
 class InGameChatPreview extends StatefulWidget {
@@ -28,35 +28,36 @@ class _InGameChatPreviewState extends State<InGameChatPreview> {
   @override
   void initState() {
     super.initState();
-    widget.socket?.on('chat:message', _onMessage);
+    ChatSessionStore.bindSocket(widget.socket);
+    _syncLatest();
+    ChatSessionStore.revision.addListener(_syncLatest);
   }
 
   @override
   void didUpdateWidget(covariant InGameChatPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.socket != widget.socket) {
-      oldWidget.socket?.off('chat:message', _onMessage);
-      widget.socket?.on('chat:message', _onMessage);
+      ChatSessionStore.bindSocket(widget.socket);
     }
+    if (oldWidget.channels != widget.channels) {
+      _syncLatest();
+    }
+  }
+
+  void _syncLatest() {
+    if (!mounted) return;
+    setState(() {
+      _latest = ChatSessionStore.latestForChannels(
+        widget.channels,
+        excludeUserId: widget.myUserId,
+      );
+    });
   }
 
   @override
   void dispose() {
-    _latest = null;
-    widget.socket?.off('chat:message', _onMessage);
+    ChatSessionStore.revision.removeListener(_syncLatest);
     super.dispose();
-  }
-
-  void _onMessage(dynamic data) {
-    if (data is! Map) return;
-    final msg = ChatMessage.fromJson(Map<String, dynamic>.from(data));
-    if (!widget.channels.contains(msg.channel)) return;
-    if (widget.myUserId != null &&
-        msg.userId.isNotEmpty &&
-        msg.userId == widget.myUserId) {
-      return;
-    }
-    if (mounted) setState(() => _latest = msg);
   }
 
   @override

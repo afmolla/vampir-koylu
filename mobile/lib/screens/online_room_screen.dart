@@ -36,6 +36,7 @@ class OnlineRoomScreen extends StatefulWidget {
 
 class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
   late OnlineRoomState _room;
+  bool _roomLeft = false;
   bool _showRoleReveal = false;
   String? _bannerPhaseOverride;
   late bool _fillWithBots;
@@ -199,6 +200,8 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
   }
 
   void _leaveRoom() {
+    if (_roomLeft) return;
+    _roomLeft = true;
     widget.socketService.offRoomState();
     RoomSession.clear();
     final socket = widget.socketService.socket;
@@ -207,7 +210,10 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
 
   @override
   void dispose() {
-    _leaveRoom();
+    if (!_roomLeft) {
+      super.dispose();
+      return;
+    }
     super.dispose();
   }
 
