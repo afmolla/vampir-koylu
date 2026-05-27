@@ -96,6 +96,14 @@ if not exist "node_modules\better-sqlite3" (
     pause
     exit /b 1
   )
+) else if not exist "node_modules\multer" (
+  echo       Yeni paketler var ^(multer vb.^) — npm install...
+  call npm install
+  if errorlevel 1 (
+    echo HATA: npm install basarisiz.
+    pause
+    exit /b 1
+  )
 ) else (
   echo       node_modules OK
 )
