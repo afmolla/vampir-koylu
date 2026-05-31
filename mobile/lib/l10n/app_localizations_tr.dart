@@ -338,6 +338,42 @@ class AppLocalizationsTr extends AppLocalizations {
   String get vampiresWin => 'Vampirler kazandı!';
 
   @override
+  String get foolWins => 'Aptal kazandı!';
+
+  @override
+  String get noKillNight => 'Bu gece kimse ölmedi.';
+
+  @override
+  String hunterRevenge(String name) {
+    return 'Avcı intikamı: $name düştü.';
+  }
+
+  @override
+  String nightInsightAlignment(String name, String alignment) {
+    return '$name: $alignment';
+  }
+
+  @override
+  String nightInsightRole(String name, String role) {
+    return '$name → $role';
+  }
+
+  @override
+  String get alignmentGood => 'iyi taraf';
+
+  @override
+  String get alignmentEvil => 'kötü taraf';
+
+  @override
+  String get alignmentNeutral => 'tarafsız';
+
+  @override
+  String get actionDeceive => 'Kandır';
+
+  @override
+  String get canActNightHint => 'Hedef seçmek için oyuncuya dokun';
+
+  @override
   String get playAgain => 'Tekrar oyna';
 
   @override

@@ -337,6 +337,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get vampiresWin => 'Vampires win!';
 
   @override
+  String get foolWins => 'The Fool wins!';
+
+  @override
+  String get noKillNight => 'No one died tonight.';
+
+  @override
+  String hunterRevenge(String name) {
+    return 'Hunter\'s revenge: $name fell.';
+  }
+
+  @override
+  String nightInsightAlignment(String name, String alignment) {
+    return '$name: $alignment';
+  }
+
+  @override
+  String nightInsightRole(String name, String role) {
+    return '$name → $role';
+  }
+
+  @override
+  String get alignmentGood => 'good alignment';
+
+  @override
+  String get alignmentEvil => 'evil alignment';
+
+  @override
+  String get alignmentNeutral => 'neutral';
+
+  @override
+  String get actionDeceive => 'Deceive';
+
+  @override
+  String get canActNightHint => 'Tap a player to choose your target';
+
+  @override
   String get playAgain => 'Play again';
 
   @override

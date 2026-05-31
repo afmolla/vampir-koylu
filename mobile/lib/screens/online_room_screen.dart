@@ -345,12 +345,59 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     }
   }
 
-  String _actionTypeForPhase(dynamic game) {
+  String _actionTypeForPhase(OnlineGameState game) {
     if (game.phase == 'night') {
-      if (game.yourRole == 'doctor') return 'doctor_protect';
-      return 'night_kill';
+      switch (game.yourRole) {
+        case 'doctor':
+          return 'doctor_protect';
+        case 'guard':
+          return 'guard_protect';
+        case 'seer':
+        case 'sheriff':
+          return 'investigate';
+        case 'vampire':
+        case 'silent_killer':
+          return 'night_kill';
+      }
     }
     return 'day_vote';
+  }
+
+  String _alignmentLabel(AppLocalizations l10n, String? alignment) {
+    switch (alignment) {
+      case 'evil':
+        return l10n.alignmentEvil;
+      case 'neutral':
+        return l10n.alignmentNeutral;
+      default:
+        return l10n.alignmentGood;
+    }
+  }
+
+  String? _nightInsightText(AppLocalizations l10n, OnlineGameState game) {
+    final ins = game.nightInsight;
+    if (ins == null || ins.nick.isEmpty || ins.kind.isEmpty) return null;
+    final locale = Localizations.localeOf(context).languageCode;
+    if (ins.kind == 'role' && ins.role != null) {
+      return l10n.nightInsightRole(
+        ins.nick,
+        roleMeta(ins.role).label(locale),
+      );
+    }
+    return l10n.nightInsightAlignment(
+      ins.nick,
+      _alignmentLabel(l10n, ins.alignment),
+    );
+  }
+
+  Future<void> _deceiveAction() async {
+    final socket = widget.socketService.socket;
+    if (socket == null) return;
+    socket.emitWithAck(
+      'game:action',
+      {'type': 'deceive', 'targetId': 0},
+      ack: (_) {},
+    );
   }
 
   Future<void> _gameAction(String type, int targetId) async {
@@ -371,6 +418,8 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     final inGame = game != null && !inLobby;
     final activeGame = inGame ? game : null;
     final showVoice = _room.status != 'finished';
+    final insightText =
+        game != null ? _nightInsightText(l10n, game) : null;
 
     return PopScope(
       canPop: false,
@@ -444,6 +493,8 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                           lastVictim: game?.lastVictimName,
                           winner: game?.winner,
                           serverMessage: game?.message,
+                          noKillNight: game?.noKillNight ?? false,
+                          hunterRevengeNick: game?.hunterRevengeNick,
                         ),
                         const SizedBox(height: 12),
                         if (game?.yourRole != null)
@@ -459,6 +510,78 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                        if (insightText != null)
+                          Card(
+                            color: Colors.indigo.withValues(alpha: 0.25),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.visibility_outlined,
+                                    color: Colors.lightBlueAccent,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      insightText,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        if (game?.canAct == true)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              game!.phase == 'night'
+                                  ? l10n.canActNightHint
+                                  : l10n.tapToVote,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        if (game?.phase == 'night' &&
+                            game?.yourRole == 'double_agent')
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: OutlinedButton.icon(
+                              onPressed: _deceiveAction,
+                              icon: const Icon(Icons.theater_comedy_outlined),
+                              label: Text(l10n.actionDeceive),
+                            ),
+                          ),
+                        if (game?.revealedRoles.isNotEmpty == true) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Roller',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleSmall,
+                          ),
+                          ...game!.revealedRoles.map((r) {
+                            final locale =
+                                Localizations.localeOf(context).languageCode;
+                            return ListTile(
+                              dense: true,
+                              title: Text(r.nick),
+                              subtitle: Text(
+                                roleMeta(r.role).label(locale),
+                              ),
+                              trailing: Icon(
+                                r.alive ? Icons.person : Icons.close,
+                                size: 18,
+                                color: r.alive ? Colors.greenAccent : Colors.grey,
+                              ),
+                            );
+                          }),
+                        ],
                         Text(
                           l10n.playersCount(
                             _room.players.length,

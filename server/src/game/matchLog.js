@@ -52,6 +52,7 @@ export function buildMatchSummary(room) {
       score += 2;
     }
     if (g.winner === 'vampire' && ['vampire', 'silent_killer'].includes(p.role)) score += 3;
+    if (g.winner === 'fool' && p.role === 'fool') score += 10;
     score += (log.accusationCounts.get(p.userId) ?? 0) * 0.5;
     kills.forEach((k) => {
       if (k.killerNick === p.nick) score += 2;

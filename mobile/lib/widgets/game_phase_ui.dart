@@ -37,6 +37,13 @@ class GamePhaseUi {
             icon: Icons.bloodtype_rounded,
           );
         }
+        if (winner == 'fool') {
+          return const GamePhaseVisual(
+            accent: Color(0xFF6A4C93),
+            glow: Color(0xFFE1BEE7),
+            icon: Icons.psychology_alt_rounded,
+          );
+        }
         return const GamePhaseVisual(
           accent: Color(0xFF2E7D52),
           glow: Color(0xFF81C784),
@@ -72,6 +79,7 @@ class GamePhaseUi {
         return l10n.phaseDawn;
       case 'gameOver':
         if (winner == 'vampire') return l10n.vampiresWin;
+        if (winner == 'fool') return l10n.foolWins;
         if (winner == 'villager') return l10n.villagersWin;
         return l10n.phaseGameOver;
       case 'lobby':
@@ -85,7 +93,15 @@ class GamePhaseUi {
     AppLocalizations l10n, {
     String? serverMessage,
     String? lastVictim,
+    bool noKillNight = false,
+    String? hunterRevengeNick,
   }) {
+    if (hunterRevengeNick != null && hunterRevengeNick.isNotEmpty) {
+      return l10n.hunterRevenge(hunterRevengeNick);
+    }
+    if (noKillNight && (lastVictim == null || lastVictim.isEmpty)) {
+      return l10n.noKillNight;
+    }
     if (lastVictim != null && lastVictim.isNotEmpty) {
       return l10n.lastVictim(lastVictim);
     }

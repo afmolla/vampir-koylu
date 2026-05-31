@@ -134,6 +134,31 @@
   "tapToVote": "Tap a player to vote them out",
   "villagersWin": "Villagers win!",
   "vampiresWin": "Vampires win!",
+  "foolWins": "The Fool wins!",
+  "noKillNight": "No one died tonight.",
+  "hunterRevenge": "Hunter's revenge: {name} fell.",
+  "@hunterRevenge": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "nightInsightAlignment": "{name}: {alignment}",
+  "@nightInsightAlignment": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "alignment": { "type": "String" }
+    }
+  },
+  "nightInsightRole": "{name} → {role}",
+  "@nightInsightRole": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "role": { "type": "String" }
+    }
+  },
+  "alignmentGood": "good alignment",
+  "alignmentEvil": "evil alignment",
+  "alignmentNeutral": "neutral",
+  "actionDeceive": "Deceive",
+  "canActNightHint": "Tap a player to choose your target",
   "playAgain": "Play again",
   "matchSummaryTitle": "Match summary",
   "summaryKills": "Who eliminated whom",

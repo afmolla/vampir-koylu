@@ -1,6 +1,6 @@
 # Vampir Köylü — Roadmap
 
-**Güncel:** v0.2.32 · [GELISTIRME-PLANI.md](./GELISTIRME-PLANI.md) · [PLAN-TUTMA-REKABET.md](./PLAN-TUTMA-REKABET.md) · [PLAN-PROFIL-UX.md](./PLAN-PROFIL-UX.md) · [PLAYSTORE-HAZIRLIK-PLANI-v0.2.32.md](./PLAYSTORE-HAZIRLIK-PLANI-v0.2.32.md)
+**Güncel:** v0.2.32 · [GELISTIRME-PLANI.md](./GELISTIRME-PLANI.md) · [PLAN-OYUN-GELISTIRME.md](./PLAN-OYUN-GELISTIRME.md) (ilgi/zevk) · [PLAN-TUTMA-REKABET.md](./PLAN-TUTMA-REKABET.md) · [PLAN-PROFIL-UX.md](./PLAN-PROFIL-UX.md) · [PLAYSTORE-HAZIRLIK-PLANI-v0.2.32.md](./PLAYSTORE-HAZIRLIK-PLANI-v0.2.32.md)
 
 ## v0.2.32 (yayında)
 - Profil hub genişletildi, avatar yükleme (galeri/kamera)

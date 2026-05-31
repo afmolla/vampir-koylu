@@ -680,6 +680,36 @@ abstract class AppLocalizations {
   /// **'Vampires win!'**
   String get vampiresWin;
 
+  /// No description provided for @foolWins.
+  String get foolWins;
+
+  /// No description provided for @noKillNight.
+  String get noKillNight;
+
+  /// No description provided for @hunterRevenge.
+  String hunterRevenge(String name);
+
+  /// No description provided for @nightInsightAlignment.
+  String nightInsightAlignment(String name, String alignment);
+
+  /// No description provided for @nightInsightRole.
+  String nightInsightRole(String name, String role);
+
+  /// No description provided for @alignmentGood.
+  String get alignmentGood;
+
+  /// No description provided for @alignmentEvil.
+  String get alignmentEvil;
+
+  /// No description provided for @alignmentNeutral.
+  String get alignmentNeutral;
+
+  /// No description provided for @actionDeceive.
+  String get actionDeceive;
+
+  /// No description provided for @canActNightHint.
+  String get canActNightHint;
+
   /// No description provided for @playAgain.
   ///
   /// In en, this message translates to:

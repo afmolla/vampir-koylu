@@ -134,6 +134,31 @@
   "tapToVote": "Elenmesini istediğin oyuncuya dokun",
   "villagersWin": "Köylüler kazandı!",
   "vampiresWin": "Vampirler kazandı!",
+  "foolWins": "Aptal kazandı!",
+  "noKillNight": "Bu gece kimse ölmedi.",
+  "hunterRevenge": "Avcı intikamı: {name} düştü.",
+  "@hunterRevenge": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "nightInsightAlignment": "{name}: {alignment}",
+  "@nightInsightAlignment": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "alignment": { "type": "String" }
+    }
+  },
+  "nightInsightRole": "{name} → {role}",
+  "@nightInsightRole": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "role": { "type": "String" }
+    }
+  },
+  "alignmentGood": "iyi taraf",
+  "alignmentEvil": "kötü taraf",
+  "alignmentNeutral": "tarafsız",
+  "actionDeceive": "Kandır",
+  "canActNightHint": "Hedef seçmek için oyuncuya dokun",
   "playAgain": "Tekrar oyna",
   "matchSummaryTitle": "Maç özeti",
   "summaryKills": "Kim kimi öldürdü",

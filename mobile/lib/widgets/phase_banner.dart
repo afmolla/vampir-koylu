@@ -12,6 +12,8 @@ class PhaseBanner extends StatelessWidget {
     this.lastVictim,
     this.winner,
     this.serverMessage,
+    this.noKillNight = false,
+    this.hunterRevengeNick,
   });
 
   final String phase;
@@ -19,6 +21,8 @@ class PhaseBanner extends StatelessWidget {
   final String? lastVictim;
   final String? winner;
   final String? serverMessage;
+  final bool noKillNight;
+  final String? hunterRevengeNick;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +33,8 @@ class PhaseBanner extends StatelessWidget {
       l10n,
       serverMessage: serverMessage,
       lastVictim: lastVictim,
+      noKillNight: noKillNight,
+      hunterRevengeNick: hunterRevengeNick,
     );
 
     return AnimatedSwitcher(

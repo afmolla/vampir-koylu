@@ -24,7 +24,7 @@ class MatchSummaryScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           Text(
-            summary['winner'] == 'vampire' ? l10n.vampiresWin : l10n.villagersWin,
+            _winnerTitle(l10n, summary['winner'] as String?),
             style: Theme.of(context).textTheme.headlineSmall,
             textAlign: TextAlign.center,
           ),
@@ -104,6 +104,12 @@ class MatchSummaryScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+String _winnerTitle(AppLocalizations l10n, String? winner) {
+  if (winner == 'vampire') return l10n.vampiresWin;
+  if (winner == 'fool') return l10n.foolWins;
+  return l10n.villagersWin;
 }
 
 class _Section extends StatelessWidget {
