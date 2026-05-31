@@ -67,6 +67,8 @@ if not "%SKIP_GIT_PULL%"=="1" (
 ) else (
   echo [0/5] git atlandi (SKIP_GIT_PULL=1)
 )
+for /f "delims=" %%c in ('git rev-parse --short HEAD 2^>nul') do set GIT_HEAD=%%c
+if defined GIT_HEAD echo       Git commit: %GIT_HEAD%
 echo.
 
 cd /d "%VPS_APP_DIR%\server"
@@ -109,9 +111,14 @@ if not exist "node_modules\better-sqlite3" (
 )
 
 REM --- 3) Ortam degiskenleri (surum = health.js SERVER_BUILD) ---
-for /f "delims=" %%v in ('node -e "const fs=require(''fs'');const m=fs.readFileSync(''src/routes/health.js'',''utf8'').match(/SERVER_BUILD\\s*=\\s*''([^'']+)''/);process.stdout.write(m?m[1]:'''')"') do (
+for /f "delims=" %%v in ('node "%~dp0print-build.cjs"') do (
   set LATEST_VERSION=%%v
   set APK_PUBLISH_VERSION=%%v
+)
+if not defined LATEST_VERSION (
+  echo       UYARI: print-build.cjs surum okuyamadi - repo-paths yedegi kullaniliyor.
+) else (
+  echo       SERVER_BUILD=%LATEST_VERSION%
 )
 echo [3/5] Surum ayarlari: MIN=%MIN_REQUIRED_VERSION%  LATEST=%LATEST_VERSION%
 set PORT=%API_PORT%

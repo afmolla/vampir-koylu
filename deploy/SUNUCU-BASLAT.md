@@ -10,7 +10,13 @@ C:\apps\vampir-koylu\BASLAT-API.cmd
 
 **Bu IIS makinesi (wwwroot):** `C:\inetpub\wwwroot\oyun1\BASLAT-API.cmd`
 
-**Dosya silindiyse / yoksa:** repodan `BASLAT-API.cmd` kopyala (proje kokune) veya asagidaki alternatifleri kullan.
+**Eski masaustu (`C:\apps\flutter\BASLAT-API.cmd`) guncellenmez** — repodaki dosya git ile gelir. Eski kisayol kullaniyorsan bir kez:
+
+```cmd
+copy /Y C:\apps\vampir-koylu\deploy\MASAUSTU-BASLAT-YONLENDIR.cmd C:\apps\flutter\BASLAT-API.cmd
+```
+
+Baslatinca pencerede `BASLAT-API (launcher guncel: 2026-05-28)` ve `Git commit: 32cf161` gibi satirlar gorunmeli; `/health` → `serverBuild` = `0.2.33`.
 ```
 
 veya
