@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import 'game_phase_ui.dart';
 
 /// Üstte animasyonlu faz bandı (gece / şafak / gündüz / oyun bitti).
-class PhaseBanner extends StatelessWidget {
+class PhaseBanner extends StatefulWidget {
   const PhaseBanner({
     super.key,
     required this.phase,
@@ -14,6 +16,7 @@ class PhaseBanner extends StatelessWidget {
     this.serverMessage,
     this.noKillNight = false,
     this.hunterRevengeNick,
+    this.phaseEndsAt,
   });
 
   final String phase;
@@ -23,19 +26,51 @@ class PhaseBanner extends StatelessWidget {
   final String? serverMessage;
   final bool noKillNight;
   final String? hunterRevengeNick;
+  final int? phaseEndsAt;
+
+  @override
+  State<PhaseBanner> createState() => _PhaseBannerState();
+}
+
+class _PhaseBannerState extends State<PhaseBanner> {
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  int? get _secondsLeft {
+    final end = widget.phaseEndsAt;
+    if (end == null) return null;
+    final left =
+        ((end - DateTime.now().millisecondsSinceEpoch) / 1000).ceil();
+    return left > 0 ? left : 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final style = GamePhaseUi.styleFor(phase, winner: winner);
-    final label = GamePhaseUi.phaseLabel(l10n, phase, winner: winner);
+    final style = GamePhaseUi.styleFor(widget.phase, winner: widget.winner);
+    final label =
+        GamePhaseUi.phaseLabel(l10n, widget.phase, winner: widget.winner);
     final hint = GamePhaseUi.messageHint(
       l10n,
-      serverMessage: serverMessage,
-      lastVictim: lastVictim,
-      noKillNight: noKillNight,
-      hunterRevengeNick: hunterRevengeNick,
+      serverMessage: widget.serverMessage,
+      lastVictim: widget.lastVictim,
+      noKillNight: widget.noKillNight,
+      hunterRevengeNick: widget.hunterRevengeNick,
     );
+    final secs = _secondsLeft;
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 650),
@@ -54,7 +89,7 @@ class PhaseBanner extends StatelessWidget {
         );
       },
       child: Container(
-        key: ValueKey('$phase-$dayNumber-$hint'),
+        key: ValueKey('${widget.phase}-${widget.dayNumber}-$hint-$secs'),
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
@@ -92,12 +127,25 @@ class PhaseBanner extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              '${l10n.dayLabel} $dayNumber',
+              '${l10n.dayLabel} ${widget.dayNumber}',
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.55),
                 fontSize: 13,
               ),
             ),
+            if (secs != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                '⏱ ${secs}s',
+                style: TextStyle(
+                  color: secs <= 15
+                      ? Colors.orangeAccent
+                      : Colors.white.withValues(alpha: 0.7),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
             if (hint != null && hint.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(

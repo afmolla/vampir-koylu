@@ -163,6 +163,13 @@ function roleAlignment(role) {
   return 'good';
 }
 
+const PHASE_MS = { night: 90_000, dayVote: 120_000 };
+
+function bumpPhaseTimer(g, phase) {
+  const ms = PHASE_MS[phase] ?? 90_000;
+  g.phaseEndsAt = Date.now() + ms;
+}
+
 function publicGameState(room) {
   const g = room.game;
   return {
@@ -173,6 +180,7 @@ function publicGameState(room) {
     winner: g.winner,
     noKillNight: Boolean(g.noKillNight),
     hunterRevengeNick: g.hunterRevengeNick ?? null,
+    phaseEndsAt: g.phaseEndsAt ?? null,
     players: g.players.map((p) => ({
       id: p.id,
       nick: p.nick,
@@ -566,6 +574,7 @@ export function startGame(socketId, userId, { fillWithBots } = {}) {
     nightDeceived: new Set(),
     noKillNight: false,
     hunterRevengeNick: null,
+    phaseEndsAt: Date.now() + PHASE_MS.night,
     matchLog: createMatchLog(),
     players: room.players.map((p, idx) => ({
       id: idx,
@@ -697,6 +706,7 @@ function resolveNight(room) {
     g.nightGuards.clear();
     g.phase = 'dayVote';
     g.message = 'day_vote';
+    bumpPhaseTimer(g, 'dayVote');
     tickBotActions(room);
     return;
   }
@@ -758,6 +768,7 @@ function resolveNight(room) {
   g.nightGuards.clear();
   g.phase = 'dayVote';
   g.message = 'day_vote';
+  bumpPhaseTimer(g, 'dayVote');
   tickBotActions(room);
 }
 
@@ -813,6 +824,7 @@ function resolveDay(room) {
   g.message = 'night';
   g.nightInvestigations.clear();
   g.nightDeceived?.clear();
+  bumpPhaseTimer(g, 'night');
   tickBotActions(room);
 }
 

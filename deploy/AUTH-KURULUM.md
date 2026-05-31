@@ -24,24 +24,25 @@ keytool -list -v -keystore mobile\android\signing\release.keystore -alias vampir
 
 `SHA1:` satırını Google Console’a yapıştır.
 
-## 2. Sunucu (VPS)
+## 2. Sunucu (VPS) — önerilen
 
 ```cmd
-cd C:\inetpub\wwwroot\oyun1\server
-copy auth-secrets.env.example auth-secrets.env
-notepad auth-secrets.env
+cd C:\apps\vampir-koylu
+deploy\KURULUM-GOOGLE.cmd
 ```
 
-`auth-secrets.env` içine:
-
-```env
-GOOGLE_CLIENT_ID=WEB_CLIENT_ID.apps.googleusercontent.com
-```
-
-API’yi yeniden başlat:
+`deploy\google-oauth.local.cmd` içine Web Client ID yapıştır, kaydet, sonra:
 
 ```cmd
 BASLAT-API.cmd
+```
+
+(BASLAT-API otomatik `server\auth-secrets.env` oluşturur; uyarı çıkmaz.)
+
+Alternatif — elle `server\auth-secrets.env`:
+
+```env
+GOOGLE_CLIENT_ID=WEB_CLIENT_ID.apps.googleusercontent.com
 ```
 
 Kontrol:  

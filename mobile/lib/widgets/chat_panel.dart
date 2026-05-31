@@ -132,6 +132,18 @@ class _ChatPanelState extends State<ChatPanel> {
     });
   }
 
+  static const _quickPhrases = [
+    '👀 Şüpheli',
+    '✓ Güveniyorum',
+    '🤫 Sus',
+    '🗳️ Oy ver',
+  ];
+
+  void _sendPreset(String text) {
+    _controller.text = text;
+    _send();
+  }
+
   void _send() {
     final text = _controller.text.trim();
     if (text.isEmpty || widget.socket == null) return;
@@ -222,6 +234,26 @@ class _ChatPanelState extends State<ChatPanel> {
                   },
                 ),
         ),
+        if (!widget.isPrivate)
+          SizedBox(
+            height: 38,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: _quickPhrases.length,
+              separatorBuilder: (_, __) => const SizedBox(width: 6),
+              itemBuilder: (context, i) {
+                final phrase = _quickPhrases[i];
+                return ActionChip(
+                  label: Text(phrase, style: const TextStyle(fontSize: 12)),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: widget.socket == null
+                      ? null
+                      : () => _sendPreset(phrase),
+                );
+              },
+            ),
+          ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(

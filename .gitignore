@@ -15,6 +15,7 @@ mobile/.flutter-plugins-dependencies
 .env.*
 !.env.example
 server/auth-secrets.env
+deploy/google-oauth.local.cmd
 
 # IDE
 .idea/

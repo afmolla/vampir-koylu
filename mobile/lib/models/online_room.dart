@@ -99,6 +99,7 @@ class OnlineGameState {
     this.winner,
     this.noKillNight = false,
     this.hunterRevengeNick,
+    this.phaseEndsAt,
     required this.players,
     this.yourRole,
     this.canAct = false,
@@ -116,6 +117,7 @@ class OnlineGameState {
   final String? winner;
   final bool noKillNight;
   final String? hunterRevengeNick;
+  final int? phaseEndsAt;
   final List<OnlineGamePlayer> players;
   final String? yourRole;
   final bool canAct;
@@ -138,6 +140,7 @@ class OnlineGameState {
       winner: j['winner'] as String?,
       noKillNight: j['noKillNight'] == true,
       hunterRevengeNick: j['hunterRevengeNick'] as String?,
+      phaseEndsAt: j['phaseEndsAt'] as int?,
       players: list
           .map((e) => OnlineGamePlayer.fromJson(e as Map<String, dynamic>))
           .toList(),

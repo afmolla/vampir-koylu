@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/online_room.dart';
@@ -247,6 +248,12 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
     final nextPhase = next.game?.phase;
 
     if (prevPhase == 'night' && nextPhase == 'dayVote') {
+      final g = next.game;
+      if (g != null &&
+          ((g.lastVictimName != null && g.lastVictimName!.isNotEmpty) ||
+              g.hunterRevengeNick != null)) {
+        HapticFeedback.heavyImpact();
+      }
       setState(() => _bannerPhaseOverride = GamePhaseUi.phaseAfterNightKill());
       Future<void>.delayed(const Duration(milliseconds: 1600), () {
         if (mounted) setState(() => _bannerPhaseOverride = null);
@@ -495,6 +502,7 @@ class _OnlineRoomScreenState extends State<OnlineRoomScreen> {
                           serverMessage: game?.message,
                           noKillNight: game?.noKillNight ?? false,
                           hunterRevengeNick: game?.hunterRevengeNick,
+                          phaseEndsAt: game?.phaseEndsAt,
                         ),
                         const SizedBox(height: 12),
                         if (game?.yourRole != null)

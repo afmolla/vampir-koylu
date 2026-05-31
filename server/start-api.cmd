@@ -8,7 +8,7 @@ if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
 if not defined API_PORT set API_PORT=3002
-if not defined LATEST_VERSION set LATEST_VERSION=0.2.33
+if not defined LATEST_VERSION set LATEST_VERSION=0.2.34
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
 if not defined GITHUB_REPO set GITHUB_REPO=afmolla/vampir-koylu
 
@@ -133,12 +133,11 @@ set JWT_SECRET=vampir-koylu-production-change-me
 set JWT_EXPIRES_IN=7d
 set ADMIN_API_KEY=vampir-admin-change-me
 
-if not exist "auth-secrets.env" (
-  if exist "auth-secrets.env.example" (
-    echo       UYARI: auth-secrets.env yok - Google giris icin:
-    echo         copy auth-secrets.env.example auth-secrets.env
-    echo         GOOGLE_CLIENT_ID=Web_Client_ID.apps.googleusercontent.com
-  )
+call "%~dp0scripts\ensure-auth-secrets.cmd" >nul 2>&1
+if errorlevel 1 (
+  echo       Google giris: kapali — deploy\KURULUM-GOOGLE.cmd ^(Web Client ID^)
+) else (
+  echo       Google giris: AKTIF
 )
 
 (
@@ -157,10 +156,7 @@ if not exist "auth-secrets.env" (
 ) > .env
 
 if exist "auth-secrets.env" (
-  echo       auth-secrets.env birlestiriliyor...
   type auth-secrets.env >> .env
-) else (
-  echo       Google giris: auth-secrets.env olustur ^(ornek: auth-secrets.env.example^)
 )
 
 REM --- 4) Node baslat ---

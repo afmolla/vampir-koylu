@@ -1,0 +1,6 @@
+@echo off
+REM Kopyala:  copy google-oauth.local.cmd.example google-oauth.local.cmd
+REM Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 > Web application
+REM Client ID (.apps.googleusercontent.com ile biter) asagiya yapistir:
+
+set GOOGLE_CLIENT_ID=
