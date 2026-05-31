@@ -8,7 +8,7 @@ if exist "%~dp0..\deploy\repo-paths.cmd" call "%~dp0..\deploy\repo-paths.cmd"
 if not defined VPS_APP_DIR set VPS_APP_DIR=%~dp0..
 if not defined PUBLIC_IP set PUBLIC_IP=85.95.251.204
 if not defined API_PORT set API_PORT=3002
-if not defined LATEST_VERSION set LATEST_VERSION=0.2.32
+if not defined LATEST_VERSION set LATEST_VERSION=0.2.33
 if not defined MIN_REQUIRED_VERSION set MIN_REQUIRED_VERSION=0.2.6
 if not defined GITHUB_REPO set GITHUB_REPO=afmolla/vampir-koylu
 
@@ -108,7 +108,11 @@ if not exist "node_modules\better-sqlite3" (
   echo       node_modules OK
 )
 
-REM --- 3) Ortam degiskenleri ---
+REM --- 3) Ortam degiskenleri (surum = health.js SERVER_BUILD) ---
+for /f "delims=" %%v in ('node -e "const fs=require(''fs'');const m=fs.readFileSync(''src/routes/health.js'',''utf8'').match(/SERVER_BUILD\\s*=\\s*''([^'']+)''/);process.stdout.write(m?m[1]:'''')"') do (
+  set LATEST_VERSION=%%v
+  set APK_PUBLISH_VERSION=%%v
+)
 echo [3/5] Surum ayarlari: MIN=%MIN_REQUIRED_VERSION%  LATEST=%LATEST_VERSION%
 set PORT=%API_PORT%
 set NODE_ENV=production

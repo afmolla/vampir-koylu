@@ -29,7 +29,7 @@ export const config = {
   forceUpdate: (process.env.FORCE_UPDATE ?? 'true') === 'true',
   updateUrlAndroid:
     process.env.UPDATE_URL_ANDROID ??
-    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.32'),
+    apkDownloadUrl(process.env.APK_PUBLISH_VERSION ?? '0.2.33'),
   updateUrlLatest: apkLatestDownloadUrl(),
   apkReleaseRepo,
   jwtSecret: process.env.JWT_SECRET ?? 'dev-only-change-in-production',
